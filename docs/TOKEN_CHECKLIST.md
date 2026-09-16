@@ -97,7 +97,7 @@ If a component needs a new reusable visual value, add it there first instead of 
 - Shadows:
   - If it is raised, is it reusing button/window shadow logic instead of inventing a new one?
 - Theme coverage:
-  - Would the component still read correctly in `classic`, `amber`, and `phosphor`?
+  - Would the component still read correctly in `classic`, `amber`, `phosphor`, and `midnight`?
 - Hardcoded values:
   - Are any colors or dimensions local only because they are truly component-specific?
 

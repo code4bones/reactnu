@@ -16,7 +16,8 @@ const preview: Preview = {
       const theme = String(context.globals.theme ?? "classic") as
         | "classic"
         | "amber"
-        | "phosphor";
+        | "phosphor"
+        | "midnight";
       const fontKey = String(
         context.globals.font ?? "comic"
       ) as keyof typeof FONT_OPTIONS;
@@ -57,7 +58,8 @@ const preview: Preview = {
         items: [
           { title: "Classic", value: "classic" },
           { title: "Amber", value: "amber" },
-          { title: "Phosphor", value: "phosphor" }
+          { title: "Phosphor", value: "phosphor" },
+          { title: "Midnight Slate", value: "midnight" }
         ],
         title: "Theme"
       }

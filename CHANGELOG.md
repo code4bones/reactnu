@@ -9,6 +9,12 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.15]
+
+### Added
+
+- Added the `midnight` theme: a dark blue-gray DOS palette with pale chrome and yellow focus accents.
+
 ## [0.1.14]
 
 ### Fixed

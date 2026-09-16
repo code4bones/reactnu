@@ -59,6 +59,7 @@ Supported props:
 
 ## Notes
 
-- The default theme is the classic DOS/Norton-inspired palette.
+- Built-in themes are `classic` (default), `amber`, `phosphor`, and `midnight`.
+- `midnight` is a restrained dark blue-gray palette with pale chrome and yellow focus accents.
 - Theme tokens drive desktop, windowing, controls, selection, and inactive overlays.
 - Provider typography affects preview content, managed windows, dialogs, menus, and popup portals rendered inside the theme scope.

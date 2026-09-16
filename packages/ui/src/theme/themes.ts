@@ -157,10 +157,48 @@ const phosphorTheme: NuThemeDefinition = {
   }
 };
 
+const midnightTheme: NuThemeDefinition = {
+  name: "midnight",
+  label: "Midnight Slate",
+  tokens: {
+    desktopBackground: "#1b2430",
+    desktopPattern: "rgb(156 177 201 / 0.24)",
+    shellBackground: "#101722",
+    appBackground: "#17273b",
+    appBackgroundAlt: "#0d1724",
+    chromeBackground: "#d4dde8",
+    panelBackground: "#17273b",
+    panelInsetBackground: "#111e2e",
+    titleBackground: "#d4dde8",
+    titleText: "#14233a",
+    textPrimary: "#e6edf7",
+    textMuted: "#aebdcd",
+    textInverse: "#0b1220",
+    textAccent: "#ffd166",
+    textHotkey: "#ff7171",
+    buttonFace: "#d4dde8",
+    buttonFaceAlt: "#9baabd",
+    buttonDanger: "#a94d57",
+    buttonSuccess: "#3c936d",
+    buttonText: "#0b1220",
+    fieldBackground: "#09111c",
+    fieldText: "#e6edf7",
+    borderLight: "#e6edf7",
+    borderDark: "#070c14",
+    borderAccent: "#ffd166",
+    shadowColor: "#070c14",
+    panelShadowColor: "rgb(7 12 20 / 0.56)",
+    focusColor: "#ffd166",
+    windowInactiveOverlay: "rgb(7 12 20 / 0.3)",
+    windowModalBackdrop: "rgb(7 12 20 / 0.48)"
+  }
+};
+
 export const nuThemes = {
   classic: classicTheme,
   amber: amberTheme,
-  phosphor: phosphorTheme
+  phosphor: phosphorTheme,
+  midnight: midnightTheme
 } as const satisfies Record<string, NuThemeDefinition>;
 
 export type NuThemeName = keyof typeof nuThemes;
