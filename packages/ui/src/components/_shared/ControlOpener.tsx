@@ -35,6 +35,7 @@ export function ControlOpener(props: ControlOpenerProps) {
 
   if (props.as === "button") {
     const { as: _as, type = "button", ...buttonProps } = props;
+    void _as;
 
     return (
       <button
@@ -55,6 +56,7 @@ export function ControlOpener(props: ControlOpenerProps) {
   }
 
   const { ariaHidden = false, as: _as, ...spanProps } = props;
+  void _as;
 
   return (
     <span

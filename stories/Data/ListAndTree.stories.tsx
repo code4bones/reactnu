@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ListBox, ListView, Stack, TreeListView, TreeView } from "@deadragdoll/reactnu";
+import { ListBox, ListView, TreeListView, TreeView } from "@deadragdoll/reactnu";
 import {
   dropdownData,
   listColumns,
@@ -20,7 +20,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Overview: Story = {
-  render: () => {
+  render: function OverviewStory() {
     const [selectedListId, setSelectedListId] = useState<string | undefined>(
       "row-2"
     );

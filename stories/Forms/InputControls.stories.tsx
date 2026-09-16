@@ -21,7 +21,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Overview: Story = {
-  render: () => {
+  render: function OverviewStory() {
     const [name, setName] = useState("NORTON");
     const [checked, setChecked] = useState(true);
     const [spin, setSpin] = useState(3);
@@ -109,7 +109,7 @@ export const Overview: Story = {
 };
 
 export const VerticalTickBar: Story = {
-  render: () => {
+  render: function VerticalTickBarStory() {
     const [gain, setGain] = useState(7);
 
     return (

@@ -72,37 +72,6 @@ export type TreeListViewProps<T extends TreeListItemBase<T>> = Omit<
   uncheckedShape?: "box" | "none";
 };
 
-function areTreeListColumnsEqual<T extends TreeListItemBase<T>>(
-  previousColumns: TreeListColumn<T>[],
-  nextColumns: TreeListColumn<T>[]
-) {
-  if (previousColumns === nextColumns) {
-    return true;
-  }
-
-  if (previousColumns.length !== nextColumns.length) {
-    return false;
-  }
-
-  return previousColumns.every((previousColumn, index) => {
-    const nextColumn = nextColumns[index];
-
-    return (
-      previousColumn.align === nextColumn.align &&
-      previousColumn.className === nextColumn.className &&
-      previousColumn.field === nextColumn.field &&
-      previousColumn.headerAlign === nextColumn.headerAlign &&
-      previousColumn.id === nextColumn.id &&
-      previousColumn.minWidth === nextColumn.minWidth &&
-      previousColumn.renderCell === nextColumn.renderCell &&
-      previousColumn.resizable === nextColumn.resizable &&
-      previousColumn.title === nextColumn.title &&
-      previousColumn.tree === nextColumn.tree &&
-      previousColumn.width === nextColumn.width
-    );
-  });
-}
-
 function TreeListViewInner<T extends TreeListItemBase<T>>(
   {
     activeItemId: activeItemIdProp,
@@ -130,9 +99,6 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
   const rootRef = useRef<HTMLDivElement | null>(null);
   const treeId = useId();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const columnsRef = useRef(columns);
-  const getCellContentRef = useRef(getCellContent);
-  const onItemDoubleClickRef = useRef(onItemDoubleClick);
   const resizeFrameRef = useRef<number | null>(null);
   const resizeStateRef = useRef<{
     columnId: string;
@@ -140,14 +106,6 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
     startWidth: number;
     startX: number;
   } | null>(null);
-  if (!areTreeListColumnsEqual(columnsRef.current, columns)) {
-    columnsRef.current = columns;
-  }
-
-  getCellContentRef.current = getCellContent;
-  onItemDoubleClickRef.current = onItemDoubleClick;
-
-  const resolvedColumns = columnsRef.current;
   const isExpandedControlled = expandedIds !== undefined;
   const [uncontrolledExpandedIds, setUncontrolledExpandedIds] = useState<
     string[]
@@ -211,30 +169,30 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
   const minColumnWidthById = useMemo(
     () =>
       Object.fromEntries(
-        resolvedColumns.map(
+        columns.map(
           (column) => [column.id, column.minWidth ?? 0] as const
         )
       ) as Record<string, number>,
-    [resolvedColumns]
+    [columns]
   );
   const templateColumns = useMemo(
     () =>
-      getTreeListTemplateColumns(resolvedColumns, {
+      getTreeListTemplateColumns(columns, {
         autoColumnWidths,
         userColumnWidths
       }),
-    [autoColumnWidths, resolvedColumns, userColumnWidths]
+    [autoColumnWidths, columns, userColumnWidths]
   );
   const treeColumnId = useMemo(
-    () => getTreeListTreeColumnId(resolvedColumns),
-    [resolvedColumns]
+    () => getTreeListTreeColumnId(columns),
+    [columns]
   );
   const rowIndexMap = useMemo(
     () =>
       new Map(
         visibleItems.map((entry, index) => [entry.itemId, index] as const)
       ),
-    [visibleItems, dataVersion]
+    [visibleItems]
   );
 
   useEffect(() => {
@@ -256,13 +214,14 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
 
   const resolveCellContent = useCallback(
     (...args: Parameters<TreeListGetCellContent<T>>) =>
-      getCellContentRef.current?.(...args),
-    []
+      getCellContent?.(...args),
+    [getCellContent]
   );
 
-  const handleItemDoubleClick = useCallback((item: T) => {
-    onItemDoubleClickRef.current?.(item);
-  }, []);
+  const handleItemDoubleClick = useCallback(
+    (item: T) => onItemDoubleClick?.(item),
+    [onItemDoubleClick]
+  );
 
   useLayoutEffect(() => {
     const rootNode = rootRef.current;
@@ -275,7 +234,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
       let didChange = false;
       const nextWidths = { ...currentWidths };
 
-      resolvedColumns.forEach((column) => {
+      columns.forEach((column) => {
         if (
           currentWidths[column.id] !== undefined ||
           userColumnWidths[column.id] !== undefined ||
@@ -308,7 +267,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
 
       return didChange ? nextWidths : currentWidths;
     });
-  }, [resolvedColumns, userColumnWidths, visibleItems]);
+  }, [columns, userColumnWidths, visibleItems]);
 
   useEffect(() => {
     return () => {
@@ -475,19 +434,23 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
     return checkedIds ? checkedIds.includes(item.id) : item.checked === true;
   }
 
-  function toggleItemCheck(itemId: string) {
-    const item = findTreeListItemById(data, itemId);
+  const toggleItemCheck = useCallback(
+    (itemId: string) => {
+      const item = findTreeListItemById(data, itemId);
 
-    if (
-      !item ||
-      item.disabled ||
-      (item.checked === undefined && checkedIds === undefined)
-    ) {
-      return;
-    }
+      if (
+        !item ||
+        item.disabled ||
+        (item.checked === undefined && checkedIds === undefined)
+      ) {
+        return;
+      }
 
-    onItemCheckChange?.(item, !isItemChecked(item));
-  }
+      const checked = checkedIds ? checkedIds.includes(item.id) : item.checked;
+      onItemCheckChange?.(item, !checked);
+    },
+    [checkedIds, data, onItemCheckChange]
+  );
 
   useImperativeHandle(
     ref,
@@ -524,7 +487,13 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
         toggleItemCheck(itemId);
       }
     }),
-    [checkedIds, data, resolvedActiveItemId, resolvedExpandedIds]
+    [
+      activateResolvedItem,
+      data,
+      resolvedActiveItemId,
+      setExpandedState,
+      toggleItemCheck
+    ]
   );
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -557,7 +526,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
         event.preventDefault();
         activateResolvedItem(resolvedActiveItemId);
         break;
-      case " ":
+      case " ": {
         event.preventDefault();
 
         if (!resolvedActiveItemId) {
@@ -578,6 +547,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
           setExpandedState(activeItem, !expandedIdSet.has(activeItem.id));
         }
         break;
+      }
       default:
         break;
     }
@@ -666,6 +636,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
         resolvedActiveItemId ? `${treeId}-${resolvedActiveItemId}` : undefined
       }
       className={["nu-tree-list-view", className].filter(Boolean).join(" ")}
+      data-version={dataVersion}
       onKeyDown={handleKeyDown}
       ref={rootRef}
       role="treegrid"
@@ -680,7 +651,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
           } as CSSProperties
         }
       >
-        {resolvedColumns.map((column, columnIndex) => (
+        {columns.map((column, columnIndex) => (
           <span
             className={[
               "nu-tree-list-view__header-cell",
@@ -716,7 +687,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
             <TreeListViewRow
               activeItemId={resolvedActiveItemId}
               checkedIds={checkedIds}
-              columns={resolvedColumns}
+              columns={columns}
               depth={0}
               expandedIdSet={expandedIdSet}
               getCellContent={getCellContent ? resolveCellContent : undefined}

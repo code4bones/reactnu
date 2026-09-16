@@ -91,7 +91,7 @@ function findComboBoxOption(options: ComboBoxOption[], value?: string | null) {
   return options.find((option) => option.value === value) ?? null;
 }
 
-function resolveComboBoxPortalRoot(anchor: HTMLElement | null) {
+function resolveComboBoxPortalRoot() {
   return document.body;
 }
 
@@ -163,9 +163,10 @@ export function ComboBox({
     [filteredData]
   );
   const popupRoot =
-    typeof document === "undefined"
-      ? null
-      : resolveComboBoxPortalRoot(rootRef.current);
+    typeof document === "undefined" ? null : resolveComboBoxPortalRoot();
+  const [themePortalStyle, setThemePortalStyle] = useState<
+    ReturnType<typeof getThemePortalStyle>
+  >(() => undefined);
 
   useEffect(() => {
     if (!open) {
@@ -237,7 +238,11 @@ export function ComboBox({
       return;
     }
 
-    setOpen((currentOpen) => !currentOpen);
+    if (!open) {
+      setThemePortalStyle(getThemePortalStyle(rootRef.current));
+    }
+
+    setOpen(!open);
     inputRef.current?.focus();
   }
 
@@ -249,6 +254,7 @@ export function ComboBox({
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
+        setThemePortalStyle(getThemePortalStyle(rootRef.current));
         setOpen(true);
         break;
       case "Enter":
@@ -313,6 +319,7 @@ export function ComboBox({
               id={fieldId}
               onChange={(event) => {
                 setResolvedInputValue(event.target.value);
+                setThemePortalStyle(getThemePortalStyle(rootRef.current));
                 setOpen(true);
               }}
               onKeyDown={handleInputKeyDown}
@@ -360,7 +367,7 @@ export function ComboBox({
               id={`${fieldId}-popup`}
               ref={popupRef}
               style={mergeSlotStyle(
-                getThemePortalStyle(rootRef.current),
+                themePortalStyle,
                 slotStyles?.popup
               )}
             >

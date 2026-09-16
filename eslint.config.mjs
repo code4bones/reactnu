@@ -7,10 +7,16 @@ import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["**/dist", "**/node_modules"]
+    ignores: ["**/dist", "**/node_modules", "**/storybook-static"]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    files: ["**/*.{js,mjs}"],
+    languageOptions: {
+      globals: globals.node
+    }
+  },
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -31,6 +37,12 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true }
       ]
+    }
+  },
+  {
+    files: ["packages/ui/src/windowing/dialogHelpers.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off"
     }
   },
   prettier

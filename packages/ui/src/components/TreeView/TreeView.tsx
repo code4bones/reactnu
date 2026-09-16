@@ -162,17 +162,22 @@ function TreeViewInner(
     [onItemSelect, selectedId]
   );
 
-  function activateResolvedItem(itemId: string | null) {
-    if (!itemId) {
-      return;
-    }
+  const activateResolvedItem = useCallback(
+    (itemId: string | null) => {
+      if (!itemId) {
+        return;
+      }
 
-    const nextEntry = selectableItems.find((entry) => entry.itemId === itemId);
+      const nextEntry = selectableItems.find(
+        (entry) => entry.itemId === itemId
+      );
 
-    if (nextEntry) {
-      activateEntry(nextEntry.item, nextEntry.itemId);
-    }
-  }
+      if (nextEntry) {
+        activateEntry(nextEntry.item, nextEntry.itemId);
+      }
+    },
+    [activateEntry, selectableItems]
+  );
 
   function moveActive(direction: 1 | -1) {
     if (selectableItems.length === 0) {
@@ -290,7 +295,7 @@ function TreeViewInner(
         event.preventDefault();
         activateResolvedItem(resolvedActiveId);
         break;
-      case " ":
+      case " ": {
         event.preventDefault();
 
         if (!resolvedActiveId) {
@@ -311,6 +316,7 @@ function TreeViewInner(
           setExpandedState(activeItem, !expandedIdSet.has(activeItem.id));
         }
         break;
+      }
       default:
         break;
     }
@@ -355,7 +361,13 @@ function TreeViewInner(
         }
       }
     }),
-    [data, resolvedActiveId, resolvedExpandedIds, onItemCheckChange]
+    [
+      activateResolvedItem,
+      data,
+      onItemCheckChange,
+      resolvedActiveId,
+      setExpandedState
+    ]
   );
 
   return (

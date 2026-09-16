@@ -1,10 +1,8 @@
 import {
   ChangeEvent,
-  CSSProperties,
   FocusEvent,
   InputHTMLAttributes,
   KeyboardEvent,
-  useEffect,
   useId,
   useMemo,
   useState
@@ -105,13 +103,12 @@ export function SpinBox({
   const numericValue = isControlled
     ? clampSpinValue(value ?? initialNumericValue, min, max)
     : uncontrolledValue;
-  const [draftValue, setDraftValue] = useState(() =>
+  const [uncontrolledDraftValue, setUncontrolledDraftValue] = useState(() =>
     formatSpinValue(initialNumericValue)
   );
-
-  useEffect(() => {
-    setDraftValue(formatSpinValue(numericValue));
-  }, [numericValue]);
+  const draftValue = isControlled
+    ? formatSpinValue(numericValue)
+    : uncontrolledDraftValue;
 
   function commitValue(nextValue: number) {
     const clampedValue = clampSpinValue(nextValue, min, max);
@@ -120,7 +117,7 @@ export function SpinBox({
       setUncontrolledValue(clampedValue);
     }
 
-    setDraftValue(formatSpinValue(clampedValue));
+    setUncontrolledDraftValue(formatSpinValue(clampedValue));
     onValueChange?.(clampedValue);
   }
 
@@ -132,7 +129,9 @@ export function SpinBox({
     const nextDraftValue = event.target.value;
     const parsedValue = parseSpinDraft(nextDraftValue);
 
-    setDraftValue(nextDraftValue);
+    if (!isControlled) {
+      setUncontrolledDraftValue(nextDraftValue);
+    }
 
     if (parsedValue !== null) {
       const clampedValue = clampSpinValue(parsedValue, min, max);
@@ -148,7 +147,7 @@ export function SpinBox({
   }
 
   function handleBlur(event: FocusEvent<HTMLInputElement>) {
-    setDraftValue(formatSpinValue(numericValue));
+    setUncontrolledDraftValue(formatSpinValue(numericValue));
     onBlur?.(event);
   }
 

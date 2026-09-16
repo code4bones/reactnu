@@ -112,17 +112,22 @@ function ListBoxInner(
     [onItemSelect]
   );
 
-  function activateResolvedItem(itemId: string | null) {
-    if (!itemId) {
-      return;
-    }
+  const activateResolvedItem = useCallback(
+    (itemId: string | null) => {
+      if (!itemId) {
+        return;
+      }
 
-    const nextEntry = selectableItems.find((entry) => entry.itemId === itemId);
+      const nextEntry = selectableItems.find(
+        (entry) => entry.itemId === itemId
+      );
 
-    if (nextEntry) {
-      activateItem(nextEntry.item, nextEntry.group, nextEntry.itemId);
-    }
-  }
+      if (nextEntry) {
+        activateItem(nextEntry.item, nextEntry.group, nextEntry.itemId);
+      }
+    },
+    [activateItem, selectableItems]
+  );
 
   function moveActive(direction: 1 | -1) {
     if (selectableItems.length === 0) {
@@ -208,7 +213,7 @@ function ListBoxInner(
         toggleItemCheck(itemId);
       }
     }),
-    [resolvedActiveId, checkedIds, data]
+    [activateResolvedItem, resolvedActiveId, toggleItemCheck]
   );
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {

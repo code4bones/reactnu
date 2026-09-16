@@ -55,6 +55,12 @@ export function AppBarItem(props: AppBarItemProps) {
       interactive: _interactive,
       ...buttonProps
     } = props as AppBarItemButtonProps;
+    void _active;
+    void _alignment;
+    void _children;
+    void _className;
+    void _grow;
+    void _interactive;
 
     return createElement(
       "button",
@@ -76,6 +82,12 @@ export function AppBarItem(props: AppBarItemProps) {
     interactive: _interactive,
     ...staticProps
   } = props as AppBarItemStaticProps;
+  void _active;
+  void _alignment;
+  void _children;
+  void _className;
+  void _grow;
+  void _interactive;
 
   return createElement(
     "div",

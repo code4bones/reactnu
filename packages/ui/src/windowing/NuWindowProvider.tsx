@@ -2,7 +2,6 @@ import {
   CSSProperties,
   Fragment,
   PropsWithChildren,
-  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -250,57 +249,6 @@ function findTopmostAppModalIndex(windows: NuManagedWindowRecord[]) {
   return -1;
 }
 
-function getIdHandler<Args extends unknown[]>(
-  cache: Map<string, (...args: Args) => void>,
-  id: string,
-  fn: (id: string, ...args: Args) => void
-): (...args: Args) => void {
-  let handler = cache.get(id);
-
-  if (!handler) {
-    handler = (...args: Args) => fn(id, ...args);
-    cache.set(id, handler);
-  }
-
-  return handler;
-}
-
-function getWindowControls(
-  cache: Map<string, NuManagedWindowControls>,
-  id: string,
-  bringToFront: () => void,
-  close: () => void,
-  toggleMaximized: () => void,
-  toggleMinimized: () => void,
-  update: (patch: Partial<NuManagedWindowDefinition>) => void
-): NuManagedWindowControls {
-  let controls = cache.get(id);
-
-  if (!controls) {
-    controls = { bringToFront, close, id, toggleMaximized, toggleMinimized, update };
-    cache.set(id, controls);
-  }
-
-  return controls;
-}
-
-function getWindowContent(
-  cache: Map<string, { source: NuManagedWindowDefinition["content"]; element: ReactNode }>,
-  id: string,
-  source: NuManagedWindowDefinition["content"],
-  controls: NuManagedWindowControls
-): ReactNode {
-  const cached = cache.get(id);
-
-  if (cached && cached.source === source) {
-    return cached.element;
-  }
-
-  const element = typeof source === "function" ? source(controls) : source;
-  cache.set(id, { source, element });
-  return element;
-}
-
 function getActivationChain(
   windows: NuManagedWindowRecord[],
   id: string
@@ -337,34 +285,6 @@ export function NuWindowProvider({
   const creationOrderRef = useRef(0);
   const idRef = useRef(0);
   const windowBoundsByIdRef = useRef<Record<string, NuWindowBounds>>({});
-  const boundsChangeHandlersRef = useRef(
-    new Map<string, (bounds: NuWindowBounds) => void>()
-  );
-  const windowStyleCacheRef = useRef(
-    new Map<
-      string,
-      { source: CSSProperties | undefined; zIndex: number; merged: CSSProperties }
-    >()
-  );
-  const closeHandlersRef = useRef(new Map<string, () => void>());
-  const activateHandlersRef = useRef(new Map<string, () => void>());
-  const bringToFrontHandlersRef = useRef(new Map<string, () => void>());
-  const toggleMaximizedHandlersRef = useRef(new Map<string, () => void>());
-  const toggleMinimizedHandlersRef = useRef(new Map<string, () => void>());
-  const positionHandlersRef = useRef(
-    new Map<string, (position: WindowPosition) => void>()
-  );
-  const sizeHandlersRef = useRef(new Map<string, (size: WindowSize) => void>());
-  const updateHandlersRef = useRef(
-    new Map<string, (patch: Partial<NuManagedWindowDefinition>) => void>()
-  );
-  const controlsCacheRef = useRef(new Map<string, NuManagedWindowControls>());
-  const contentCacheRef = useRef(
-    new Map<
-      string,
-      { source: NuManagedWindowDefinition["content"]; element: ReactNode }
-    >()
-  );
   const [windows, setWindows] = useState<NuManagedWindowRecord[]>([]);
   const [windowBoundsById, setWindowBoundsById] = useState<
     Record<string, NuWindowBounds>
@@ -434,61 +354,6 @@ export function NuWindowProvider({
     },
     []
   );
-
-  const getBoundsChangeHandler = useCallback(
-    (id: string) => {
-      let handler = boundsChangeHandlersRef.current.get(id);
-
-      if (!handler) {
-        handler = (bounds: NuWindowBounds) => updateWindowBounds(id, bounds);
-        boundsChangeHandlersRef.current.set(id, handler);
-      }
-
-      return handler;
-    },
-    [updateWindowBounds]
-  );
-
-  const getWindowStyle = useCallback(
-    (id: string, source: CSSProperties | undefined, zIndex: number) => {
-      const cached = windowStyleCacheRef.current.get(id);
-
-      if (cached && cached.source === source && cached.zIndex === zIndex) {
-        return cached.merged;
-      }
-
-      const merged: CSSProperties = { ...source, zIndex };
-      windowStyleCacheRef.current.set(id, { source, zIndex, merged });
-      return merged;
-    },
-    []
-  );
-
-  useEffect(() => {
-    const liveIds = new Set(windows.map((windowEntry) => windowEntry.id));
-    const idKeyedCaches: Map<string, unknown>[] = [
-      boundsChangeHandlersRef.current,
-      windowStyleCacheRef.current,
-      closeHandlersRef.current,
-      activateHandlersRef.current,
-      bringToFrontHandlersRef.current,
-      toggleMaximizedHandlersRef.current,
-      toggleMinimizedHandlersRef.current,
-      positionHandlersRef.current,
-      sizeHandlersRef.current,
-      updateHandlersRef.current,
-      controlsCacheRef.current,
-      contentCacheRef.current
-    ];
-
-    for (const cache of idKeyedCaches) {
-      for (const id of cache.keys()) {
-        if (!liveIds.has(id)) {
-          cache.delete(id);
-        }
-      }
-    }
-  }, [windows]);
 
   const bringToFront = useCallback((id: string) => {
     setWindows((currentWindows) => {
@@ -942,61 +807,31 @@ export function NuWindowProvider({
                     zIndex: stackIndex + 1
                   }
                 : null;
-            const handleClose = getIdHandler(
-              closeHandlersRef.current,
-              windowEntry.id,
-              closeWindow
-            );
-            const handleActivate = getIdHandler(
-              activateHandlersRef.current,
-              windowEntry.id,
-              activateWindow
-            );
-            const handleBringToFront = getIdHandler(
-              bringToFrontHandlersRef.current,
-              windowEntry.id,
-              bringToFront
-            );
-            const handleToggleMaximized = getIdHandler(
-              toggleMaximizedHandlersRef.current,
-              windowEntry.id,
-              toggleWindowMaximized
-            );
-            const handleToggleMinimized = getIdHandler(
-              toggleMinimizedHandlersRef.current,
-              windowEntry.id,
-              toggleWindowMinimized
-            );
-            const handlePositionChange = getIdHandler(
-              positionHandlersRef.current,
-              windowEntry.id,
-              updateWindowPosition
-            );
-            const handleSizeChange = getIdHandler(
-              sizeHandlersRef.current,
-              windowEntry.id,
-              handleWindowSizeChange
-            );
-            const handleUpdate = getIdHandler(
-              updateHandlersRef.current,
-              windowEntry.id,
-              updateWindow
-            );
-            const controls = getWindowControls(
-              controlsCacheRef.current,
-              windowEntry.id,
-              handleBringToFront,
-              handleClose,
-              handleToggleMaximized,
-              handleToggleMinimized,
-              handleUpdate
-            );
-            const content = getWindowContent(
-              contentCacheRef.current,
-              windowEntry.id,
-              windowEntry.content,
-              controls
-            );
+            const handleClose = () => closeWindow(windowEntry.id);
+            const handleActivate = () => activateWindow(windowEntry.id);
+            const handleBringToFront = () => bringToFront(windowEntry.id);
+            const handleToggleMaximized = () =>
+              toggleWindowMaximized(windowEntry.id);
+            const handleToggleMinimized = () =>
+              toggleWindowMinimized(windowEntry.id);
+            const handlePositionChange = (position: WindowPosition) =>
+              updateWindowPosition(windowEntry.id, position);
+            const handleSizeChange = (size: WindowSize) =>
+              handleWindowSizeChange(windowEntry.id, size);
+            const handleUpdate = (patch: Partial<NuManagedWindowDefinition>) =>
+              updateWindow(windowEntry.id, patch);
+            const controls: NuManagedWindowControls = {
+              bringToFront: handleBringToFront,
+              close: handleClose,
+              id: windowEntry.id,
+              toggleMaximized: handleToggleMaximized,
+              toggleMinimized: handleToggleMinimized,
+              update: handleUpdate
+            };
+            const content =
+              typeof windowEntry.content === "function"
+                ? windowEntry.content(controls)
+                : windowEntry.content;
 
             return (
               <Fragment key={windowEntry.id}>
@@ -1024,7 +859,9 @@ export function NuWindowProvider({
                   minimized={windowEntry.minimized}
                   mode={windowEntry.mode}
                   onActivate={handleActivate}
-                  onBoundsChange={getBoundsChangeHandler(windowEntry.id)}
+                  onBoundsChange={(bounds) =>
+                    updateWindowBounds(windowEntry.id, bounds)
+                  }
                   onClose={handleClose}
                   onPositionChange={handlePositionChange}
                   onSizeChange={handleSizeChange}
@@ -1032,15 +869,15 @@ export function NuWindowProvider({
                   onToggleMinimized={handleToggleMinimized}
                   resizable={windowEntry.resizable}
                   statusBar={windowEntry.statusBar}
-                  style={getWindowStyle(
-                    windowEntry.id,
-                    windowEntry.style,
-                    isTopmostAppModal && topmostAppModalIndex >= 0
-                      ? visibleWindows.length + 2
-                      : ownerBackdropStyle
-                        ? ownerBackdropStyle.zIndex + 1
-                        : (stackIndex ?? 0) + 1
-                  )}
+                  style={{
+                    ...windowEntry.style,
+                    zIndex:
+                      isTopmostAppModal && topmostAppModalIndex >= 0
+                        ? visibleWindows.length + 2
+                        : ownerBackdropStyle
+                          ? ownerBackdropStyle.zIndex + 1
+                          : (stackIndex ?? 0) + 1
+                  }}
                   title={windowEntry.title}
                 >
                   {content}

@@ -18,7 +18,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const NestedEditorRows: Story = {
-  render: () => {
+  render: function NestedEditorRowsStory() {
     const [name, setName] = useState("Archive Set");
     const [left, setLeft] = useState(32);
     const [watch, setWatch] = useState(true);

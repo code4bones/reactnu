@@ -69,7 +69,7 @@ function resolveAnchorPosition(anchor: PopupMenuAnchor | null) {
   };
 }
 
-function resolvePortalRoot(anchor: PopupMenuAnchor | null) {
+function resolvePortalRoot() {
   if (typeof document === "undefined") {
     return null;
   }
@@ -94,7 +94,7 @@ export function PopupMenu({
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const isControlled = open !== undefined;
   const resolvedOpen = isControlled ? open : uncontrolledOpen;
-  const portalRoot = resolvePortalRoot(anchor);
+  const portalRoot = resolvePortalRoot();
 
   const setResolvedOpen = useCallback(
     (nextOpen: boolean) => {

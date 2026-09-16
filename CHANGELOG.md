@@ -9,6 +9,30 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.14]
+
+### Fixed
+
+- Made the root lint command ignore generated Storybook output and lint source stories correctly.
+
+## [0.1.13]
+
+### Fixed
+
+- Restored sandbox TypeScript and lint checks by repairing its recursive TreeList demo data and supported stack spacing.
+
+## [0.1.12]
+
+### Fixed
+
+- Removed package-source lint violations, including unsafe ref reads during render and unnecessary synchronous state synchronization.
+
+## [0.1.11]
+
+### Changed
+
+- Ignored local MCP/session files and npm tarball artifacts to keep repository status clean.
+
 ## [0.1.10]
 
 ### Added

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ComboBox, Dropdown, SearchBox, Stack } from "@deadragdoll/reactnu";
 import { dropdownData, searchRecords } from "../helpers/storyData";
@@ -13,7 +13,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Overview: Story = {
-  render: () => {
+  render: function OverviewStory() {
     const [dropdownValue, setDropdownValue] = useState("c");
     const [comboValue, setComboValue] = useState<string | undefined>("d");
     const [comboInput, setComboInput] = useState("Drive D:");

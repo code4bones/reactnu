@@ -217,7 +217,7 @@ function ListViewInner<T extends ListViewRowBase>(
         toggleRowCheck(rowId);
       }
     }),
-    [resolvedActiveRowId, showCheckBox, checkedIds, data]
+    [activateRowId, resolvedActiveRowId, toggleRowCheck]
   );
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {

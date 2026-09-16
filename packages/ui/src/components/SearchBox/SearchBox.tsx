@@ -48,7 +48,7 @@ type SearchBoxResultOption<T> = {
   value: string;
 };
 
-function resolveSearchBoxPortalRoot(anchor: HTMLElement | null) {
+function resolveSearchBoxPortalRoot() {
   return document.body;
 }
 
@@ -118,15 +118,13 @@ export function SearchBox<T>({
     [resultOptions]
   );
   const popupRoot =
-    typeof document === "undefined"
-      ? null
-      : resolveSearchBoxPortalRoot(rootRef.current);
+    typeof document === "undefined" ? null : resolveSearchBoxPortalRoot();
+  const [themePortalStyle, setThemePortalStyle] = useState<
+    ReturnType<typeof getThemePortalStyle>
+  >(() => undefined);
 
   useEffect(() => {
     if (disabled) {
-      setOpen(false);
-      setResults([]);
-      setStatus("idle");
       return;
     }
 
@@ -175,8 +173,6 @@ export function SearchBox<T>({
     }
 
     if (trimmedQuery.length < minQueryLength) {
-      setResults([]);
-      setStatus("idle");
       return;
     }
 
@@ -216,6 +212,11 @@ export function SearchBox<T>({
     }
 
     onQueryChange?.(nextQuery);
+  }
+
+  function openPopup() {
+    setThemePortalStyle(getThemePortalStyle(rootRef.current));
+    setOpen(true);
   }
 
   function handleSelectItem(option: SearchBoxResultOption<T>) {
@@ -269,7 +270,7 @@ export function SearchBox<T>({
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
-        setOpen(true);
+        openPopup();
         break;
       case "Enter":
         if (open && status === "success" && resultOptions[0]) {
@@ -309,10 +310,10 @@ export function SearchBox<T>({
             id={fieldId}
             onChange={(event) => {
               setResolvedQuery(event.target.value);
-              setOpen(true);
+              openPopup();
               setSelectedValue(null);
             }}
-            onFocus={() => setOpen(true)}
+            onFocus={openPopup}
             onKeyDown={handleInputKeyDown}
             placeholder={placeholder}
             ref={inputRef}
@@ -335,7 +336,7 @@ export function SearchBox<T>({
               className="nu-search-box__popup"
               id={`${fieldId}-popup`}
               ref={popupRef}
-              style={getThemePortalStyle(rootRef.current)}
+              style={themePortalStyle}
             >
               {renderPopupContent()}
             </div>,

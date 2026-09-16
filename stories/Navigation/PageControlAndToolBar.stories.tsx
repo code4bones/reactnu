@@ -25,7 +25,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Overview: Story = {
-  render: () => {
+  render: function OverviewStory() {
     const [log, setLog] = useState("No toolbar command yet");
     const [watch, setWatch] = useState(true);
 

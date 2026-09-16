@@ -54,7 +54,7 @@ export const Variants: Story = {
 };
 
 export const EventsAndFocus: Story = {
-  render: () => {
+  render: function EventsAndFocusStory() {
     const [log, setLog] = useState("No events yet");
 
     return (

@@ -3,7 +3,6 @@ import {
   HTMLAttributes,
   KeyboardEvent as ReactKeyboardEvent,
   ReactNode,
-  useEffect,
   useId,
   useMemo,
   useRef,
@@ -243,9 +242,7 @@ export function PropertyGrid({
   const [uncontrolledExpandedIds, setUncontrolledExpandedIds] = useState<
     string[]
   >(() => getInitialExpandedIds(entries, defaultExpandedIds));
-  const resolvedExpandedIds = isExpandedControlled
-    ? (expandedIdsProp ?? [])
-    : uncontrolledExpandedIds;
+  const resolvedExpandedIds = expandedIdsProp ?? uncontrolledExpandedIds;
   const expandedIdSet = useMemo(
     () =>
       new Set(
@@ -261,35 +258,14 @@ export function PropertyGrid({
   const [uncontrolledActiveId, setUncontrolledActiveId] = useState<
     string | undefined
   >(() => getInitialActiveId(interactiveRows, defaultActiveId));
-  const resolvedActiveId = isActiveControlled
+  const requestedActiveId = isActiveControlled
     ? activeIdProp
     : uncontrolledActiveId;
-
-  useEffect(() => {
-    if (interactiveRows.length === 0) {
-      return;
-    }
-
-    const hasResolvedActiveId =
-      resolvedActiveId &&
-      interactiveRows.some((row) => row.id === resolvedActiveId);
-
-    if (hasResolvedActiveId) {
-      return;
-    }
-
-    const fallbackActiveId = interactiveRows[0]?.id;
-
-    if (!fallbackActiveId) {
-      return;
-    }
-
-    if (!isActiveControlled) {
-      setUncontrolledActiveId(fallbackActiveId);
-    }
-
-    onActiveIdChange?.(fallbackActiveId);
-  }, [interactiveRows, isActiveControlled, onActiveIdChange, resolvedActiveId]);
+  const resolvedActiveId =
+    requestedActiveId &&
+    interactiveRows.some((row) => row.id === requestedActiveId)
+      ? requestedActiveId
+      : interactiveRows[0]?.id;
 
   function updateExpandedIds(nextExpandedIds: string[]) {
     if (!isExpandedControlled) {
@@ -389,7 +365,7 @@ export function PropertyGrid({
         event.preventDefault();
         focusBoundaryRow("last");
         return;
-      case "ArrowLeft":
+      case "ArrowLeft": {
         event.preventDefault();
 
         if (row.type === "group" && expandedIdSet.has(row.entry.id)) {
@@ -404,7 +380,8 @@ export function PropertyGrid({
         }
 
         return;
-      case "ArrowRight":
+      }
+      case "ArrowRight": {
         event.preventDefault();
 
         if (row.type === "group") {
@@ -419,6 +396,7 @@ export function PropertyGrid({
 
         activateItemEditor(`${editorIdPrefix}-editor-${row.entry.id}`);
         return;
+      }
       case "Enter":
       case " ":
         event.preventDefault();

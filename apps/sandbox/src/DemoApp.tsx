@@ -963,7 +963,8 @@ type AggregatedWeatherMetrics = WeatherMetrics & {
   leafCount: number;
 };
 
-type SandboxTreeListItem = TreeListItemBase<SandboxTreeListItem> & {
+type SandboxTreeListItem = Omit<TreeListItemBase, "children"> & {
+  children?: SandboxTreeListItem[];
   metrics?: WeatherMetrics;
 };
 
@@ -1079,7 +1080,6 @@ function collectWeatherMetricsById(
 
 function TreeListViewWindowContent() {
   const [selectedNodeId, setSelectedNodeId] = useState("1");
-  const [dataVersion, setDataVersion] = useState(0);
   const [treeListData, setTreeListData] = useState<SandboxTreeListItem[]>([
     {
       title: "North America",
@@ -1313,7 +1313,6 @@ function TreeListViewWindowContent() {
       setTreeListData((currentTreeListData) =>
         updateWeatherMetrics(currentTreeListData)
       );
-      setDataVersion((currentVersion) => currentVersion + 1);
     }, 5000);
 
     return () => {
@@ -1323,7 +1322,7 @@ function TreeListViewWindowContent() {
 
   const weatherMetricsById = useMemo(
     () => collectWeatherMetricsById(treeListData),
-    [treeListData, dataVersion]
+    [treeListData]
   );
 
   const columns = useMemo<TreeListColumn<SandboxTreeListItem>[]>(
@@ -1434,7 +1433,6 @@ function TreeListViewWindowContent() {
             className="sandbox-tree-list-view"
             columns={columns}
             data={treeListData}
-            dataVersion={dataVersion}
             getCellContent={getWeatherCellContent}
             onItemCheckChange={handleTreeListItemCheckChange}
             onItemSelect={handleTreeListItemSelect}
@@ -2480,7 +2478,7 @@ function FrameWindowContent() {
         <Frame
           contentStyle={{ padding: "var(--nu-content-inset)" }}
           titleEnd={
-            <Stack direction="row" gap="xs">
+            <Stack direction="row" gap="sm">
               <CommandButton icon="star">A</CommandButton>
               <CommandButton icon="folder">B</CommandButton>
             </Stack>

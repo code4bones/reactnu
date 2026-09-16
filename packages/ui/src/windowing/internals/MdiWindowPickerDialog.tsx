@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "../../components/Button";
 import { ListBox } from "../../components/ListBox";
 import { Stack } from "../../components/Stack";
@@ -77,23 +77,18 @@ export function MdiWindowPickerDialog({
     activeWindowId ?? resolvedWindows[0]?.id ?? ""
   );
 
-  useEffect(() => {
-    if (
-      selectedId &&
-      resolvedWindows.some((windowEntry) => windowEntry.id === selectedId)
-    ) {
-      return;
-    }
-
-    setSelectedId(activeWindowId ?? resolvedWindows[0]?.id ?? "");
-  }, [activeWindowId, resolvedWindows, selectedId]);
+  const resolvedSelectedId = resolvedWindows.some(
+    (windowEntry) => windowEntry.id === selectedId
+  )
+    ? selectedId
+    : (activeWindowId ?? resolvedWindows[0]?.id ?? "");
 
   function handleActivate() {
-    if (!selectedId) {
+    if (!resolvedSelectedId) {
       return;
     }
 
-    onActivateWindow(selectedId);
+    onActivateWindow(resolvedSelectedId);
     onClose();
   }
 
@@ -125,7 +120,7 @@ export function MdiWindowPickerDialog({
           onActivateWindow(item.id);
           onClose();
         }}
-        selectedId={selectedId}
+        selectedId={resolvedSelectedId}
         style={{
           maxHeight: "14rem",
           minHeight: "12rem"
