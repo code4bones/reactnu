@@ -1,0 +1,57 @@
+.nu-view {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  .nu-scrollbar-chrome();
+
+  &[data-fill] {
+    flex: 1 1 auto;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  &[data-scroll="auto"] {
+    overflow: auto;
+  }
+
+  &[data-scroll="x"] {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  &[data-scroll="y"] {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  &[data-scroll="both"] {
+    overflow: scroll;
+  }
+
+  &[data-scroll="hidden"] {
+    overflow: hidden;
+  }
+
+  &[data-padding="none"] {
+    padding: 0;
+  }
+
+  // One DOS character cell: 1ch inline (glyph width), 1em block (glyph
+  // height) — the same x/y pairing already used for the window shadow
+  // offset (variables.less), kept here as the canonical content inset.
+  &[data-padding="cell"] {
+    padding: var(--nu-content-inset);
+  }
+
+  &[data-padding="sm"] {
+    padding: var(--nu-space-sm);
+  }
+
+  &[data-padding="md"] {
+    padding: var(--nu-space-md);
+  }
+
+  &[data-padding="lg"] {
+    padding: var(--nu-space-lg);
+  }
+}

@@ -1,0 +1,92 @@
+.nu-memo {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  background: var(--nu-memo-bg, #dbc78d);
+  color: var(--nu-memo-text, #000000);
+  overflow: hidden;
+
+  &[data-fill] {
+    flex: 1 1 auto;
+    align-self: stretch;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  &[data-scroll="auto"] {
+    .nu-memo__viewport {
+      padding-right: var(--nu-scrollbar-button-size);
+      padding-bottom: var(--nu-scrollbar-button-size);
+    }
+
+    .nu-memo__input {
+      overflow: auto;
+    }
+  }
+
+  &[data-scroll="x"] {
+    .nu-memo__viewport {
+      padding-bottom: var(--nu-scrollbar-button-size);
+    }
+
+    .nu-memo__input {
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+  }
+
+  &[data-scroll="y"] {
+    .nu-memo__viewport {
+      padding-right: var(--nu-scrollbar-button-size);
+    }
+
+    .nu-memo__input {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+  }
+
+  &[data-scroll="both"] {
+    .nu-memo__input {
+      overflow: scroll;
+    }
+  }
+
+  &[data-scroll="hidden"] {
+    .nu-memo__input {
+      overflow: hidden;
+    }
+  }
+
+  &__viewport {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  &__input {
+    width: calc(100% + var(--nu-scrollbar-button-size));
+    height: calc(100% + var(--nu-scrollbar-button-size));
+    min-width: 0;
+    min-height: 0;
+    padding: 0.5ch 1ch;
+    border: 0;
+    outline: 0;
+    resize: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    .nu-scrollbar-chrome();
+
+    &:focus {
+      background: var(--nu-memo-focus-bg, var(--nu-memo-bg, #dbc78d));
+      color: var(--nu-memo-focus-text, var(--nu-memo-text, #000000));
+      caret-color: var(--nu-memo-focus-text, var(--nu-memo-text, #000000));
+    }
+  }
+}

@@ -1,0 +1,162 @@
+.nu-dropdown {
+  display: grid;
+  gap: var(--nu-space-xs);
+  font-family: var(--nu-font-body);
+
+  &__label {
+    color: var(--nu-text-accent);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+  }
+
+  &__trigger {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--nu-text-primary);
+    font: inherit;
+    text-align: left;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+
+    &:focus .nu-dropdown__value-shell,
+    &:focus-visible .nu-dropdown__value-shell {
+      background: var(--nu-color-field-bg);
+      color: var(--nu-color-field-text);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__trigger:focus-visible {
+    .nu-dropdown__bracket,
+    .nu-dropdown__value-shell,
+    .nu-dropdown__field,
+    .nu-dropdown__arrow-shell {
+      color: var(--nu-text-accent);
+    }
+  }
+
+  &__slot {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 0.2ch;
+    min-height: var(--nu-control-height);
+    font: inherit;
+    line-height: 1;
+  }
+
+  &__field {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: stretch;
+    min-width: 0;
+    min-height: var(--nu-control-height);
+    font: inherit;
+    line-height: 1;
+  }
+
+  &__bracket {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    block-size: var(--nu-control-height);
+    color: var(--nu-color-field-text);
+    font: inherit;
+    line-height: 1;
+  }
+
+  &__value-shell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    block-size: var(--nu-control-height);
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  &__value {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__arrow-shell {
+    flex: none;
+  }
+
+  &__hint {
+    color: var(--nu-text-muted);
+    font-size: 0.75rem;
+  }
+
+  &__popup {
+    position: fixed;
+    z-index: 1200;
+    min-width: 0;
+  }
+
+  &__popup-shell {
+    position: relative;
+    isolation: isolate;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--nu-window-shadow-bg);
+      transform: translate(
+        var(--nu-window-shadow-offset-x),
+        var(--nu-window-shadow-offset-y)
+      );
+      pointer-events: none;
+    }
+  }
+
+  &__listbox {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-height: 14rem;
+    background: var(--nu-color-button-face);
+    color: var(--nu-text-inverse);
+  }
+
+  &__listbox .nu-listbox__item {
+    color: var(--nu-text-inverse);
+  }
+
+  &__listbox .nu-listbox__item:hover {
+    background: var(--nu-color-app-bg-alt);
+    color: var(--nu-text-primary);
+  }
+
+  &__listbox .nu-listbox__category {
+    padding: 0.08rem 0.65ch;
+    background: var(--nu-color-button-face-alt);
+    color: var(--nu-text-inverse);
+  }
+
+  &__listbox .nu-listbox__item--active,
+  &__listbox .nu-listbox__item--selected {
+    color: var(--nu-text-primary);
+  }
+}

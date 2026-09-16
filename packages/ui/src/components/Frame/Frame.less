@@ -1,0 +1,116 @@
+.nu-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--nu-frame-border-color, currentColor);
+  color: var(--nu-text-primary);
+  overflow: clip;
+  overflow-clip-margin: 0.75rem;
+  --nu-frame-title-bg: var(--nu-color-panel-inset);
+  --nu-frame-title-color: var(--nu-text-primary);
+  --nu-frame-title-bar-bg: var(--nu-color-title-bg);
+  --nu-frame-title-bar-text: var(--nu-color-title-text);
+
+  &[data-fill] {
+    flex: 1 1 auto;
+    align-self: stretch;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  &__title {
+    position: absolute;
+    top: 0;
+    left: 0.8rem;
+    right: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1ch;
+    transform: translateY(-50%);
+    color: var(--nu-frame-title-color);
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  &__title-start,
+  &__title-content,
+  &__title-end {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0 2ch;
+    background: var(--nu-frame-title-bg);
+    pointer-events: auto;
+  }
+
+  &__title-end {
+    margin-left: auto;
+  }
+
+  &[data-title-align="center"] .nu-frame__title {
+    justify-content: center;
+  }
+
+  &[data-title-align="end"] .nu-frame__title {
+    justify-content: flex-end;
+  }
+
+  &[data-title-bold] .nu-frame__title {
+    font-weight: 700;
+  }
+
+  &[data-variant="title-bar"] {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 1.15rem;
+      background: var(--nu-frame-title-bar-bg);
+    }
+
+    .nu-frame__title {
+      top: 0.55rem;
+      transform: translateY(-50%);
+      color: var(--nu-frame-title-bar-text);
+    }
+
+    .nu-frame__title-start,
+    .nu-frame__title-content,
+    .nu-frame__title-end {
+      background: transparent;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--nu-color-panel-inset);
+    overflow: clip;
+  }
+
+  &[data-variant="title-bar"] .nu-frame__body {
+    padding-top: 1.8rem;
+  }
+
+  &__body > :first-child {
+    margin-top: 0;
+  }
+
+  &__body > :only-child {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  &__body > :last-child {
+    min-width: 0;
+    margin-bottom: 0;
+  }
+}

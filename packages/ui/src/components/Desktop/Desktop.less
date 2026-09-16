@@ -1,0 +1,67 @@
+.nu-desktop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: var(--nu-text-primary);
+  background-color: var(--nu-desktop-bg);
+  background-image: var(--nu-desktop-pattern-image);
+  background-size: var(--nu-desktop-pattern-size);
+  background-repeat: var(--nu-desktop-pattern-repeat);
+
+  &__menu {
+    grid-column: 1;
+    position: relative;
+    z-index: 1100;
+    min-height: 0;
+  }
+
+  &__window-region {
+    grid-column: 1;
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  &__workspace {
+    grid-row: 1;
+    grid-column: 1;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  &__app-bar {
+    grid-row: 2;
+    grid-column: 1;
+    min-height: 0;
+  }
+
+  &__window-region > .nu-window-layer {
+    position: relative;
+    grid-row: 1;
+    grid-column: 1;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+  }
+
+  &[data-modal-active] .nu-desktop__menu,
+  &[data-modal-active] .nu-desktop__app-bar {
+    position: relative;
+    pointer-events: none;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--nu-window-modal-backdrop);
+      pointer-events: auto;
+    }
+  }
+}

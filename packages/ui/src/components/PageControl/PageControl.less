@@ -1,0 +1,63 @@
+.nu-page-control {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  font-family: var(--nu-font-body);
+
+  &[data-fill] {
+    flex: 1 1 auto;
+    align-self: stretch;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  &__tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5ch;
+    min-width: 0;
+    padding-left: 1ch;
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1em;
+    padding: 0.1em 1.25ch;
+    border: 0;
+    border-radius: 0;
+    background: var(--nu-color-button-face-alt);
+    box-shadow: none;
+    color: var(--nu-text-inverse);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &[data-active] {
+      background: var(--nu-color-button-face);
+      color: var(--nu-color-title-text);
+      transform: translateY(1px);
+    }
+
+    &:focus-visible {
+      color: var(--nu-text-accent);
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__panel {
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--nu-border-light);
+    background: var(--nu-color-button-face);
+    overflow: clip;
+  }
+}

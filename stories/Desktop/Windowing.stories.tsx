@@ -1,0 +1,273 @@
+import React, { useEffect } from "react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import {
+  Button,
+  Info,
+  InfoAccent,
+  MainMenu,
+  MainMenuNode,
+  NuWindowProvider,
+  StatusBarItem,
+  Stack,
+  Window,
+  useNuWindowManager
+} from "@deadragdoll/reactnu";
+import { useWindowMenu } from "../../packages/ui/src/components/Window/windowMenuContext";
+import { StoryFrame } from "../helpers/StoryLayout";
+
+const meta = {
+  title: "Desktop/Windowing",
+  tags: ["autodocs"]
+} satisfies Meta;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const desktopMenuItems: MainMenuNode[] = [
+  {
+    id: "file",
+    text: "&File",
+    items: [
+      { id: "file-new", text: "&New workspace" },
+      {
+        id: "file-export",
+        text: "E&xport",
+        items: [
+          { id: "file-export-text", text: "&Text report" },
+          {
+            id: "file-export-binary",
+            text: "&Binary package",
+            items: [
+              { id: "file-export-binary-zip", text: "&Zip archive" },
+              { id: "file-export-binary-tar", text: "&Tar bundle" }
+            ]
+          }
+        ]
+      },
+      { id: "file-exit", text: "E&xit" }
+    ]
+  },
+  {
+    id: "view",
+    text: "&View",
+    items: [
+      { id: "view-wide", text: "&Wide layout", checkable: true, checked: true },
+      {
+        id: "view-columns",
+        text: "&Columns",
+        items: [
+          { id: "view-columns-left", text: "&Left" },
+          { id: "view-columns-right", text: "&Right" },
+          {
+            id: "view-columns-advanced",
+            text: "A&dvanced",
+            items: [
+              { id: "view-columns-advanced-grid", text: "&Grid" },
+              { id: "view-columns-advanced-compact", text: "&Compact" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "help",
+    text: "&Help",
+    items: [{ id: "help-about", text: "&About" }]
+  }
+];
+
+const windowMenuItems: MainMenuNode[] = [
+  {
+    id: "scope",
+    text: "&Scope",
+    items: [
+      { id: "scope-active", text: "&Active set" },
+      {
+        id: "scope-history",
+        text: "&History",
+        items: [
+          { id: "scope-history-today", text: "&Today" },
+          {
+            id: "scope-history-snapshots",
+            text: "&Snapshots",
+            items: [
+              { id: "scope-history-snapshots-morning", text: "&Morning" },
+              { id: "scope-history-snapshots-evening", text: "&Evening" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "actions",
+    text: "&Actions",
+    items: [
+      { id: "actions-run", text: "&Run" },
+      { id: "actions-preview", text: "&Preview" }
+    ]
+  }
+];
+
+function WindowMenuSeed({ items }: { items: MainMenuNode[] }) {
+  const menu = useWindowMenu();
+
+  useEffect(() => {
+    menu.setMainMenu(items);
+  }, [items, menu]);
+
+  return null;
+}
+
+function DialogLauncherSurface() {
+  const windowManager = useNuWindowManager();
+  const [result, setResult] = React.useState("No dialog result yet");
+
+  async function openMessageBox() {
+    const nextResult = await windowManager.showMessageBox({
+      message: "Archive operation completed successfully.",
+      okLabel: "&Acknowledge",
+      preset: "ok",
+      title: "Information"
+    });
+
+    setResult(`MessageBox: ${nextResult}`);
+  }
+
+  async function openErrorBox() {
+    const nextResult = await windowManager.showMessageBox({
+      kind: "error",
+      message: "Device 3A did not respond within the expected timeout window.",
+      preset: "yes-no-cancel",
+      title: "Danger"
+    });
+
+    setResult(`ErrorBox: ${nextResult}`);
+  }
+
+  async function openInputBox() {
+    const nextResult = await windowManager.showInputBox({
+      defaultValue: "NODE-07",
+      hint: "Provide the node label used for the next diagnostics run.",
+      label: "Node name",
+      title: "Input"
+    });
+
+    setResult(
+      nextResult === null ? "InputBox: cancelled" : `InputBox: ${nextResult}`
+    );
+  }
+
+  return (
+    <div style={{ padding: "1rem" }}>
+      <StoryFrame title="Dialog Launchers">
+        <Stack gap="md">
+          <Stack direction="row" gap="sm">
+            <Button onClick={openMessageBox} variant="secondary">
+              Open &message box
+            </Button>
+            <Button onClick={openErrorBox} variant="danger">
+              Open &danger box
+            </Button>
+            <Button onClick={openInputBox} variant="secondary">
+              Open &input box
+            </Button>
+          </Stack>
+          <Info>
+            Last result: <InfoAccent>{result}</InfoAccent>
+          </Info>
+        </Stack>
+      </StoryFrame>
+    </div>
+  );
+}
+
+export const WindowShell: Story = {
+  render: () => (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "32rem",
+        overflow: "hidden",
+        backgroundColor: "var(--nu-desktop-bg)",
+        backgroundImage: "var(--nu-desktop-pattern-image)",
+        backgroundSize: "var(--nu-desktop-pattern-size)",
+        backgroundRepeat: "var(--nu-desktop-pattern-repeat)"
+      }}
+    >
+      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <MainMenu items={desktopMenuItems} />
+        <Window
+          active
+          mode="window"
+          statusBar={<StatusBarItem>Ready Geometry test</StatusBarItem>}
+          style={{
+            height: 320,
+            left: 32,
+            top: 48,
+            width: 420,
+            position: "absolute"
+          }}
+          title="Diagnostics"
+        >
+          <WindowMenuSeed items={windowMenuItems} />
+          <div style={{ padding: "0.75rem 1rem" }}>
+            <Stack gap="sm">
+              <div>
+                Direct `Window` story for title bar, shadow, status strip, body
+                fill, and embedded window-level menu.
+              </div>
+              <div>
+                Open Scope -&gt; History -&gt; Snapshots to verify nested
+                submenu geometry.
+              </div>
+            </Stack>
+          </div>
+        </Window>
+        <Window
+          active={false}
+          mode="dialog"
+          style={{
+            height: 160,
+            left: 300,
+            top: 210,
+            width: 260,
+            position: "absolute"
+          }}
+          title="Confirm"
+        >
+          <div style={{ padding: "0.75rem 1rem" }}>
+            Secondary inactive dialog for contrast.
+          </div>
+        </Window>
+      </div>
+    </div>
+  )
+};
+
+export const NestedMainMenu: Story = {
+  render: () => <MainMenu items={desktopMenuItems} />
+};
+
+export const Dialogs: Story = {
+  render: () => (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "52rem",
+        overflow: "hidden",
+        backgroundColor: "var(--nu-desktop-bg)",
+        backgroundImage: "var(--nu-desktop-pattern-image)",
+        backgroundSize: "var(--nu-desktop-pattern-size)",
+        backgroundRepeat: "var(--nu-desktop-pattern-repeat)"
+      }}
+    >
+      <NuWindowProvider renderAppBar={false}>
+        <DialogLauncherSurface />
+      </NuWindowProvider>
+    </div>
+  )
+};

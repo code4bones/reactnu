@@ -1,0 +1,70 @@
+.nu-tree-connector-stroke() {
+  content: "";
+  position: absolute;
+  background: var(--nu-tree-connector-color, currentColor);
+  opacity: 0.7;
+}
+
+.nu-tree-connector-shape-pipe(@x: calc(50% - 0.5px)) {
+  &::before {
+    .nu-tree-connector-stroke();
+    top: 0;
+    bottom: 0;
+    left: @x;
+    width: 1px;
+  }
+}
+
+.nu-tree-connector-shape-tee(
+  @stem-x: -0.5px,
+  @arm-left: calc(var(--nu-glyph-cell-size) * -0.5),
+  @arm-right: 0
+) {
+  &::before {
+    .nu-tree-connector-stroke();
+    top: 0;
+    bottom: 0;
+    left: @stem-x;
+    width: 1px;
+  }
+
+  &::after {
+    .nu-tree-connector-stroke();
+    top: calc(50% - 0.5px);
+    left: @arm-left;
+    right: @arm-right;
+    height: 1px;
+  }
+}
+
+.nu-tree-connector-shape-elbow(
+  @stem-x: -0.5px,
+  @arm-left: calc(var(--nu-glyph-cell-size) * -0.5),
+  @arm-right: 0
+) {
+  &::before {
+    .nu-tree-connector-stroke();
+    top: 0;
+    bottom: 50%;
+    left: @stem-x;
+    width: 1px;
+  }
+
+  &::after {
+    .nu-tree-connector-stroke();
+    top: calc(50% - 0.5px);
+    left: @arm-left;
+    right: @arm-right;
+    height: 1px;
+  }
+}
+
+.nu-tree-connector-shape-bridge(@width: 1ch) {
+  &::before {
+    .nu-tree-connector-stroke();
+    top: calc(50% - 0.5px);
+    right: 100%;
+    width: @width;
+    height: 1px;
+  }
+}

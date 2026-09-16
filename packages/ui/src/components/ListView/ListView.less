@@ -1,0 +1,144 @@
+.nu-list-view {
+  display: grid;
+  flex: 1 1 auto;
+  align-self: stretch;
+  inline-size: 100%;
+  block-size: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  color: var(--nu-text-primary);
+  font-family: var(--nu-font-body);
+  user-select: none;
+
+  .nu-scrollbar-chrome();
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  &__header,
+  &__row {
+    display: grid;
+    grid-template-columns: var(--nu-list-view-columns);
+    align-items: center;
+    gap: 1ch;
+    min-width: 0;
+    padding-inline: 0.35rem;
+  }
+
+  &__header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-height: calc(var(--nu-control-height) + 0.2rem);
+    border-block-end: 1px solid var(--nu-border-dark);
+    background: var(--nu-color-button-face);
+    color: var(--nu-text-inverse);
+  }
+
+  &__header-cell {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--center {
+      text-align: center;
+    }
+
+    &--end {
+      text-align: right;
+    }
+  }
+
+  &__body {
+    min-height: 0;
+  }
+
+  &__row {
+    min-height: calc(var(--nu-control-height) + 0.1rem);
+    color: var(--nu-text-primary);
+
+    &--active,
+    &--selected {
+      background: var(--nu-color-field-bg);
+      color: var(--nu-color-field-text);
+    }
+
+    &--disabled {
+      opacity: 0.6;
+    }
+  }
+
+  &__cell,
+  &__check-cell {
+    min-width: 0;
+  }
+
+  &__cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--center {
+      text-align: center;
+    }
+
+    &--end {
+      text-align: right;
+    }
+  }
+
+  &__check-cell,
+  &__header-cell:first-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--nu-color-button-face);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+  }
+
+  &__check-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--nu-glyph-cell-size);
+    block-size: var(--nu-glyph-cell-size);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--nu-color-button-face);
+
+    &[data-unchecked-shape="none"] {
+      box-shadow: none;
+    }
+  }
+
+  &__check-indicator {
+    color: var(--nu-text-accent);
+  }
+
+  &__empty {
+    padding: 0.35rem;
+    color: var(--nu-text-muted);
+  }
+}

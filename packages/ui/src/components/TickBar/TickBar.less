@@ -1,0 +1,153 @@
+.nu-tick-bar {
+  --nu-tick-bar-track-inset: 0.75rem;
+
+  display: grid;
+  gap: var(--nu-space-xs);
+  font-family: var(--nu-font-body);
+
+  &[data-fill] {
+    flex: 1 1 auto;
+    align-self: stretch;
+    inline-size: 100%;
+  }
+
+  &[data-disabled] {
+    opacity: 0.6;
+  }
+
+  &__label {
+    color: var(--nu-text-accent);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+  }
+
+  &__slot {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1ch;
+    min-width: 0;
+  }
+
+  &__track {
+    position: relative;
+    min-width: 10rem;
+    min-height: 1rem;
+    padding: 0 var(--nu-tick-bar-track-inset);
+    color: var(--nu-text-primary);
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    outline: none;
+  }
+
+  &__track:focus-visible .nu-tick-bar__thumb,
+  &__track[data-dragging] .nu-tick-bar__thumb {
+    background: var(--nu-color-field-bg);
+    color: var(--nu-color-field-text);
+  }
+
+  &__rail {
+    position: absolute;
+    top: 50%;
+    right: var(--nu-tick-bar-track-inset);
+    left: var(--nu-tick-bar-track-inset);
+    height: 1px;
+    background: var(--nu-border-light);
+    transform: translateY(-50%);
+  }
+
+  &__ticks {
+    position: absolute;
+    top: 50%;
+    right: var(--nu-tick-bar-track-inset);
+    left: var(--nu-tick-bar-track-inset);
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  &__tick {
+    width: 1px;
+    height: 0.7rem;
+    background: var(--nu-border-light);
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 50%;
+    width: 1.2rem;
+    min-width: 2ch;
+    min-height: var(--nu-control-height);
+    border: 1px solid var(--nu-border-dark);
+    background: var(--nu-color-button-face);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  &__value {
+    min-width: 4ch;
+    color: var(--nu-text-primary);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  &__hint {
+    color: var(--nu-text-muted);
+    font-size: 0.75rem;
+  }
+
+  &[data-orientation="vertical"] {
+    justify-items: start;
+  }
+
+  &[data-orientation="vertical"] .nu-tick-bar__slot {
+    grid-template-columns: auto auto;
+    align-items: start;
+  }
+
+  &[data-orientation="vertical"] .nu-tick-bar__track {
+    min-width: 1rem;
+    min-height: 10rem;
+    padding: var(--nu-tick-bar-track-inset) 0;
+  }
+
+  &[data-orientation="vertical"] .nu-tick-bar__rail {
+    top: var(--nu-tick-bar-track-inset);
+    bottom: var(--nu-tick-bar-track-inset);
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: auto;
+    transform: translateX(-50%);
+  }
+
+  &[data-orientation="vertical"] .nu-tick-bar__ticks {
+    top: var(--nu-tick-bar-track-inset);
+    right: auto;
+    bottom: var(--nu-tick-bar-track-inset);
+    left: 50%;
+    flex-direction: column-reverse;
+    width: auto;
+    height: calc(100% - (var(--nu-tick-bar-track-inset) * 2));
+    transform: translateX(-50%);
+  }
+
+  &[data-orientation="vertical"] .nu-tick-bar__tick {
+    width: 0.7rem;
+    height: 1px;
+  }
+
+  &[data-orientation="vertical"] .nu-tick-bar__thumb {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  &[data-orientation="vertical"] .nu-tick-bar__value {
+    min-width: 0;
+    padding-top: 0.1rem;
+    text-align: left;
+  }
+}

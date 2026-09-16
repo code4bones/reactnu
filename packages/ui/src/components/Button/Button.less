@@ -1,0 +1,149 @@
+.nu-button {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  align-self: flex-start;
+  padding: 0 var(--nu-button-shadow-x) var(--nu-button-shadow-y) 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--nu-color-button-text);
+  font-family: var(--nu-font-body);
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  &__face {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1em;
+    padding: 0.13em 3.15ch;
+    background: var(--nu-color-button-face);
+  }
+
+  &__label {
+    display: block;
+    white-space: nowrap;
+  }
+
+  &__focus-indicator {
+    position: absolute;
+    top: 50%;
+    display: none;
+    width: 0.65ch;
+    height: 0.8em;
+    background: currentColor;
+    transform: translateY(-50%);
+
+    &--left {
+      left: 0.3ch;
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+
+    &--right {
+      right: 0.3ch;
+      clip-path: polygon(100% 0, 0 50%, 100% 100%);
+    }
+  }
+
+  &[data-variant="secondary"] {
+    color: var(--nu-text-inverse);
+
+    .nu-button__face {
+      background: var(--nu-color-button-face-alt);
+    }
+  }
+
+  &[data-variant="danger"] {
+    color: var(--nu-text-primary);
+
+    .nu-button__face {
+      background: var(--nu-color-button-danger);
+    }
+  }
+
+  &[data-variant="success"] {
+    color: var(--nu-text-accent);
+
+    .nu-button__face {
+      background: var(--nu-color-button-success);
+    }
+  }
+
+  &__shadow {
+    position: absolute;
+    background: var(--nu-shadow-color);
+    pointer-events: none;
+
+    &--right {
+      top: var(--nu-button-shadow-offset-y);
+      right: 0;
+      width: var(--nu-button-shadow-x);
+      // +1px: guarantees overlap with --bottom (painted after, covers the
+      // extra px) so sub-pixel rounding of a fractionally-positioned
+      // ancestor (e.g. a centered dialog) can't open a seam at the corner.
+      height: calc(
+        100% - var(--nu-button-shadow-offset-y) - var(--nu-button-shadow-y) +
+          1px
+      );
+    }
+
+    &--bottom {
+      right: 0;
+      bottom: 0;
+      left: var(--nu-button-shadow-offset-x);
+      height: var(--nu-button-shadow-y);
+    }
+  }
+
+  &:not(:disabled):hover .nu-button__face {
+    filter: brightness(1.03);
+  }
+
+  &:not(:disabled):active {
+    .nu-button__face {
+      transform: translate(
+        var(--nu-button-press-depth-x),
+        var(--nu-button-press-depth-y)
+      );
+    }
+  }
+
+  &[data-focused],
+  &:focus-visible {
+    color: var(--nu-color-title-text);
+
+    .nu-button__face {
+      background: var(--nu-color-button-face);
+    }
+
+    .nu-button__focus-indicator {
+      display: block;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    .nu-button__face {
+      filter: grayscale(0.2);
+    }
+
+    .nu-button__focus-indicator {
+      display: none;
+    }
+  }
+}

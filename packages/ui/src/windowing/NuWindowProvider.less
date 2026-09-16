@@ -1,0 +1,18 @@
+.nu-window-host {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.nu-window-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.nu-window-layer__modal-backdrop {
+  position: absolute;
+  background: var(--nu-window-modal-backdrop);
+  pointer-events: auto;
+}

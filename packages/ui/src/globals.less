@@ -1,0 +1,121 @@
+@import (less) "./variables.less";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.nu-mnemonic__key {
+  color: var(--nu-text-hotkey);
+}
+
+.nu-scrollbar-chrome() {
+  scrollbar-width: thin;
+  scrollbar-color: var(--nu-scrollbar-thumb) var(--nu-scrollbar-track);
+
+  &::-webkit-scrollbar {
+    width: var(--nu-scrollbar-button-size);
+    height: var(--nu-scrollbar-button-size);
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-track-piece,
+  &::-webkit-scrollbar-corner {
+    background: var(--nu-scrollbar-track);
+    border-radius: 0 !important;
+    box-shadow: none;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 1.25rem;
+    min-width: 1.25rem;
+    border: 1px solid var(--nu-border-dark);
+    border-radius: 0 !important;
+    background: var(--nu-scrollbar-thumb);
+    background-clip: border-box;
+    box-shadow: none;
+  }
+
+  &::-webkit-scrollbar-thumb:vertical {
+    border-radius: 0 !important;
+  }
+
+  &::-webkit-scrollbar-thumb:horizontal {
+    border-radius: 0 !important;
+  }
+
+  &::-webkit-scrollbar-button:single-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: var(--nu-scrollbar-button-size);
+    height: var(--nu-scrollbar-button-size);
+    border: 1px solid var(--nu-border-dark);
+    border-radius: 0 !important;
+    background-color: var(--nu-scrollbar-button-bg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 0.62rem 0.62rem;
+    box-shadow: none;
+  }
+
+  &::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: var(--nu-scrollbar-arrow-up);
+  }
+
+  &::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: var(--nu-scrollbar-arrow-down);
+  }
+
+  &::-webkit-scrollbar-button:single-button:horizontal:decrement {
+    background-image: var(--nu-scrollbar-arrow-left);
+  }
+
+  &::-webkit-scrollbar-button:single-button:horizontal:increment {
+    background-image: var(--nu-scrollbar-arrow-right);
+  }
+}
+
+@import (less) "./theme/NuThemeProvider.less";
+@import (less) "./components/_shared/ControlOpener.less";
+@import (less) "./components/Glyph/NuGlyph.less";
+@import (less) "./components/CheckBox/CheckBox.less";
+@import (less) "./components/Dashboard/Dashboard.less";
+@import (less) "./components/Dropdown/Dropdown.less";
+@import (less) "./components/Panel/Panel.less";
+@import (less) "./components/Frame/Frame.less";
+@import (less) "./components/Info/Info.less";
+@import (less) "./components/ListBox/ListBox.less";
+@import (less) "./components/ListView/ListView.less";
+@import (less) "./components/MainMenu/MainMenu.less";
+@import (less) "./components/MaskedField/MaskedField.less";
+@import (less) "./components/Memo/Memo.less";
+@import (less) "./components/PageControl/PageControl.less";
+@import (less) "./components/PopupMenu/PopupMenu.less";
+@import (less) "./components/PropertyGrid/PropertyGrid.less";
+@import (less) "./components/ProgressBar/ProgressBar.less";
+@import (less) "./components/RadioGroup/RadioGroup.less";
+@import (less) "./components/ReportCell/ReportCell.less";
+@import (less) "./components/SearchBox/SearchBox.less";
+@import (less) "./components/SpinBox/SpinBox.less";
+@import (less) "./components/Splitter/Splitter.less";
+@import (less) "./components/Desktop/Desktop.less";
+@import (less) "./components/Stack/Stack.less";
+@import (less) "./components/Button/Button.less";
+@import (less) "./components/TickBar/TickBar.less";
+@import (less) "./components/ToolBar/ToolBar.less";
+@import (less) "./components/ComboBox/ComboBox.less";
+@import (less) "./components/TextField/TextField.less";
+@import (less) "./components/TreeView/TreeView.less";
+@import (less) "./components/TreeListView/TreeListView.less";
+@import (less) "./components/View/NuView.less";
+@import (less) "./components/Window/Window.less";
+@import (less) "./windowing/AppBarItem.less";
+@import (less) "./windowing/AppBarHost.less";
+@import (less) "./windowing/DialogHelpers.less";
+@import (less) "./windowing/NuWindowProvider.less";
+@import (less) "./windowing/WindowBar.less";

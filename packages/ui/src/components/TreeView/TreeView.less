@@ -1,0 +1,252 @@
+@import (less) "../_shared/TreeConnectors.less";
+
+.nu-tree-view {
+  flex: 1 1 auto;
+  align-self: stretch;
+  inline-size: 100%;
+  block-size: 100%;
+  min-width: 0;
+  overflow: auto;
+  color: var(--nu-text-primary);
+  outline: none;
+  .nu-scrollbar-chrome();
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  &:focus-visible .nu-tree-view__item--selected {
+    color: var(--nu-text-accent);
+  }
+
+  &__item {
+    display: flex;
+    align-items: stretch;
+    gap: calc(var(--nu-glyph-cell-size) * 0.5);
+    min-width: 0;
+    min-block-size: calc(var(--nu-glyph-cell-size) + 0.16rem);
+    padding: 0 0.65ch;
+    line-height: 1.2;
+    color: var(--nu-text-primary);
+    cursor: default;
+    user-select: none;
+
+    // A branch row's expander sits in .prefix at the depth's shared control
+    // column; its own .content still starts one grid step later so a
+    // trailing icon lands on the NEXT depth's control column (where this
+    // row's children's checkboxes/expanders resolve), keeping icon-bearing
+    // branches and their children in the same vertical rail.
+    &:has(.nu-tree-view__expander):has(.nu-tree-view__icon) {
+      gap: var(--nu-glyph-cell-size);
+    }
+
+    &--selected {
+      background: var(--nu-color-field-bg);
+    }
+
+    &--disabled {
+      color: var(--nu-text-muted);
+    }
+  }
+
+  &__prefix {
+    display: inline-flex;
+    align-items: stretch;
+    flex: none;
+    gap: 0;
+    overflow: visible;
+  }
+
+  &__lead {
+    display: inline-flex;
+    align-items: stretch;
+    flex: none;
+    gap: 0;
+    overflow: visible;
+    margin-inline-start: calc(
+      var(--nu-tree-view-origin-offset, 0) * var(--nu-glyph-cell-size)
+    );
+  }
+
+  &__guide,
+  &__expander,
+  &__check-slot {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--nu-glyph-cell-size);
+    block-size: auto;
+    align-self: stretch;
+    flex: none;
+  }
+
+  &__branch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    inline-size: var(--nu-glyph-cell-size);
+    block-size: auto;
+    flex: none;
+    overflow: visible;
+  }
+
+  &__guide::before,
+  &__branch::before,
+  &__branch::after {
+    content: none;
+  }
+
+  &__guide[data-visible] {
+    .nu-tree-connector-shape-pipe();
+    transform: translateX(
+      calc(var(--nu-tree-view-guide-offset, 0) * var(--nu-glyph-cell-size))
+    );
+  }
+
+  &__branch[data-branch="tee"] {
+    .nu-tree-connector-shape-tee(calc(50% - 0.5px), 50%, 0);
+  }
+
+  &__branch[data-branch="elbow"] {
+    .nu-tree-connector-shape-elbow(calc(50% - 0.5px), 50%, 0);
+  }
+
+  &__expander-button,
+  &__check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--nu-glyph-cell-size);
+    block-size: var(--nu-glyph-cell-size);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+  }
+
+  &__expander-button {
+    background: var(--nu-color-button-face);
+    color: var(--nu-color-field-bg);
+  }
+
+  &__expander[data-connector="lead"] {
+    inline-size: calc(var(--nu-glyph-cell-size) * 1.5);
+    justify-content: flex-end;
+  }
+
+  &__expander[data-connector="lead"]::before {
+    content: "";
+    position: absolute;
+    top: calc(50% - 0.5px);
+    left: 0;
+    width: calc(var(--nu-glyph-cell-size) * 0.5);
+    height: 1px;
+    background: var(--nu-tree-connector-color, currentColor);
+    opacity: 0.7;
+  }
+
+  &__expander-placeholder,
+  &__icon-placeholder {
+    position: relative;
+    inline-size: var(--nu-glyph-cell-size);
+    block-size: auto;
+    align-self: stretch;
+    flex: none;
+  }
+
+  &__expander-placeholder[data-connector="lead"]::before {
+    content: "";
+    position: absolute;
+    top: calc(50% - 0.5px);
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--nu-tree-connector-color, currentColor);
+    opacity: 0.7;
+  }
+
+  &__expander-placeholder[data-connector="lead"] {
+    inline-size: 0;
+    margin-inline-end: 0;
+  }
+
+  &__check-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--nu-glyph-cell-size);
+    block-size: var(--nu-glyph-cell-size);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--nu-color-button-face);
+
+    &[data-unchecked-shape="none"] {
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+
+  &__check-mark {
+    color: var(--nu-text-accent);
+  }
+
+  &__content {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--nu-glyph-cell-size) * 0.5);
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--nu-glyph-cell-size);
+    block-size: var(--nu-glyph-cell-size);
+    flex: none;
+  }
+
+  &__content[data-branch-anchor="label"]::before {
+    content: none;
+  }
+
+  &__content[data-branch-anchor="label"] {
+    .nu-tree-connector-shape-bridge();
+  }
+
+  &__title {
+    min-width: 0;
+  }
+
+  &__hint {
+    margin-left: auto;
+    color: var(--nu-text-muted);
+    white-space: nowrap;
+  }
+
+  &__item--selected .nu-tree-view__hint {
+    color: var(--nu-text-primary);
+  }
+
+  &__empty {
+    color: var(--nu-text-muted);
+  }
+}

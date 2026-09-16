@@ -1,0 +1,57 @@
+.nu-progress-bar {
+  display: grid;
+  gap: var(--nu-space-xs);
+  font-family: var(--nu-font-body);
+
+  &__label {
+    color: var(--nu-text-primary);
+  }
+
+  &__track {
+    position: relative;
+    min-width: 0;
+    min-height: var(--nu-control-height);
+    padding: 1px;
+    background: var(--nu-color-button-shadow);
+    box-shadow:
+      inset 0 0 0 1px var(--nu-border-dark),
+      inset 1px 1px 0 0 var(--nu-border-light);
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    min-width: 0;
+    background: var(--nu-color-button-face);
+
+    &[data-indeterminate] {
+      width: 28%;
+      animation: nu-progress-bar-slide 1.1s linear infinite;
+    }
+  }
+
+  &__value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nu-text-hotkey);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  &__hint {
+    color: var(--nu-text-accent);
+  }
+}
+
+@keyframes nu-progress-bar-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}

@@ -1,0 +1,326 @@
+import {
+  CSSProperties,
+  ForwardedRef,
+  HTMLAttributes,
+  KeyboardEvent,
+  RefAttributes,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState
+} from "react";
+import { renderMnemonicText } from "../../utils/renderMnemonicText";
+import {
+  getInitialActiveRowId,
+  getListViewRowChecked
+} from "./internals/helpers";
+import { ListViewRow } from "./internals/ListViewRow";
+import { ListViewColumn, ListViewRowBase } from "./internals/types";
+
+export type { ListViewColumn, ListViewRowBase } from "./internals/types";
+
+export type ListViewHandle = {
+  activateRow: (rowId: string) => void;
+  focus: () => void;
+  getActiveRowId: () => string | null;
+  scrollToRow: (rowId: string) => void;
+  toggleRowCheck: (rowId: string) => void;
+};
+
+export type ListViewProps<T extends ListViewRowBase> = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "onSelect"
+> & {
+  activeRowId?: string;
+  checkedIds?: string[];
+  columns: ListViewColumn<T>[];
+  data: T[];
+  defaultActiveRowId?: string;
+  emptyText?: string;
+  onActiveRowChange?: (row: T) => void;
+  onRowCheckChange?: (row: T, checked: boolean) => void;
+  onRowDoubleClick?: (row: T) => void;
+  onRowSelect?: (row: T) => void;
+  selectedId?: string;
+  showCheckBox?: boolean;
+  uncheckedShape?: "box" | "none";
+};
+
+function ListViewInner<T extends ListViewRowBase>(
+  {
+    activeRowId: activeRowIdProp,
+    checkedIds,
+    className,
+    columns,
+    data,
+    defaultActiveRowId,
+    emptyText = "No rows",
+    onActiveRowChange,
+    onRowCheckChange,
+    onRowDoubleClick,
+    onRowSelect,
+    selectedId,
+    showCheckBox = false,
+    uncheckedShape = "box",
+    ...props
+  }: ListViewProps<T>,
+  ref: ForwardedRef<ListViewHandle>
+) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const selectableRows = useMemo(
+    () => data.filter((row) => !row.disabled),
+    [data]
+  );
+  const isActiveControlled = activeRowIdProp !== undefined;
+  const [uncontrolledActiveRowId, setUncontrolledActiveRowId] = useState<
+    string | null
+  >(
+    () =>
+      defaultActiveRowId ?? getInitialActiveRowId(selectableRows, selectedId)
+  );
+  const activeRowId =
+    activeRowIdProp !== undefined ? activeRowIdProp : uncontrolledActiveRowId;
+  const resolvedActiveRowId =
+    activeRowId && selectableRows.some((row) => row.id === activeRowId)
+      ? activeRowId
+      : getInitialActiveRowId(selectableRows, selectedId);
+  const templateColumns = useMemo(() => {
+    const checkboxColumn = showCheckBox ? "var(--nu-glyph-cell-size)" : null;
+    const dataColumns = columns.map(
+      (column) => column.width ?? "minmax(0, 1fr)"
+    );
+
+    return [checkboxColumn, ...dataColumns].filter(Boolean).join(" ");
+  }, [columns, showCheckBox]);
+
+  useEffect(() => {
+    if (!resolvedActiveRowId) {
+      return;
+    }
+
+    rowRefs.current[resolvedActiveRowId]?.scrollIntoView({
+      block: "nearest"
+    });
+  }, [resolvedActiveRowId]);
+
+  const registerRowRef = useCallback(
+    (rowId: string, node: HTMLDivElement | null) => {
+      rowRefs.current[rowId] = node;
+    },
+    []
+  );
+
+  const updateActiveRow = useCallback(
+    (row: T) => {
+      if (!isActiveControlled) {
+        setUncontrolledActiveRowId(row.id);
+      }
+
+      onActiveRowChange?.(row);
+    },
+    [isActiveControlled, onActiveRowChange]
+  );
+
+  const activateRowId = useCallback(
+    (rowId: string | null) => {
+      if (!rowId) {
+        return;
+      }
+
+      const nextRow = selectableRows.find((row) => row.id === rowId);
+
+      if (!nextRow) {
+        return;
+      }
+
+      updateActiveRow(nextRow);
+      onRowSelect?.(nextRow);
+    },
+    [selectableRows, updateActiveRow, onRowSelect]
+  );
+
+  function moveActive(direction: 1 | -1) {
+    if (selectableRows.length === 0) {
+      return;
+    }
+
+    const currentIndex = selectableRows.findIndex(
+      (row) => row.id === resolvedActiveRowId
+    );
+    const fallbackIndex = direction > 0 ? 0 : selectableRows.length - 1;
+    const nextIndex =
+      currentIndex === -1
+        ? fallbackIndex
+        : Math.max(
+            0,
+            Math.min(selectableRows.length - 1, currentIndex + direction)
+          );
+
+    activateRowId(selectableRows[nextIndex]?.id ?? null);
+  }
+
+  function activateEdge(edge: "start" | "end") {
+    if (selectableRows.length === 0) {
+      return;
+    }
+
+    activateRowId(
+      edge === "start"
+        ? (selectableRows[0]?.id ?? null)
+        : (selectableRows[selectableRows.length - 1]?.id ?? null)
+    );
+  }
+
+  function isRowChecked(row: T) {
+    return getListViewRowChecked(row, checkedIds);
+  }
+
+  const toggleRowCheck = useCallback(
+    (rowId: string) => {
+      if (!showCheckBox) {
+        return;
+      }
+
+      const row = data.find((currentRow) => currentRow.id === rowId);
+
+      if (!row || row.disabled) {
+        return;
+      }
+
+      onRowCheckChange?.(row, !getListViewRowChecked(row, checkedIds));
+    },
+    [showCheckBox, data, checkedIds, onRowCheckChange]
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      activateRow(rowId: string) {
+        activateRowId(rowId);
+      },
+      focus() {
+        rootRef.current?.focus();
+      },
+      getActiveRowId() {
+        return resolvedActiveRowId;
+      },
+      scrollToRow(rowId: string) {
+        rowRefs.current[rowId]?.scrollIntoView({
+          block: "nearest"
+        });
+      },
+      toggleRowCheck(rowId: string) {
+        toggleRowCheck(rowId);
+      }
+    }),
+    [resolvedActiveRowId, showCheckBox, checkedIds, data]
+  );
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        moveActive(1);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        moveActive(-1);
+        break;
+      case "Home":
+        event.preventDefault();
+        activateEdge("start");
+        break;
+      case "End":
+        event.preventDefault();
+        activateEdge("end");
+        break;
+      case "Enter":
+        event.preventDefault();
+        activateRowId(resolvedActiveRowId);
+        break;
+      case " ":
+        if (resolvedActiveRowId) {
+          event.preventDefault();
+          activateRowId(resolvedActiveRowId);
+          toggleRowCheck(resolvedActiveRowId);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  return (
+    <div
+      {...props}
+      aria-activedescendant={resolvedActiveRowId ?? undefined}
+      className={["nu-list-view", className].filter(Boolean).join(" ")}
+      onKeyDown={handleKeyDown}
+      ref={rootRef}
+      role="grid"
+      tabIndex={0}
+    >
+      <div
+        className="nu-list-view__header"
+        role="row"
+        style={
+          {
+            "--nu-list-view-columns": templateColumns
+          } as CSSProperties
+        }
+      >
+        {showCheckBox ? (
+          <span className="nu-list-view__header-cell" role="columnheader" />
+        ) : null}
+        {columns.map((column) => (
+          <span
+            className={[
+              "nu-list-view__header-cell",
+              `nu-list-view__header-cell--${column.align ?? "start"}`,
+              column.className
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            key={column.id}
+            role="columnheader"
+          >
+            {renderMnemonicText(column.title)}
+          </span>
+        ))}
+      </div>
+      <div className="nu-list-view__body">
+        {data.length > 0 ? (
+          data.map((row) => (
+            <ListViewRow
+              columns={columns}
+              isActive={row.id === resolvedActiveRowId}
+              isChecked={isRowChecked(row)}
+              isSelected={row.id === selectedId}
+              key={row.id}
+              onActivate={activateRowId}
+              onDoubleClick={onRowDoubleClick}
+              onToggleCheck={toggleRowCheck}
+              registerRowRef={registerRowRef}
+              row={row}
+              showCheckBox={showCheckBox}
+              templateColumns={templateColumns}
+              uncheckedShape={uncheckedShape}
+            />
+          ))
+        ) : (
+          <div className="nu-list-view__empty">{emptyText}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export const ListView = forwardRef(ListViewInner) as <
+  T extends ListViewRowBase
+>(
+  props: ListViewProps<T> & RefAttributes<ListViewHandle>
+) => ReturnType<typeof ListViewInner>;

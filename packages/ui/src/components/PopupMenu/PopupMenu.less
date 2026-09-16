@@ -1,0 +1,30 @@
+.nu-popup-menu {
+  position: fixed;
+  z-index: 8;
+  min-width: 0;
+}
+
+.nu-popup-menu__shell {
+  position: relative;
+  isolation: isolate;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: var(--nu-window-shadow-bg);
+    transform: translate(
+      var(--nu-window-shadow-offset-x),
+      var(--nu-window-shadow-offset-y)
+    );
+    pointer-events: none;
+  }
+}
+
+.nu-popup-menu .nu-main-menu__popup {
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: 1;
+}

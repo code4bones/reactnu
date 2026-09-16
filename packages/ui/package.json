@@ -1,0 +1,47 @@
+{
+  "name": "@deadragdoll/reactnu",
+  "version": "0.1.7",
+  "private": false,
+  "description": "React components with a precise DOS-era utility interface.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "react",
+    "typescript",
+    "component-library",
+    "dos",
+    "norton-utilities"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepack": "node scripts/prepare-package-docs.mjs && yarn build",
+    "postpack": "node scripts/prepare-package-docs.mjs --clean",
+    "build:styles": "mkdir -p dist && lessc src/globals.less dist/styles.css && prettier --write dist/styles.css",
+    "watch:styles": "mkdir -p dist && lessc --watch src/globals.less dist/styles.css",
+    "build": "tsup src/index.ts --clean --tsconfig tsconfig.json --format esm,cjs --external react,react-dom && tsc -p tsconfig.build.json && yarn build:styles",
+    "dev": "yarn build:styles && tsup src/index.ts --watch --tsconfig tsconfig.json --format esm,cjs --external react,react-dom"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}

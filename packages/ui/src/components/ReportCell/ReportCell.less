@@ -1,0 +1,36 @@
+.nu-report-cell {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  font: inherit;
+  line-height: inherit;
+
+  &--center {
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  &--end {
+    justify-content: flex-end;
+    width: 100%;
+    text-align: right;
+  }
+
+  &--muted {
+    color: var(--nu-text-muted);
+  }
+
+  &--accent {
+    color: var(--nu-text-accent);
+  }
+
+  &--danger {
+    color: var(--nu-text-hotkey);
+  }
+
+  &--success {
+    color: var(--nu-text-primary);
+  }
+}

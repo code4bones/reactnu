@@ -1,0 +1,100 @@
+.nu-masked-field {
+  display: grid;
+  gap: var(--nu-space-xs);
+  font-family: var(--nu-font-body);
+
+  &:focus-within .nu-masked-field__input-shell {
+    background: var(--nu-color-field-bg);
+    color: var(--nu-color-field-text);
+  }
+
+  &:focus-within .nu-masked-field__bracket,
+  &:focus-within .nu-masked-field__input {
+    color: var(--nu-color-field-text);
+  }
+
+  &--invalid {
+    .nu-masked-field__input-shell {
+      background: var(--nu-color-button-danger);
+      color: var(--nu-text-accent);
+    }
+
+    .nu-masked-field__bracket,
+    .nu-masked-field__input {
+      color: var(--nu-text-accent);
+    }
+  }
+
+  &:focus-within&--invalid .nu-masked-field__input-shell {
+    background: var(--nu-color-button-danger);
+    color: var(--nu-text-accent);
+  }
+
+  &:focus-within&--invalid .nu-masked-field__bracket,
+  &:focus-within&--invalid .nu-masked-field__input {
+    color: var(--nu-text-accent);
+  }
+
+  &__label {
+    color: var(--nu-text-accent);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+  }
+
+  &__slot {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: stretch;
+    gap: 0.2ch;
+    min-height: var(--nu-control-height);
+    font: inherit;
+    line-height: 1;
+  }
+
+  &__bracket {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    block-size: var(--nu-control-height);
+    color: var(--nu-color-field-text);
+    font: inherit;
+    line-height: 1;
+  }
+
+  &__input-shell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    block-size: var(--nu-control-height);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  &__input {
+    width: 100%;
+    block-size: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: var(--nu-radius-none);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    outline: 0;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::selection {
+      background: var(--nu-border-accent);
+      color: var(--nu-text-inverse);
+    }
+  }
+
+  &__hint {
+    color: var(--nu-text-muted);
+    font-size: 0.75rem;
+  }
+}

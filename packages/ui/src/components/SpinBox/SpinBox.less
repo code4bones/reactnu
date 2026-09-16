@@ -1,0 +1,102 @@
+.nu-spin-box {
+  display: grid;
+  gap: var(--nu-space-xs);
+  font-family: var(--nu-font-body);
+
+  &:focus-within .nu-spin-box__input-shell {
+    background: var(--nu-color-field-bg);
+    color: var(--nu-color-field-text);
+  }
+
+  &:focus-within .nu-spin-box__bracket,
+  &:focus-within .nu-spin-box__input {
+    color: var(--nu-color-field-text);
+  }
+
+  &__label {
+    color: var(--nu-text-accent);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+  }
+
+  &__slot {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: stretch;
+    gap: 0.2ch;
+    min-height: var(--nu-control-height);
+    font: inherit;
+    line-height: 1;
+  }
+
+  &__bracket {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    block-size: var(--nu-control-height);
+    color: var(--nu-color-field-text);
+    font: inherit;
+    line-height: 1;
+  }
+
+  &__input-shell {
+    display: flex;
+    align-items: center;
+    block-size: var(--nu-control-height);
+    background: transparent;
+    color: inherit;
+    overflow: hidden;
+  }
+
+  &__input {
+    width: 100%;
+    block-size: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    outline: 0;
+    text-align: right;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  &__controls {
+    display: inline-flex;
+    gap: 0.2ch;
+  }
+
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2ch;
+    min-height: var(--nu-control-height);
+    padding: 0 0.55ch;
+    border: 1px solid var(--nu-border-dark);
+    background: var(--nu-color-button-face);
+    color: var(--nu-color-button-text);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:focus-visible {
+      color: var(--nu-text-accent);
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__hint {
+    color: var(--nu-text-muted);
+    font-size: 0.75rem;
+  }
+}

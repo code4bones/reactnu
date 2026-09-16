@@ -1,0 +1,25 @@
+.nu-stack {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+
+  &[data-direction="column"] {
+    flex-direction: column;
+  }
+
+  &[data-direction="row"] {
+    flex-direction: row;
+  }
+
+  &[data-gap="sm"] {
+    gap: var(--nu-space-sm);
+  }
+
+  &[data-gap="md"] {
+    gap: var(--nu-space-md);
+  }
+
+  &[data-gap="lg"] {
+    gap: var(--nu-space-lg);
+  }
+}
