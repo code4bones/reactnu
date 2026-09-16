@@ -1,9 +1,17 @@
 {
   "name": "@deadragdoll/reactnu",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": false,
   "description": "React components with a precise DOS-era utility interface.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/code4bones/reactnu.git"
+  },
+  "homepage": "https://github.com/code4bones/reactnu#readme",
+  "bugs": {
+    "url": "https://github.com/code4bones/reactnu/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

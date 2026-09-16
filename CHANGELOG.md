@@ -9,6 +9,12 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.10]
+
+### Added
+
+- GitHub repository, homepage, and issue-tracker metadata to the npm package.
+
 ## [0.1.9]
 
 ### Changed
