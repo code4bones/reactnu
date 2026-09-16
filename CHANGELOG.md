@@ -9,6 +9,12 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.8]
+
+### Changed
+
+- Moved the screenshot gallery directly below the README introduction and made npm the only consumer installation and release command shown.
+
 ## [0.1.7]
 
 ### Changed

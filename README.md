@@ -5,6 +5,37 @@
 It is a nostalgic tribute to a beautiful era of precise, purposeful utility
 interfaces, brought forward as a modern reusable component system.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <a href="https://github.com/code4bones/reactnu/blob/main/images/full.png">
+        <img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/full.png" alt="Full ReactNU desktop" width="900" />
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/windows.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/windows.png" alt="Managed windows" width="440" /></a></td>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/menu_window.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/menu_window.png" alt="Menu and window" width="440" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/popup.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/popup.png" alt="Popup menu" width="440" /></a></td>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/toolbar.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/toolbar.png" alt="Toolbar" width="440" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/splitter.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/splitter.png" alt="Splitter layout" width="440" /></a></td>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/propertygrid.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/propertygrid.png" alt="Property grid" width="440" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/tickbar.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/tickbar.png" alt="Tick bar" width="440" /></a></td>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/progress.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/progress.png" alt="Progress bar" width="440" /></a></td>
+  </tr>
+</table>
+
+The screenshots use public GitHub URLs rather than local paths, so they render
+on the repository page and in external README viewers.
+
 This is not a novelty retro skin. The goal is a reusable desktop-style UI system that is:
 
 - dense
@@ -75,45 +106,8 @@ Surfaces and windowing:
 ## Install
 
 ```bash
-yarn add @deadragdoll/reactnu react react-dom
-```
-
-or:
-
-```bash
 npm install @deadragdoll/reactnu react react-dom
 ```
-
-## Screenshots
-
-<table>
-  <tr>
-    <td colspan="2" align="center">
-      <a href="https://github.com/code4bones/reactnu/blob/main/images/full.png">
-        <img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/full.png" alt="Full ReactNU desktop" width="900" />
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/windows.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/windows.png" alt="Managed windows" width="440" /></a></td>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/menu_window.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/menu_window.png" alt="Menu and window" width="440" /></a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/popup.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/popup.png" alt="Popup menu" width="440" /></a></td>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/toolbar.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/toolbar.png" alt="Toolbar" width="440" /></a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/splitter.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/splitter.png" alt="Splitter layout" width="440" /></a></td>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/propertygrid.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/propertygrid.png" alt="Property grid" width="440" /></a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/tickbar.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/tickbar.png" alt="Tick bar" width="440" /></a></td>
-    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/progress.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/progress.png" alt="Progress bar" width="440" /></a></td>
-  </tr>
-</table>
-
-The screenshots use public GitHub URLs rather than local paths, so they render
-on the repository page and in external README viewers.
 
 ## Quick Start
 
@@ -258,7 +252,7 @@ Update the matching sandbox dependency and `CHANGELOG.md`, build the package,
 then publish it to the public npm registry:
 
 ```bash
-yarn workspace @deadragdoll/reactnu build
+npm run build --workspace @deadragdoll/reactnu
 cd packages/ui
 npm publish
 ```
