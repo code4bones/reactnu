@@ -1,6 +1,6 @@
 {
   "name": "@deadragdoll/reactnu",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": false,
   "description": "React components with a precise DOS-era utility interface.",
   "license": "MIT",
@@ -33,12 +33,12 @@
     "access": "public"
   },
   "scripts": {
-    "prepack": "node scripts/prepare-package-docs.mjs && yarn build",
+    "prepack": "node scripts/prepare-package-docs.mjs && npm run build",
     "postpack": "node scripts/prepare-package-docs.mjs --clean",
     "build:styles": "mkdir -p dist && lessc src/globals.less dist/styles.css && prettier --write dist/styles.css",
     "watch:styles": "mkdir -p dist && lessc --watch src/globals.less dist/styles.css",
-    "build": "tsup src/index.ts --clean --tsconfig tsconfig.json --format esm,cjs --external react,react-dom && tsc -p tsconfig.build.json && yarn build:styles",
-    "dev": "yarn build:styles && tsup src/index.ts --watch --tsconfig tsconfig.json --format esm,cjs --external react,react-dom"
+    "build": "tsup src/index.ts --clean --tsconfig tsconfig.json --format esm,cjs --external react,react-dom && tsc -p tsconfig.build.json && npm run build:styles",
+    "dev": "npm run build:styles && tsup src/index.ts --watch --tsconfig tsconfig.json --format esm,cjs --external react,react-dom"
   },
   "peerDependencies": {
     "react": "^19.2.0",

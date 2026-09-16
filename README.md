@@ -232,17 +232,17 @@ docs
 From repo root:
 
 ```bash
-yarn dev:sandbox
+npm run dev:sandbox
 ```
 
 Useful scripts:
 
 ```bash
-yarn build
-yarn storybook
-yarn build-storybook
-yarn typecheck
-yarn format:check
+npm run build
+npm run storybook
+npm run build-storybook
+npm run typecheck
+npm run format:check
 ```
 
 ## npm Release Flow

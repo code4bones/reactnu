@@ -3,20 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "license": "MIT",
-  "packageManager": "yarn@1.22.22",
+  "packageManager": "npm@11.6.2",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspace @deadragdoll/reactnu build && yarn workspace @reactnu/sandbox build",
-    "build-storybook": "yarn workspace @deadragdoll/reactnu build:styles && storybook build",
-    "dev:styles": "yarn workspace @deadragdoll/reactnu watch:styles",
-    "dev:sandbox": "yarn workspace @deadragdoll/reactnu build:styles && yarn workspace @reactnu/sandbox dev",
+    "build": "npm run build --workspace @deadragdoll/reactnu && npm run build --workspace @reactnu/sandbox",
+    "build-storybook": "npm run build:styles --workspace @deadragdoll/reactnu && storybook build",
+    "dev:styles": "npm run watch:styles --workspace @deadragdoll/reactnu",
+    "dev:sandbox": "npm run build:styles --workspace @deadragdoll/reactnu && npm run dev --workspace @reactnu/sandbox",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "storybook": "yarn workspace @deadragdoll/reactnu build:styles && storybook dev -p 6006",
+    "storybook": "npm run build:styles --workspace @deadragdoll/reactnu && storybook dev -p 6006",
     "typecheck": "tsc --noEmit -p packages/ui/tsconfig.json && tsc --noEmit -p apps/sandbox/tsconfig.json"
   },
   "devDependencies": {

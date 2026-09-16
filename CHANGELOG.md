@@ -9,6 +9,16 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.9]
+
+### Changed
+
+- Migrated repository scripts and contributor documentation from Yarn to npm.
+
+### Removed
+
+- Yarn lockfile and Yarn-specific repository configuration.
+
 ## [0.1.8]
 
 ### Changed

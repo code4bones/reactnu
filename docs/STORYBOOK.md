@@ -4,9 +4,9 @@ ReactNU now ships with a dedicated Storybook layer for component coverage, visua
 
 ## Scripts
 
-- `yarn storybook`
+- `npm run storybook`
   starts Storybook in dev mode
-- `yarn build-storybook`
+- `npm run build-storybook`
   produces a static build in `storybook-static/`
 
 ## Global Toolbars
