@@ -31,6 +31,10 @@ interfaces, brought forward as a modern reusable component system.
     <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/tickbar.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/tickbar.png" alt="Tick bar" width="440" /></a></td>
     <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/progress.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/progress.png" alt="Progress bar" width="440" /></a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/icon_provider.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/icon_provider.png" alt="Applications icon grid" width="440" /></a></td>
+    <td align="center"><a href="https://github.com/code4bones/reactnu/blob/main/images/page_control.png"><img src="https://raw.githubusercontent.com/code4bones/reactnu/main/images/page_control.png" alt="Page control" width="440" /></a></td>
+  </tr>
 </table>
 
 The screenshots use public GitHub URLs rather than local paths, so they render

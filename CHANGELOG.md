@@ -9,6 +9,12 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.24]
+
+### Added
+
+- Added Applications icon-grid and PageControl screenshots to the README gallery.
+
 ## [0.1.23]
 
 ### Changed
