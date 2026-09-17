@@ -39,6 +39,8 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
 - `useNuWindowManager()`
   opens, updates, activates, and closes managed windows
   also exposes `showMessageBox(...)` and `showInputBox(...)`
+- `useNuIconManager()`
+  manages icons inside a `NuIconProvider`
 - `usePopupMenu()`
   anchor/open helper for `PopupMenu`
 - `useWindowMenu()`
@@ -113,6 +115,8 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
   docs: [MainMenu](./MainMenu.md)
 - `PopupMenu`
   docs: [PopupMenu](./PopupMenu.md)
+- `NuIconProvider`, `NuIconGrid`
+  docs: [Icon Grid](./IconGrid.md)
 
 ## Windowing And Desktop Chrome
 

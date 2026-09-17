@@ -42,6 +42,7 @@ import {
 } from "./windowing.types";
 
 export type {
+  NuManagedWindowControls,
   NuManagedWindowDefinition,
   NuManagedWindowInfo,
   NuManagedWindowSnapshot

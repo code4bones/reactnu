@@ -1,6 +1,6 @@
 {
   "name": "@deadragdoll/reactnu",
-  "version": "0.1.15",
+  "version": "0.1.23",
   "private": false,
   "description": "React components with a precise DOS-era utility interface.",
   "license": "MIT",

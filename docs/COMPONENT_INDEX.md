@@ -19,6 +19,7 @@
 - [Frame](./Frame.md)
 - [Glyph](./Glyph.md)
 - [Info](./Info.md)
+- [Icon Grid](./IconGrid.md)
 - [ListBox](./ListBox.md)
 - [ListView](./ListView.md)
 - [MainMenu](./MainMenu.md)

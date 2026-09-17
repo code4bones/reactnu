@@ -6,6 +6,7 @@ export * from "./components/Dropdown";
 export * from "./components/Frame";
 export * from "./components/Glyph";
 export * from "./components/Info";
+export * from "./components/IconGrid";
 export * from "./components/ComboBox";
 export * from "./components/CommandButton";
 export * from "./components/CrtGlitch";

@@ -9,6 +9,54 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.23]
+
+### Changed
+
+- Documented icon-grid composition, arrangement, accessibility, and layout persistence in the README and component docs.
+
+## [0.1.22]
+
+### Fixed
+
+- Arranged sandbox Applications icons after their window grid is measured, keeping them visible in the bounded window.
+
+## [0.1.21]
+
+### Added
+
+- Added long multi-word and unbroken icon-label examples to the sandbox Applications window.
+
+## [0.1.20]
+
+### Fixed
+
+- Limited icon labels to two wrapped lines and truncated longer labels with an ellipsis.
+
+## [0.1.19]
+
+### Added
+
+- Added composable icon providers and grids with keyboard support, drag-and-drop positioning, icon and grid context menus, and icon arrangement methods.
+
+## [0.1.18]
+
+### Changed
+
+- Increased window title bar height by 3 px.
+
+## [0.1.17]
+
+### Fixed
+
+- Re-exported `NuManagedWindowControls` from the package public API for typed managed-window content callbacks.
+
+## [0.1.16]
+
+### Fixed
+
+- Dimmed inactive window borders along with their content, including both single and double frames.
+
 ## [0.1.15]
 
 ### Added

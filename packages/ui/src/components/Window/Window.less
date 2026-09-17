@@ -1,6 +1,6 @@
 .nu-window {
   --nu-window-title-controls-width: 7.8ch;
-  --nu-window-title-height: 1em;
+  --nu-window-title-height: calc(1em + 3px);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -38,9 +38,18 @@
     border: 1px solid var(--nu-border-light);
   }
 
+  &:not([data-active])[data-border="single"] {
+    border-color: var(--nu-window-inactive-border);
+  }
+
   &[data-border="double"] {
     border: 1px solid var(--nu-border-light);
     box-shadow: inset 0 0 0 1px var(--nu-border-light);
+  }
+
+  &:not([data-active])[data-border="double"] {
+    border-color: var(--nu-window-inactive-border);
+    box-shadow: inset 0 0 0 1px var(--nu-window-inactive-border);
   }
 
   &__shadow {

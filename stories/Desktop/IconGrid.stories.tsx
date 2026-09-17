@@ -1,0 +1,81 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { NuGlyph, NuIconGrid, NuIconProvider } from "@deadragdoll/reactnu";
+
+const meta = {
+  title: "Desktop/IconGrid",
+  tags: ["autodocs"]
+} satisfies Meta;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Applications: Story = {
+  render: () => (
+    <div
+      style={{
+        height: "22rem",
+        overflow: "hidden",
+        backgroundColor: "var(--nu-desktop-bg)",
+        backgroundImage: "var(--nu-desktop-pattern-image)",
+        backgroundRepeat: "var(--nu-desktop-pattern-repeat)",
+        backgroundSize: "var(--nu-desktop-pattern-size)"
+      }}
+    >
+      <NuIconProvider
+        defaultIcons={[
+          {
+            icon: (
+              <NuGlyph
+                name="gear"
+                style={{ blockSize: "3rem", inlineSize: "3rem" }}
+              />
+            ),
+            id: "diagnostics",
+            label: "&Diagnostics"
+          },
+          {
+            icon: (
+              <NuGlyph
+                name="folder"
+                style={{ blockSize: "3rem", inlineSize: "3rem" }}
+              />
+            ),
+            id: "reports",
+            label: "&Reports"
+          },
+          {
+            icon: (
+              <NuGlyph
+                name="star"
+                style={{ blockSize: "3rem", inlineSize: "3rem" }}
+              />
+            ),
+            id: "favorites",
+            label: "&Favorites"
+          }
+        ]}
+      >
+        <NuIconGrid
+          contextMenuItems={(icons) => [
+            {
+              id: "arrange",
+              items: [
+                {
+                  id: "arrange-columns",
+                  onSelect: () => icons.arrangeIcons("columns"),
+                  text: "&Columns"
+                },
+                {
+                  id: "arrange-name",
+                  onSelect: () => icons.arrangeIcons("name"),
+                  text: "&Name"
+                }
+              ],
+              text: "&Arrange icons"
+            }
+          ]}
+        />
+      </NuIconProvider>
+    </div>
+  )
+};

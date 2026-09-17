@@ -21,6 +21,19 @@
 - `appBarContent?: ReactNode`
 - standard `div` props
 
+## Application icons
+
+`NuDesktop` does not own a separate icon implementation. Compose a reusable
+`NuIconProvider` and `NuIconGrid` inside the desktop workspace instead. The
+same pair can also live inside a `Window`.
+
+Use `NuIconGrid`'s `contextMenuItems` callback for a desktop background menu.
+It receives `useNuIconManager()`'s methods, so an `Arrange icons` submenu can
+call `arrangeIcons("columns")`, `arrangeIcons("rows")`, or
+`arrangeIcons("name")`.
+
+See [Icon Grid](./IconGrid.md) for the full API and interaction contract.
+
 ## Notes
 
 - The desktop owns the browser viewport and is intended to behave like a bounded screen.

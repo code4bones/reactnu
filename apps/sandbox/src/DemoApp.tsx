@@ -1,4 +1,10 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import MonacoEditor from "@monaco-editor/react";
 import {
   Button,
@@ -10,6 +16,8 @@ import {
   Frame,
   Info,
   InfoAccent,
+  NuIconGrid,
+  NuIconProvider,
   ListBox,
   ListView,
   MaskedField,
@@ -57,6 +65,200 @@ import type {
 
 function SandboxWindowView({ children }: { children: ReactNode }) {
   return <NuView padding="cell">{children}</NuView>;
+}
+
+function ApplicationIconGraphic({
+  color,
+  label
+}: {
+  color: string;
+  label: string;
+}) {
+  return (
+    <svg aria-label={label} role="img" viewBox="0 0 32 32">
+      <rect
+        fill={color}
+        height="26"
+        stroke="currentColor"
+        width="28"
+        x="2"
+        y="3"
+      />
+      <path
+        d="M7 9 H25 M7 15 H20 M7 21 H23"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function ApplicationsWindowContent() {
+  const windowManager = useNuWindowManager();
+
+  function openApplication(title: string, message: string) {
+    windowManager.openWindow({
+      content: () => (
+        <NuView padding="cell">
+          <Stack gap="md">
+            <p className="sandbox-copy">{message}</p>
+            <p className="sandbox-copy">
+              This managed window was opened from an Applications icon.
+            </p>
+          </Stack>
+        </NuView>
+      ),
+      domain: title,
+      statusBar: "Opened from Applications  Alt+F3 Close",
+      style: {
+        height: "15rem",
+        width: "28rem"
+      },
+      title
+    });
+  }
+
+  return (
+    <NuIconProvider
+      defaultIcons={[
+        {
+          contextMenuItems: [
+            {
+              id: "applications-diagnostics-open",
+              onSelect: () =>
+                openApplication(
+                  "Diagnostics",
+                  "Diagnostics is ready to inspect volumes and memory."
+                ),
+              text: "&Open"
+            }
+          ],
+          icon: (
+            <ApplicationIconGraphic
+              color="var(--nu-color-title-bg)"
+              label="Diagnostics"
+            />
+          ),
+          id: "diagnostics",
+          label: "&Diagnostics",
+          onDoubleClick: () =>
+            openApplication(
+              "Diagnostics",
+              "Diagnostics is ready to inspect volumes and memory."
+            )
+        },
+        {
+          contextMenuItems: [
+            {
+              id: "applications-disk-map-open",
+              onSelect: () =>
+                openApplication(
+                  "Disk Map",
+                  "Disk Map is ready to inspect allocation regions."
+                ),
+              text: "&Open"
+            }
+          ],
+          icon: (
+            <ApplicationIconGraphic
+              color="var(--nu-text-hotkey)"
+              label="Disk Map"
+            />
+          ),
+          id: "disk-map",
+          label: "Disk &Map",
+          onDoubleClick: () =>
+            openApplication(
+              "Disk Map",
+              "Disk Map is ready to inspect allocation regions."
+            )
+        },
+        {
+          contextMenuItems: [
+            {
+              id: "applications-reports-open",
+              onSelect: () =>
+                openApplication(
+                  "Reports",
+                  "Reports is ready to export the latest maintenance run."
+                ),
+              text: "&Open"
+            }
+          ],
+          icon: (
+            <ApplicationIconGraphic
+              color="var(--nu-color-button-face)"
+              label="Reports"
+            />
+          ),
+          id: "reports",
+          label: "&Reports",
+          onDoubleClick: () =>
+            openApplication(
+              "Reports",
+              "Reports is ready to export the latest maintenance run."
+            )
+        },
+        {
+          icon: (
+            <ApplicationIconGraphic
+              color="var(--nu-color-button-success)"
+              label="System Maintenance and Recovery Console"
+            />
+          ),
+          id: "maintenance-console",
+          label: "System &Maintenance and Recovery Console",
+          onDoubleClick: () =>
+            openApplication(
+              "Maintenance Console",
+              "The maintenance console is ready to schedule recovery tasks."
+            )
+        },
+        {
+          icon: (
+            <ApplicationIconGraphic
+              color="var(--nu-color-button-danger)"
+              label="UltraLongApplicationIdentifierWithoutSpaces"
+            />
+          ),
+          id: "long-identifier",
+          label: "UltraLongApplicationIdentifierWithoutSpaces",
+          onDoubleClick: () =>
+            openApplication(
+              "Long Identifier",
+              "This icon verifies labels containing one long unbroken word."
+            )
+        }
+      ]}
+    >
+      <NuIconGrid
+        defaultArrangeMode="columns"
+        contextMenuItems={(iconManager) => [
+          {
+            id: "applications-arrange-icons",
+            items: [
+              {
+                id: "applications-arrange-columns",
+                onSelect: () => iconManager.arrangeIcons("columns"),
+                text: "&Columns"
+              },
+              {
+                id: "applications-arrange-rows",
+                onSelect: () => iconManager.arrangeIcons("rows"),
+                text: "&Rows"
+              },
+              {
+                id: "applications-arrange-name",
+                onSelect: () => iconManager.arrangeIcons("name"),
+                text: "&Name"
+              }
+            ],
+            text: "&Arrange icons"
+          }
+        ]}
+      />
+    </NuIconProvider>
+  );
 }
 
 const SANDBOX_FONT_OPTIONS = [
@@ -2594,6 +2796,19 @@ function WindowLaunchers() {
     });
   }
 
+  function openApplicationsWindow() {
+    windowManager.openWindow({
+      content: () => <ApplicationsWindowContent />,
+      domain: "Applications",
+      statusBar: "Double-click Open  Drag Move  Shift+F10 Menu",
+      style: {
+        height: "22rem",
+        width: "30rem"
+      },
+      title: "Applications"
+    });
+  }
+
   function openActivityWindow() {
     const windowDefinition: NuManagedWindowDefinition = {
       border: "double",
@@ -2986,6 +3201,9 @@ function WindowLaunchers() {
         </Button>
         <Button onClick={openLoginDialog} variant="secondary">
           &Login
+        </Button>
+        <Button onClick={openApplicationsWindow} variant="secondary">
+          &Applications
         </Button>
         <Button onClick={openMessageBox} variant="secondary">
           Open &message box

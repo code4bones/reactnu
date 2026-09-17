@@ -63,6 +63,7 @@ Providers and shell:
 - `NuThemeProvider`
 - `NuDesktop`
 - `NuWindowProvider`
+- `NuIconProvider`
 - `Dashboard`
 
 Core controls:
@@ -96,6 +97,7 @@ Surfaces and windowing:
 - `Panel`
 - `Frame`
 - `NuView`
+- `NuIconGrid`
 - `Splitter`
 - `Window`
 - `MainMenu`
@@ -176,6 +178,52 @@ function Launcher() {
   );
 }
 ```
+
+## Application Icon Grids
+
+`NuIconProvider` and `NuIconGrid` are composition primitives: use them in a
+desktop workspace, a managed window, or any bounded surface. Icons support
+double-click actions, drag-and-drop placement, keyboard/context menus, and
+Arrange icons actions supplied by the host.
+
+```tsx
+import { NuIconGrid, NuIconProvider } from "@deadragdoll/reactnu";
+
+function Applications() {
+  return (
+    <NuIconProvider
+      defaultIcons={[
+        {
+          id: "diagnostics",
+          icon: "/icons/diagnostics.svg",
+          label: "&Diagnostics",
+          onDoubleClick: () => openDiagnostics()
+        }
+      ]}
+    >
+      <NuIconGrid
+        defaultArrangeMode="columns"
+        contextMenuItems={(icons) => [
+          {
+            id: "arrange-icons",
+            items: [
+              {
+                id: "arrange-by-name",
+                text: "&By name",
+                onSelect: () => icons.arrangeIcons("name")
+              }
+            ],
+            text: "&Arrange icons"
+          }
+        ]}
+      />
+    </NuIconProvider>
+  );
+}
+```
+
+See [Icon Grid](./docs/IconGrid.md) for the full API, keyboard behavior, and
+layout-persistence guidance.
 
 ## Architecture: Desktop First
 
