@@ -8,16 +8,20 @@
   --nu-color-panel: #6262e3;
   --nu-color-panel-inset: #6262e3;
   --nu-color-title-bg: #ffffff;
+  --nu-color-menu: #ffffff;
   --nu-color-title-text: #1f36bc;
   --nu-text-primary: #ffffff;
   --nu-text-muted: #dfe3ff;
   --nu-text-inverse: #000000;
+  --nu-main-menu-text: #000000;
   --nu-text-accent: #ffff55;
   --nu-text-hotkey: #ff5555;
   --nu-color-button-face: #ffffff;
   --nu-color-button-face-alt: #c7c7c7;
   --nu-color-button-danger: #c84d4d;
   --nu-color-button-success: #188f3b;
+  --nu-text-danger: #c84d4d;
+  --nu-text-success: #188f3b;
   --nu-color-button-text: #000000;
   --nu-color-field-bg: #000000;
   --nu-color-field-text: #ffffff;
@@ -45,9 +49,24 @@
   --nu-button-press-depth-y: 0.1em;
   --nu-frame-thickness: 2px;
   --nu-rule-thickness: 1px;
+  --nu-toolbar-background: var(--nu-color-panel);
+  --nu-toolbar-inset: 0.2ch;
+  --nu-toolbar-border-color: var(--nu-border-dark);
+  --nu-toolbar-border-style: solid;
+  --nu-toolbar-border-width: var(--nu-rule-thickness);
+  --nu-toolbar-separator-color: var(--nu-border-dark);
+  --nu-toolbar-separator-style: solid;
+  --nu-toolbar-separator-width: var(--nu-rule-thickness);
+  --nu-menu-divider-color: var(--nu-border-dark);
+  --nu-menu-divider-style: solid;
+  --nu-menu-divider-width: var(--nu-rule-thickness);
   --nu-window-shadow-bg: rgb(0 0 0 / 0.38);
   --nu-window-shadow-offset-x: 1ch;
   --nu-window-shadow-offset-y: 1em;
+  --nu-window-title-controls-width: 7.8ch;
+  --nu-window-title-icon-width: 1em;
+  --nu-window-title-height: calc(1em + 3px);
+  --nu-window-status-height: 1.35rem;
   --nu-window-inactive-overlay: rgb(0 0 0 / 0.22);
   --nu-window-inactive-border: color-mix(
     in srgb,
@@ -55,10 +74,32 @@
     var(--nu-border-dark)
   );
   --nu-window-modal-backdrop: rgb(0 0 0 / 0.32);
+  --nu-app-bar-height: 2.1rem;
+  --nu-app-bar-padding: 0.2rem 0.35rem;
   --nu-scrollbar-track: transparent;
   --nu-scrollbar-thumb: var(--nu-color-button-face);
   --nu-scrollbar-button-bg: var(--nu-color-button-face);
   --nu-scrollbar-button-size: 0.875rem;
+  --nu-icon-grid-icon-background: transparent;
+  --nu-icon-grid-icon-border-color: transparent;
+  --nu-icon-grid-icon-border-style: solid;
+  --nu-icon-grid-icon-opacity: 1;
+  --nu-icon-grid-icon-selected-background: var(--nu-color-title-bg);
+  --nu-icon-grid-icon-inactive-selected-background: color-mix(
+    in srgb,
+    var(--nu-icon-grid-icon-selected-background) 65%,
+    var(--nu-color-app-bg-alt)
+  );
+  --nu-icon-grid-icon-selected-border-color: var(--nu-focus-color);
+  --nu-icon-grid-icon-selected-border-style: solid;
+  --nu-icon-grid-icon-selected-opacity: 1;
+  --nu-icon-grid-icon-focus-background: var(--nu-color-title-bg);
+  --nu-icon-grid-icon-focus-border-color: var(--nu-focus-color);
+  --nu-icon-grid-icon-focus-border-style: solid;
+  --nu-icon-grid-icon-focus-opacity: 1;
+  --nu-icon-grid-icon-disabled-opacity: 0.6;
+  --nu-icon-grid-icon-drag-opacity: 0.35;
+  --nu-icon-grid-icon-drag-preview-opacity: 0.85;
   --nu-scrollbar-arrow-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolygon points='8,2 1,12 15,12' fill='black'/%3E%3C/svg%3E");
   --nu-scrollbar-arrow-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolygon points='1,4 15,4 8,14' fill='black'/%3E%3C/svg%3E");
   --nu-scrollbar-arrow-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolygon points='2,8 12,1 12,15' fill='black'/%3E%3C/svg%3E");

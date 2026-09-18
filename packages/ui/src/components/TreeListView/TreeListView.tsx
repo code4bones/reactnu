@@ -3,6 +3,7 @@ import {
   ForwardedRef,
   HTMLAttributes,
   KeyboardEvent,
+  MouseEvent,
   PointerEvent as ReactPointerEvent,
   RefAttributes,
   forwardRef,
@@ -28,9 +29,15 @@ import {
 import { TreeListViewRow } from "./internals/TreeListViewRow";
 import {
   TreeListColumn,
+  TreeListCellContext,
   TreeListGetCellContent,
   TreeListItemBase
 } from "./internals/types";
+import {
+  NuDragDropContext,
+  NuDragDropItem,
+  useNuDropTarget
+} from "../DragDrop";
 
 export type {
   TreeListCellContext,
@@ -51,10 +58,19 @@ export type TreeListViewHandle = {
 
 export type TreeListViewProps<T extends TreeListItemBase<T>> = Omit<
   HTMLAttributes<HTMLDivElement>,
-  "onSelect"
+  "onDrop" | "onSelect"
 > & {
+  /** Decides whether this tree can receive a shared drag item. */
+  acceptsDrop?: (item: NuDragDropItem) => boolean;
   activeItemId?: string;
   checkedIds?: string[];
+  /** Persists user-resized column widths in `localStorage` under `reactnu.<key>`. */
+  columnStoreKey?: string;
+  onPopupMenu?: (
+    event: MouseEvent<HTMLDivElement>,
+    item: T,
+    context: TreeListCellContext<T>
+  ) => void;
   columns: TreeListColumn<T>[];
   data: T[];
   dataVersion?: number;
@@ -62,34 +78,95 @@ export type TreeListViewProps<T extends TreeListItemBase<T>> = Omit<
   defaultExpandedIds?: string[];
   emptyText?: string;
   expandedIds?: string[];
+  /** Returns the shared drag item for a row, or false to keep it static. */
+  getDragItem?: (
+    item: T,
+    context: TreeListCellContext<T>
+  ) => NuDragDropItem | false;
   getCellContent?: TreeListGetCellContent<T>;
   onActiveItemChange?: (item: T) => void;
   onExpandedIdsChange?: (expandedIds: string[]) => void;
   onItemCheckChange?: (item: T, checked: boolean) => void;
   onItemDoubleClick?: (item: T) => void;
+  /** Called after this tree row was accepted by a different shared drop target. */
+  onItemDragOut?: (item: T, context: TreeListCellContext<T>) => void;
   onItemSelect?: (item: T) => void;
+  /** Receives a shared drag item. Return false to reject it. */
+  onDrop?: (
+    item: NuDragDropItem,
+    context: NuDragDropContext
+  ) => boolean | void;
   selectedId?: string;
   uncheckedShape?: "box" | "none";
 };
 
+function getColumnStorageKey(columnStoreKey: string | undefined) {
+  const normalizedKey = columnStoreKey?.trim();
+
+  return normalizedKey ? `reactnu.${normalizedKey}` : null;
+}
+
+function readStoredColumnWidths<T extends TreeListItemBase<T>>(
+  storageKey: string | null,
+  columns: TreeListColumn<T>[]
+) {
+  if (!storageKey || typeof window === "undefined") {
+    return {} as Record<string, number>;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(storageKey);
+
+    if (!rawValue) {
+      return {} as Record<string, number>;
+    }
+
+    const parsedValue: unknown = JSON.parse(rawValue);
+
+    if (!parsedValue || typeof parsedValue !== "object") {
+      return {} as Record<string, number>;
+    }
+
+    return Object.fromEntries(
+      columns.flatMap((column) => {
+        const width = (parsedValue as Record<string, unknown>)[column.id];
+
+        if (typeof width !== "number" || !Number.isFinite(width)) {
+          return [];
+        }
+
+        return [[column.id, Math.max(width, column.minWidth ?? 0)]];
+      })
+    ) as Record<string, number>;
+  } catch {
+    return {} as Record<string, number>;
+  }
+}
+
 function TreeListViewInner<T extends TreeListItemBase<T>>(
   {
+    acceptsDrop,
     activeItemId: activeItemIdProp,
     checkedIds,
     className,
+    columnStoreKey,
     columns,
+    onPopupMenu,
     data,
     dataVersion,
     defaultActiveItemId,
     defaultExpandedIds,
     emptyText = "No items",
     expandedIds,
+    getDragItem,
     getCellContent,
     onActiveItemChange,
     onExpandedIdsChange,
     onItemCheckChange,
     onItemDoubleClick,
+    onItemDragOut,
     onItemSelect,
+    onDrop,
     selectedId,
     uncheckedShape = "box",
     ...props
@@ -97,7 +174,11 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
   ref: ForwardedRef<TreeListViewHandle>
 ) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [rootElement, setRootElement] = useState<HTMLDivElement | null>(null);
   const treeId = useId();
+  const storageKey = getColumnStorageKey(columnStoreKey);
+  const loadedStorageKeyRef = useRef(storageKey);
+  const shouldPersistColumnWidthsRef = useRef(false);
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const resizeFrameRef = useRef<number | null>(null);
   const resizeStateRef = useRef<{
@@ -126,7 +207,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
   >({});
   const [userColumnWidths, setUserColumnWidths] = useState<
     Record<string, number>
-  >({});
+  >(() => readStoredColumnWidths(storageKey, columns));
   const isActiveControlled = activeItemIdProp !== undefined;
   const resolvedExpandedIds = isExpandedControlled
     ? expandedIds
@@ -194,6 +275,20 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
       ),
     [visibleItems]
   );
+  const dropTargetOptions = useMemo(
+    () =>
+      onDrop
+        ? { accepts: acceptsDrop, onDrop, type: "tree-list" }
+        : undefined,
+    [acceptsDrop, onDrop]
+  );
+
+  useNuDropTarget(rootElement, dropTargetOptions);
+
+  const setRootRef = useCallback((node: HTMLDivElement | null) => {
+    rootRef.current = node;
+    setRootElement(node);
+  }, []);
 
   useEffect(() => {
     if (!resolvedActiveItemId) {
@@ -204,6 +299,34 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
       block: "nearest"
     });
   }, [resolvedActiveItemId]);
+
+  useEffect(() => {
+    if (loadedStorageKeyRef.current === storageKey) {
+      return;
+    }
+
+    loadedStorageKeyRef.current = storageKey;
+    shouldPersistColumnWidthsRef.current = false;
+    setUserColumnWidths(readStoredColumnWidths(storageKey, columns));
+  }, [columns, storageKey]);
+
+  useEffect(() => {
+    if (!shouldPersistColumnWidthsRef.current) {
+      return;
+    }
+
+    shouldPersistColumnWidthsRef.current = false;
+
+    if (!storageKey || typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(userColumnWidths));
+    } catch {
+      // Persistence is optional; unavailable browser storage must not break resizing.
+    }
+  }, [storageKey, userColumnWidths]);
 
   const registerItemRef = useCallback(
     (itemId: string, node: HTMLDivElement | null) => {
@@ -318,6 +441,24 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
       onItemSelect?.(item);
     },
     [onItemSelect, selectedId, updateActiveItem]
+  );
+
+  const handleItemPopupMenu = useCallback(
+    (
+      event: MouseEvent<HTMLDivElement>,
+      item: T,
+      context: TreeListCellContext<T>
+    ) => {
+      if (item.disabled || !onPopupMenu) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      activateEntry(item, item.id);
+      onPopupMenu(event, item, context);
+    },
+    [activateEntry, onPopupMenu]
   );
 
   const activateResolvedItem = useCallback(
@@ -561,12 +702,18 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
     }
 
     setUserColumnWidths((currentWidths) =>
-      currentWidths[resizeState.columnId] === resizeState.nextWidth
-        ? currentWidths
-        : {
-            ...currentWidths,
-            [resizeState.columnId]: resizeState.nextWidth
-          }
+      {
+        if (currentWidths[resizeState.columnId] === resizeState.nextWidth) {
+          return currentWidths;
+        }
+
+        shouldPersistColumnWidthsRef.current = true;
+
+        return {
+          ...currentWidths,
+          [resizeState.columnId]: resizeState.nextWidth
+        };
+      }
     );
   }
 
@@ -638,7 +785,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
       className={["nu-tree-list-view", className].filter(Boolean).join(" ")}
       data-version={dataVersion}
       onKeyDown={handleKeyDown}
-      ref={rootRef}
+      ref={setRootRef}
       role="treegrid"
       tabIndex={0}
     >
@@ -691,6 +838,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
               depth={0}
               expandedIdSet={expandedIdSet}
               getCellContent={getCellContent ? resolveCellContent : undefined}
+              getDragItem={getDragItem}
               guideMask={[]}
               guideOffsets={[]}
               hasNextSibling={index < data.length - 1}
@@ -700,6 +848,8 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
               onDoubleClickItem={
                 onItemDoubleClick ? handleItemDoubleClick : undefined
               }
+              onItemDragOut={onItemDragOut}
+              onPopupMenuItem={handleItemPopupMenu}
               onToggleItemCheck={handleItemCheckChange}
               onToggleItemExpanded={setExpandedState}
               originOffset={0}

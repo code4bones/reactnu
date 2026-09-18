@@ -1,10 +1,12 @@
 import { MouseEvent, memo } from "react";
+import { NuDragDropItem, useNuDragSource } from "../../DragDrop";
 import { ListBoxCheckControl } from "./ListBoxCheckControl";
 import { renderLabel } from "./renderLabel";
 import { ListBoxGroup, ListBoxItem } from "./types";
 
 type ListBoxItemViewProps = {
   group: ListBoxGroup;
+  getDragItem?: (item: ListBoxItem, group: ListBoxGroup) => NuDragDropItem | false;
   isActive: boolean;
   isChecked: boolean;
   isSelected: boolean;
@@ -12,6 +14,13 @@ type ListBoxItemViewProps = {
   itemId: string;
   onActivate: (item: ListBoxItem, group: ListBoxGroup, itemId: string) => void;
   onDoubleClick?: (item: ListBoxItem, group: ListBoxGroup) => void;
+  onDragOut?: (item: ListBoxItem, group: ListBoxGroup) => void;
+  onPopupMenu?: (
+    event: MouseEvent<HTMLDivElement>,
+    item: ListBoxItem,
+    group: ListBoxGroup,
+    itemId: string
+  ) => void;
   onToggleCheck: (itemId: string) => void;
   registerItemRef: (itemId: string, node: HTMLDivElement | null) => void;
   rightCheckBox: boolean;
@@ -20,18 +29,28 @@ type ListBoxItemViewProps = {
 
 function ListBoxItemViewInner({
   group,
+  getDragItem,
   isActive,
   isChecked,
   isSelected,
   item,
   itemId,
   onActivate,
+  onPopupMenu,
   onDoubleClick,
+  onDragOut,
   onToggleCheck,
   registerItemRef,
   rightCheckBox,
   uncheckedShape
 }: ListBoxItemViewProps) {
+  const dragSource = useNuDragSource({
+    disabled: item.disabled || !getDragItem,
+    getItem: () => getDragItem?.(item, group) ?? false,
+    onDropAccepted: () => onDragOut?.(item, group),
+    sourceType: "listbox-item"
+  });
+
   function handleActivate() {
     if (!item.disabled) {
       onActivate(item, group, itemId);
@@ -45,6 +64,10 @@ function ListBoxItemViewInner({
     if (!item.disabled) {
       onDoubleClick?.(item, group);
     }
+  }
+
+  function handleContextMenu(event: MouseEvent<HTMLDivElement>) {
+    onPopupMenu?.(event, item, group, itemId);
   }
 
   function handleToggleCheck() {
@@ -77,7 +100,12 @@ function ListBoxItemViewInner({
         .join(" ")}
       id={itemId}
       onClick={handleActivate}
+      onContextMenu={onPopupMenu ? handleContextMenu : undefined}
       onDoubleClick={handleDoubleClick}
+      onPointerCancel={dragSource.onPointerCancel}
+      onPointerDown={dragSource.onPointerDown}
+      onPointerMove={dragSource.onPointerMove}
+      onPointerUp={dragSource.onPointerUp}
       ref={(node) => registerItemRef(itemId, node)}
       role="option"
     >

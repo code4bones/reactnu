@@ -50,6 +50,78 @@ windowManager.openWindow({
 });
 ```
 
+## Title Icons
+
+`openWindow(...)` and `openDialog(...)` accept `icon?: ReactNode`. It renders in
+the fixed left title-bar slot, so managed dialogs use the same chrome as regular
+windows. The same icon is reused in the minimized AppBar item, the MDI
+`Window` menu, and the `Pick...` dialog.
+
+```tsx
+windowManager.openDialog({
+  content: <NetworkSettings />,
+  icon: <NuGlyph name="gear" />,
+  title: "Network settings"
+});
+```
+
+## Fixed Aspect Ratio
+
+Set a positive `aspectRatio` (width / height) for image, video, map, or other
+fixed-ratio content. Pointer resizing keeps the ratio, combines `minWidth` and
+`minHeight` into a ratio-consistent minimum, and disables maximizing the
+managed window.
+
+```tsx
+windowManager.openWindow({
+  aspectRatio: 178 / 704,
+  content: <VirtualRemote />,
+  minWidth: "11rem",
+  style: { height: "50rem", width: "13rem" },
+  title: "Remote"
+});
+```
+
+## Linked Activation
+
+Set the same `activationGroup` on managed windows that represent one logical
+workspace. Activating either one gives every visible member of that group the
+active window chrome. Activating a window outside the group makes all members
+inactive again. This only links activation visuals; it does not dock, move, or
+resize the windows together.
+
+```tsx
+windowManager.openWindow({
+  activationGroup: "receiver-42",
+  content: <ReceiverOverview />,
+  title: "Receiver overview"
+});
+
+windowManager.openWindow({
+  activationGroup: "receiver-42",
+  content: <ReceiverDiagnostics />,
+  title: "Receiver diagnostics"
+});
+```
+
+App-modal dialogs remain the sole active surface while open, regardless of an
+activation group.
+
+## Size Limits
+
+Managed windows accept `minWidth` and `minHeight` directly. They override the
+provider's default minimum width (`26rem` for a window and `22rem` for a
+dialog) and constrain pointer resizing as well as CSS layout.
+
+```tsx
+windowManager.openWindow({
+  content: <CompactLog />,
+  minHeight: "10rem",
+  minWidth: "18rem",
+  title: "Compact log"
+});
+```
+
 ## Helper Dialogs
 
 The same manager also provides async helper dialogs:

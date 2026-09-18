@@ -32,7 +32,7 @@ const popupMenu = usePopupMenu();
   - `open`
   - `setOpen`
   - `close()`
-  - `openAtPoint(x, y)`
+  - `openAtPoint(x, y, themeSource?)`
   - `openAtElement(element)`
   - `openFromClick(event)`
   - `openFromContextMenu(event)`
@@ -40,3 +40,8 @@ const popupMenu = usePopupMenu();
 ## Notes
 
 - Popup menus render through a portal and are not clipped by local overflow containers.
+- Nested popup-menu levels open to the right by default and flip left only when
+  they would overflow the viewport.
+- `openFromContextMenu(event)` carries the event target into the portal, so
+  context menus inherit tokens from the nearest `NuThemeProvider`. Pass the
+  optional `themeSource` to `openAtPoint(...)` when opening one manually.

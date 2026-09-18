@@ -189,6 +189,10 @@ function buildWindowRecord(
     ownerCenteredStyle,
     index
   );
+  const hasAspectRatio =
+    typeof definition.aspectRatio === "number" &&
+    Number.isFinite(definition.aspectRatio) &&
+    definition.aspectRatio > 0;
 
   return {
     ...definition,
@@ -198,18 +202,19 @@ function buildWindowRecord(
     creationOrder,
     draggable: mode === "window",
     id,
-    maximizable: definition.maximizable ?? mode === "window",
+    maximizable:
+      !hasAspectRatio && (definition.maximizable ?? mode === "window"),
     modalOwnerId,
     minimizable: definition.minimizable ?? mode === "window",
     mode,
     resizable: definition.resizable ?? mode === "window",
-    restoreStyle: savedWindowState.restoreStyle,
+    restoreStyle: hasAspectRatio ? undefined : savedWindowState.restoreStyle,
     title: resolveManagedWindowTitle(currentWindows, titleBase),
     titleBase,
     style: {
       ...savedWindowState.style
     },
-    maximized: savedWindowState.maximized,
+    maximized: hasAspectRatio ? false : savedWindowState.maximized,
     minimized: savedWindowState.minimized
   };
 }
@@ -493,7 +498,7 @@ export function NuWindowProvider({
   const toggleWindowMaximized = useCallback((id: string) => {
     setWindows((currentWindows) =>
       currentWindows.map((windowEntry) => {
-        if (windowEntry.id !== id) {
+        if (windowEntry.id !== id || !windowEntry.maximizable) {
           return windowEntry;
         }
 
@@ -692,7 +697,20 @@ export function NuWindowProvider({
     topmostAppModalIndex >= 0
       ? visibleWindows[topmostAppModalIndex]?.id
       : visibleWindows[visibleWindows.length - 1]?.id;
+  const activeWindow = activeWindowId
+    ? windows.find((windowEntry) => windowEntry.id === activeWindowId)
+    : undefined;
+  const activeActivationGroup = topmostAppModalIndex >= 0
+    ? undefined
+    : activeWindow?.activationGroup;
   const hasAppModal = topmostAppModalIndex >= 0;
+  const isWindowActive = useCallback(
+    (windowEntry: NuManagedWindowRecord) =>
+      windowEntry.id === activeWindowId ||
+      (activeActivationGroup !== undefined &&
+        windowEntry.activationGroup === activeActivationGroup),
+    [activeActivationGroup, activeWindowId]
+  );
 
   const windowsInfo = useMemo<NuManagedWindowInfo[]>(
     () =>
@@ -702,16 +720,21 @@ export function NuWindowProvider({
             leftWindow.creationOrder - rightWindow.creationOrder
         )
         .map((windowEntry) => ({
-          active: windowEntry.id === activeWindowId,
+          active: isWindowActive(windowEntry),
+          activationGroup: windowEntry.activationGroup,
+          aspectRatio: windowEntry.aspectRatio,
           bodyClassName: windowEntry.bodyClassName,
           appModal: windowEntry.appModal,
           border: windowEntry.border,
           className: windowEntry.className,
           closeable: windowEntry.closeable,
           domain: windowEntry.domain,
+          icon: windowEntry.icon,
           id: windowEntry.id,
           maximizable: windowEntry.maximizable,
           maximized: windowEntry.maximized,
+          minHeight: windowEntry.minHeight,
+          minWidth: windowEntry.minWidth,
           modal: windowEntry.modalOwnerId ?? false,
           minimizable: windowEntry.minimizable,
           minimized: windowEntry.minimized,
@@ -722,7 +745,7 @@ export function NuWindowProvider({
           title: windowEntry.title,
           titleButtons: windowEntry.titleButtons
         })),
-    [activeWindowId, windows]
+    [isWindowActive, windows]
   );
   const mdiBridge = useMemo(
     () => ({
@@ -792,7 +815,7 @@ export function NuWindowProvider({
         {children}
         <div className="nu-window-layer">
           {renderWindows.map((windowEntry) => {
-            const isActiveWindow = windowEntry.id === activeWindowId;
+            const isActiveWindow = isWindowActive(windowEntry);
             const stackIndex = stackIndexById.get(windowEntry.id);
             const isTopmostAppModal = windowEntry.id === topmostAppModalId;
             const ownerBounds = windowEntry.modalOwnerId
@@ -849,12 +872,16 @@ export function NuWindowProvider({
                 ) : null}
                 <Window
                   active={isActiveWindow}
+                  aspectRatio={windowEntry.aspectRatio}
                   bodyClassName={windowEntry.bodyClassName}
                   border={windowEntry.border}
                   className={windowEntry.className}
                   closeable={windowEntry.closeable}
                   draggable={windowEntry.draggable}
+                  icon={windowEntry.icon}
                   maximizable={windowEntry.maximizable}
+                  minHeight={windowEntry.minHeight}
+                  minWidth={windowEntry.minWidth}
                   minimizable={windowEntry.minimizable}
                   maximized={windowEntry.maximized}
                   minimized={windowEntry.minimized}
@@ -894,6 +921,7 @@ export function NuWindowProvider({
                 active: windowEntry.active,
                 domain: windowEntry.domain,
                 id: windowEntry.id,
+                icon: windowEntry.icon,
                 minimized: windowEntry.minimized,
                 title: windowEntry.title
               }))}

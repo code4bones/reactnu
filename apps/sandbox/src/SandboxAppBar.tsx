@@ -11,6 +11,7 @@ export function SandboxAppBar() {
           active: windowEntry.active,
           domain: windowEntry.domain,
           id: windowEntry.id,
+          icon: windowEntry.icon,
           minimized: windowEntry.minimized,
           title: windowEntry.title
         }))}

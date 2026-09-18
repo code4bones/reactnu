@@ -7,6 +7,23 @@ import {
 } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import {
+  Bell,
+  BookOpen,
+  CircleHelp,
+  FolderCog,
+  FolderOpen,
+  FolderPlus,
+  KeyRound,
+  LogOut,
+  Palette,
+  PanelsTopLeft,
+  ScanSearch,
+  Settings,
+  ShieldCheck,
+  SlidersHorizontal,
+  Wrench
+} from "lucide-react";
+import {
   Button,
   CheckBox,
   CommandButton,
@@ -62,6 +79,8 @@ import type {
   TreeListItemBase,
   TreeItem
 } from "@deadragdoll/reactnu";
+import { ThemeDesignerWindow } from "./ThemeDesignerWindow";
+import { useSandboxThemeDesigner } from "./themeDesigner";
 
 function SandboxWindowView({ children }: { children: ReactNode }) {
   return <NuView padding="cell">{children}</NuView>;
@@ -93,6 +112,30 @@ function ApplicationIconGraphic({
   );
 }
 
+function IconTransferWindowContent() {
+  return (
+    <NuIconProvider
+      defaultIcons={[
+        {
+          icon: (
+            <ApplicationIconGraphic
+              color="var(--nu-color-button-success)"
+              label="Drop target"
+            />
+          ),
+          id: "drop-target",
+          label: "Drop &here"
+        }
+      ]}
+    >
+      <NuIconGrid
+        aria-label="Icon transfer target"
+        defaultArrangeMode="columns"
+      />
+    </NuIconProvider>
+  );
+}
+
 function ApplicationsWindowContent() {
   const windowManager = useNuWindowManager();
 
@@ -109,12 +152,27 @@ function ApplicationsWindowContent() {
         </NuView>
       ),
       domain: title,
+      icon: <NuGlyph name="folder" />,
       statusBar: "Opened from Applications  Alt+F3 Close",
       style: {
         height: "15rem",
         width: "28rem"
       },
       title
+    });
+  }
+
+  function openIconTransferWindow(sourceTitle: string) {
+    windowManager.openWindow({
+      content: () => <IconTransferWindowContent />,
+      domain: "Icon transfer",
+      icon: <NuGlyph name="folder" />,
+      statusBar: "Drag an Applications icon here to transfer it  Alt+F3 Close",
+      style: {
+        height: "20rem",
+        width: "24rem"
+      },
+      title: `${sourceTitle} — Icon transfer`
     });
   }
 
@@ -141,11 +199,7 @@ function ApplicationsWindowContent() {
           ),
           id: "diagnostics",
           label: "&Diagnostics",
-          onDoubleClick: () =>
-            openApplication(
-              "Diagnostics",
-              "Diagnostics is ready to inspect volumes and memory."
-            )
+          onDoubleClick: () => openIconTransferWindow("Diagnostics")
         },
         {
           contextMenuItems: [
@@ -167,11 +221,7 @@ function ApplicationsWindowContent() {
           ),
           id: "disk-map",
           label: "Disk &Map",
-          onDoubleClick: () =>
-            openApplication(
-              "Disk Map",
-              "Disk Map is ready to inspect allocation regions."
-            )
+          onDoubleClick: () => openIconTransferWindow("Disk Map")
         },
         {
           contextMenuItems: [
@@ -193,11 +243,7 @@ function ApplicationsWindowContent() {
           ),
           id: "reports",
           label: "&Reports",
-          onDoubleClick: () =>
-            openApplication(
-              "Reports",
-              "Reports is ready to export the latest maintenance run."
-            )
+          onDoubleClick: () => openIconTransferWindow("Reports")
         },
         {
           icon: (
@@ -208,11 +254,7 @@ function ApplicationsWindowContent() {
           ),
           id: "maintenance-console",
           label: "System &Maintenance and Recovery Console",
-          onDoubleClick: () =>
-            openApplication(
-              "Maintenance Console",
-              "The maintenance console is ready to schedule recovery tasks."
-            )
+          onDoubleClick: () => openIconTransferWindow("Maintenance Console")
         },
         {
           icon: (
@@ -223,11 +265,7 @@ function ApplicationsWindowContent() {
           ),
           id: "long-identifier",
           label: "UltraLongApplicationIdentifierWithoutSpaces",
-          onDoubleClick: () =>
-            openApplication(
-              "Long Identifier",
-              "This icon verifies labels containing one long unbroken word."
-            )
+          onDoubleClick: () => openIconTransferWindow("Long Identifier")
         }
       ]}
     >
@@ -410,7 +448,7 @@ const SANDBOX_SEARCH_RECORDS = [
 ] as const;
 
 function ThemeSwitcher() {
-  const { setTheme, themeName } = useNuTheme();
+  const { baseThemeName, selectBaseTheme } = useSandboxThemeDesigner();
   const themeNames = Object.keys(nuThemes) as Array<keyof typeof nuThemes>;
 
   return (
@@ -421,8 +459,8 @@ function ThemeSwitcher() {
         return (
           <Button
             key={theme.name}
-            variant={theme.name === themeName ? "primary" : "secondary"}
-            onClick={() => setTheme(currentThemeName)}
+            variant={theme.name === baseThemeName ? "primary" : "secondary"}
+            onClick={() => selectBaseTheme(currentThemeName)}
           >
             {theme.label}
           </Button>
@@ -451,6 +489,7 @@ function DesktopMenuSync({
         />
       ),
       domain: "Editor",
+      icon: <NuGlyph name="folder" />,
       statusBar: "Monaco editor inside Window  File/New opens this workspace",
       style: {
         height: "28rem",
@@ -460,6 +499,20 @@ function DesktopMenuSync({
     });
   }, [editorFontFamily, editorFontSize, windowManager]);
 
+  const openThemeDesigner = useCallback(() => {
+    windowManager.openWindow({
+      content: ({ close }) => <ThemeDesignerWindow onClose={close} />,
+      domain: "Theme Designer",
+      icon: <NuGlyph name="gear" />,
+      statusBar: "Live preview  Export CSS/JSON  Alt+F3 Close",
+      style: {
+        height: "40rem",
+        width: "58rem"
+      },
+      title: "Theme Designer"
+    });
+  }, [windowManager]);
+
   useEffect(() => {
     const desktopMenu: MainMenuNode[] = [
       {
@@ -467,13 +520,19 @@ function DesktopMenuSync({
         items: [
           {
             id: "new",
+            icon: <FolderPlus />,
             modifier: "Alt",
             onSelect: openEditorWindow,
             text: "&New workspace"
           },
-          { id: "open", modifier: "Alt", text: "&Open..." },
+          {
+            icon: <FolderOpen />,
+            id: "open",
+            modifier: "Alt",
+            text: "&Open..."
+          },
           { id: "divider-file-1", type: "divider" },
-          { id: "exit", modifier: "Alt", text: "E&xit" }
+          { icon: <LogOut />, id: "exit", modifier: "Alt", text: "E&xit" }
         ],
         text: "&File"
       },
@@ -484,6 +543,7 @@ function DesktopMenuSync({
             checkable: true,
             checked: true,
             id: "overwrite",
+            icon: <Settings />,
             modifier: "Alt",
             text: "&Overwrite mode"
           },
@@ -492,6 +552,7 @@ function DesktopMenuSync({
             items: [
               {
                 id: "tools-compare",
+                icon: <ScanSearch />,
                 modifier: "Alt",
                 text: "&Compare sessions"
               },
@@ -500,23 +561,39 @@ function DesktopMenuSync({
                 items: [
                   {
                     id: "tools-layout-compact",
+                    icon: <PanelsTopLeft />,
                     modifier: "Alt",
                     text: "&Compact layout"
                   },
                   {
                     id: "tools-layout-wide",
+                    icon: <PanelsTopLeft />,
                     modifier: "Alt",
                     text: "&Wide layout"
                   }
                 ],
+                icon: <PanelsTopLeft />,
                 modifier: "Alt",
                 text: "&Layout"
               }
             ],
+            icon: <Wrench />,
             modifier: "Alt",
             text: "&Tools"
           },
-          { id: "prefs", modifier: "Alt", text: "&Preferences..." }
+          {
+            icon: <SlidersHorizontal />,
+            id: "prefs",
+            modifier: "Alt",
+            text: "&Preferences..."
+          },
+          {
+            id: "theme-designer",
+            icon: <Palette />,
+            modifier: "Alt",
+            onSelect: openThemeDesigner,
+            text: "Theme &designer..."
+          }
         ],
         text: "&Edit"
       },
@@ -524,9 +601,72 @@ function DesktopMenuSync({
         id: "mdi.host",
         text: "&Window"
       },
+      { id: "desktop-menu-spacer", type: "spacer" },
+      {
+        id: "profile",
+        items: [
+          { icon: <FolderCog />, id: "profile-settings", text: "&Settings..." },
+          { id: "profile-plain", text: "&Plain entry" },
+          {
+            id: "profile-sub-1",
+            items: [
+              {
+                id: "profile-sub-1-2",
+                items: [
+                  {
+                    id: "profile-sub-1-2-3",
+                    items: [
+                      {
+                        id: "profile-sub-1-2-3-4",
+                        icon: <Bell />,
+                        text: "Sub 1 2 3 &4"
+                      }
+                    ],
+                    icon: <ShieldCheck />,
+                    text: "Sub 1 2 &3"
+                  }
+                ],
+                icon: <KeyRound />,
+                text: "Sub 1 &2"
+              }
+            ],
+            icon: <Settings />,
+            text: "Sub &1"
+          }
+        ],
+        text: "&Profile"
+      },
       {
         id: "help",
-        items: [{ id: "about", text: "&About ReactNU" }],
+        items: [
+          { icon: <CircleHelp />, id: "about", text: "&About ReactNU" },
+          {
+            id: "help-sub-1",
+            items: [
+              {
+                id: "help-sub-1-2",
+                items: [
+                  {
+                    id: "help-sub-1-2-3",
+                    items: [
+                      {
+                        id: "help-sub-1-2-3-4",
+                        icon: <BookOpen />,
+                        text: "Sub 1 2 3 &4"
+                      }
+                    ],
+                    icon: <CircleHelp />,
+                    text: "Sub 1 2 &3"
+                  }
+                ],
+                icon: <BookOpen />,
+                text: "Sub 1 &2"
+              }
+            ],
+            icon: <CircleHelp />,
+            text: "Sub &1"
+          }
+        ],
         text: "&Help"
       }
     ];
@@ -536,7 +676,7 @@ function DesktopMenuSync({
     return () => {
       setMainMenu([]);
     };
-  }, [openEditorWindow, setMainMenu]);
+  }, [openEditorWindow, openThemeDesigner, setMainMenu]);
 
   return null;
 }
@@ -1633,6 +1773,7 @@ function TreeListViewWindowContent() {
           </p>
           <TreeListView
             className="sandbox-tree-list-view"
+            columnStoreKey="sandbox.weather-tree-table"
             columns={columns}
             data={treeListData}
             getCellContent={getWeatherCellContent}
@@ -2157,7 +2298,7 @@ function ToolBarWindowContent() {
   return (
     <SandboxWindowView>
       <Stack gap="md">
-        <ToolBar>
+        <ToolBar startContent={<FolderCog aria-hidden="true" />}>
           <ToolButton icon="folder">&Scan</ToolButton>
           <ToolButton
             icon="star"
@@ -2800,12 +2941,77 @@ function WindowLaunchers() {
     windowManager.openWindow({
       content: () => <ApplicationsWindowContent />,
       domain: "Applications",
-      statusBar: "Double-click Open  Drag Move  Shift+F10 Menu",
+      icon: <NuGlyph name="folder" />,
+      statusBar: "Double-click Target  Drag Move  Shift+F10 Menu",
       style: {
         height: "22rem",
         width: "30rem"
       },
       title: "Applications"
+    });
+  }
+
+  function openLinkedWindows() {
+    const activationGroup = "sandbox-linked-windows";
+
+    windowManager.openWindow({
+      activationGroup,
+      content: () => (
+        <NuView padding="cell">
+          <p className="sandbox-copy">
+            This window shares its active chrome with Linked Inspector.
+          </p>
+        </NuView>
+      ),
+      domain: "Linked windows",
+      statusBar: "Activate either linked window",
+      style: {
+        height: "14rem",
+        left: "10%",
+        top: "14%",
+        transform: "none",
+        width: "25rem"
+      },
+      title: "Linked Overview"
+    });
+    windowManager.openWindow({
+      activationGroup,
+      content: () => (
+        <NuView padding="cell">
+          <p className="sandbox-copy">
+            Activating this window also activates Linked Overview.
+          </p>
+        </NuView>
+      ),
+      domain: "Linked windows",
+      statusBar: "Shared activation group",
+      style: {
+        height: "14rem",
+        left: "52%",
+        top: "38%",
+        transform: "none",
+        width: "25rem"
+      },
+      title: "Linked Inspector"
+    });
+    windowManager.openWindow({
+      content: () => (
+        <NuView padding="cell">
+          <p className="sandbox-copy">
+            Activate this independent window to dim both linked windows.
+          </p>
+        </NuView>
+      ),
+      domain: "Linked windows",
+      statusBar: "Independent activation",
+      style: {
+        height: "12rem",
+        left: "34%",
+        top: "65%",
+        transform: "none",
+        width: "25rem"
+      },
+      title: "Independent Window"
     });
   }
 
@@ -2958,7 +3164,7 @@ function WindowLaunchers() {
     windowManager.openWindow({
       content: () => <TreeListViewWindowContent />,
       domain: "Tree List View",
-      statusBar: "Left/Right Expand  Space Check  Enter Select",
+      statusBar: "Resize columns  Left/Right Expand  Space Check  Enter Select",
       style: {
         height: "24rem",
         width: "48rem"
@@ -3205,6 +3411,9 @@ function WindowLaunchers() {
         <Button onClick={openApplicationsWindow} variant="secondary">
           &Applications
         </Button>
+        <Button onClick={openLinkedWindows} variant="secondary">
+          Open &linked windows
+        </Button>
         <Button onClick={openMessageBox} variant="secondary">
           Open &message box
         </Button>
@@ -3236,7 +3445,7 @@ function WindowLaunchers() {
           Open &list view
         </Button>
         <Button onClick={openTreeListViewWindow} variant="secondary">
-          Open tree &list view
+          Open tree &table
         </Button>
         <Button onClick={openSplitterWindow} variant="secondary">
           Open s&plitter
@@ -3582,6 +3791,7 @@ export function DemoApp() {
                 <Stack direction="row" gap="sm">
                   <Button defaultFocused>&Commit theme</Button>
                   <Button variant="secondary">&Preview panel</Button>
+                  <Button variant="success">&Apply profile</Button>
                   <Button variant="danger">&Reset tokens</Button>
                 </Stack>
               </Stack>

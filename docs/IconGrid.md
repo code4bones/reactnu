@@ -61,6 +61,21 @@ function Applications() {
 - `defaultArrangeMode="columns" | "rows" | "name"` arranges seeded icons
   once, after the grid measures a non-zero available area. This prevents icons
   from initially landing outside a bounded `Window`.
+- `dropTarget` makes a grid eligible as a non-interactive drop surface when it
+  sits behind other content. Pair it with `accepts(icon)` to filter incoming
+  icons before `onIconDrop` runs. This is useful for a full desktop target that
+  uses `pointer-events: none` and therefore does not interfere with the
+  desktop's own controls.
+- Drag an icon to another `NuIconGrid`, including one in a different managed
+  window, to transfer it between providers. `onIconDrop(icon, context)` runs on
+  the target first and may return `false` to reject the transfer;
+  `onIconMoveOut(icon, context)` runs on the source after a successful transfer.
+  `context` exposes both managers, grids, and the target `position`.
+- Within `NuDragDropProvider`, use `acceptsDrop(item)` and `onDrop(item,
+  context)` to accept application-defined items from `ListBox` or
+  `TreeListView`. `onDragOut(item)` runs when an icon is accepted by one of
+  those non-icon targets. The existing `accepts(icon)` API remains specific to
+  icon-to-icon transfers.
 
 `useNuIconManager()`
 
@@ -70,12 +85,24 @@ function Applications() {
 - `arrangeIcons("columns" | "rows" | "name")` lays out the current icons.
 
 Each icon can have `onClick`, `onDoubleClick`, `onContextMenu`,
-`onPositionChange`, and its own `contextMenuItems`.
+`onPositionChange`, its own `contextMenuItems`, and an application-defined
+`payload` that is preserved during a cross-grid transfer.
+
+## Theme tokens
+
+The default, selected, and focus IconGrid states each expose `background`,
+`border-color`, `border-style`, and `opacity` values under the
+`--nu-icon-grid-icon-*` prefix. The resting background defaults to
+`transparent`; those opacity values affect only the background fill. Drag,
+drag-preview, and disabled opacity also have dedicated
+tokens. In an inactive managed window, the selected border remains visible
+while `--nu-icon-grid-icon-inactive-selected-background` supplies a calmer
+fill.
 
 ## Interaction and accessibility
 
-- Drag icons to move them inside the grid; their resulting positions remain in
-  the provider for the lifetime of that provider.
+- Drag icons to move them inside the grid, or onto another icon grid to transfer
+  them. A duplicate ID or a non-grid target leaves the source icon in place.
 - A click selects an icon. Enter and Space activate its normal button action.
 - Right-click opens the icon menu; `Shift+F10` and the Context Menu key open it
   from the keyboard.

@@ -1,11 +1,14 @@
+import { MouseEvent } from "react";
 import { buildListBoxItemId } from "./helpers";
 import { ListBoxCategoryView } from "./ListBoxCategoryView";
 import { ListBoxItemView } from "./ListBoxItemView";
 import { ListBoxGroup, ListBoxItem } from "./types";
+import { NuDragDropItem } from "../../DragDrop";
 
 type ListBoxGroupViewProps = {
   group: ListBoxGroup;
   groupIndex: number;
+  getDragItem?: (item: ListBoxItem, group: ListBoxGroup) => NuDragDropItem | false;
   isItemChecked: (item: ListBoxItem) => boolean;
   listboxId: string;
   onActivateItem: (
@@ -14,6 +17,13 @@ type ListBoxGroupViewProps = {
     itemId: string
   ) => void;
   onDoubleClickItem?: (item: ListBoxItem, group: ListBoxGroup) => void;
+  onItemDragOut?: (item: ListBoxItem, group: ListBoxGroup) => void;
+  onPopupMenuItem?: (
+    event: MouseEvent<HTMLDivElement>,
+    item: ListBoxItem,
+    group: ListBoxGroup,
+    itemId: string
+  ) => void;
   onToggleItemCheck: (itemId: string) => void;
   registerItemRef: (itemId: string, node: HTMLDivElement | null) => void;
   resolvedActiveId: string | null;
@@ -25,10 +35,13 @@ type ListBoxGroupViewProps = {
 export function ListBoxGroupView({
   group,
   groupIndex,
+  getDragItem,
   isItemChecked,
   listboxId,
   onActivateItem,
   onDoubleClickItem,
+  onItemDragOut,
+  onPopupMenuItem,
   onToggleItemCheck,
   registerItemRef,
   resolvedActiveId,
@@ -56,6 +69,7 @@ export function ListBoxGroupView({
         return (
           <ListBoxItemView
             group={group}
+            getDragItem={getDragItem}
             isActive={isActive}
             isChecked={isChecked}
             isSelected={Boolean(isSelected)}
@@ -64,6 +78,8 @@ export function ListBoxGroupView({
             key={itemId}
             onActivate={onActivateItem}
             onDoubleClick={onDoubleClickItem}
+            onDragOut={onItemDragOut}
+            onPopupMenu={onPopupMenuItem}
             onToggleCheck={onToggleItemCheck}
             registerItemRef={registerItemRef}
             rightCheckBox={rightCheckBox}

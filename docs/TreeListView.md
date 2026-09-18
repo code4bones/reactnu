@@ -44,6 +44,8 @@ const columns: TreeListColumn<Node>[] = [
 ## Key Props
 
 - `columns`
+- `columnStoreKey` — stores user-resized widths under `reactnu.<key>` in
+  `localStorage`
 - `data`
 - `getCellContent`
 - `dataVersion`
@@ -54,6 +56,11 @@ const columns: TreeListColumn<Node>[] = [
 - `defaultExpandedIds`
 - `onItemSelect`
 - `onItemDoubleClick`
+- `onPopupMenu`
+- `getDragItem`
+- `onItemDragOut`
+- `acceptsDrop`
+- `onDrop`
 - `onItemCheckChange`
 - `onExpandedIdsChange`
 - `onActiveItemChange`
@@ -82,3 +89,13 @@ const columns: TreeListColumn<Node>[] = [
 - Columns auto-size from visible content by default.
 - `minWidth` sets a lower bound for auto-sized and resized columns.
 - Columns are resizable unless `resizable={false}` is set on a column.
+- Give `columnStoreKey` a stable, application-owned name to restore a user's
+  resized widths on the next mount. Missing, malformed, or unavailable browser
+  storage falls back to the column definitions without throwing.
+- Right-clicking an enabled row activates it and calls
+  `onPopupMenu(event, item, context)`. `context` has the same `depth`, `isLeaf`,
+  `item`, and `rowIndex` fields as `getCellContent`; the host owns rendering the
+  resulting menu.
+- Inside `NuDragDropProvider`, rows may produce shared drag items through
+  `getDragItem`; the host filters and applies incoming items with
+  `acceptsDrop` and `onDrop`.

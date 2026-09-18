@@ -17,10 +17,12 @@ export type NuThemeTokens = {
   panelBackground: string;
   panelInsetBackground: string;
   titleBackground: string;
+  menuBackground: string;
   titleText: string;
   textPrimary: string;
   textMuted: string;
   textInverse: string;
+  mainMenuText: string;
   textAccent: string;
   textHotkey: string;
   buttonFace: string;
@@ -59,10 +61,12 @@ const classicTheme: NuThemeDefinition = {
     panelBackground: "#6262e3",
     panelInsetBackground: "#6262e3",
     titleBackground: "#ffffff",
+    menuBackground: "#ffffff",
     titleText: "#1f36bc",
     textPrimary: "#ffffff",
     textMuted: "#dfe3ff",
     textInverse: "#000000",
+    mainMenuText: "#000000",
     textAccent: "#ffff55",
     textHotkey: "#ff5555",
     buttonFace: "#ffffff",
@@ -96,10 +100,12 @@ const amberTheme: NuThemeDefinition = {
     panelBackground: "#4b2b00",
     panelInsetBackground: "#382000",
     titleBackground: "#ffd28f",
+    menuBackground: "#ffd28f",
     titleText: "#4b2b00",
     textPrimary: "#ffd28f",
     textMuted: "#d6b57a",
     textInverse: "#201000",
+    mainMenuText: "#201000",
     textAccent: "#fff27a",
     textHotkey: "#ff5f00",
     buttonFace: "#ffd28f",
@@ -133,10 +139,12 @@ const phosphorTheme: NuThemeDefinition = {
     panelBackground: "#11351a",
     panelInsetBackground: "#0d2813",
     titleBackground: "#b7ffbf",
+    menuBackground: "#b7ffbf",
     titleText: "#0b2310",
     textPrimary: "#b7ffbf",
     textMuted: "#8ed39a",
     textInverse: "#061208",
+    mainMenuText: "#061208",
     textAccent: "#f7ff7a",
     textHotkey: "#ff6f6f",
     buttonFace: "#b7ffbf",
@@ -166,31 +174,72 @@ const midnightTheme: NuThemeDefinition = {
     shellBackground: "#101722",
     appBackground: "#17273b",
     appBackgroundAlt: "#0d1724",
-    chromeBackground: "#d4dde8",
-    panelBackground: "#17273b",
+    chromeBackground: "#36547d",
+    panelBackground: "#192c43",
     panelInsetBackground: "#111e2e",
-    titleBackground: "#d4dde8",
-    titleText: "#14233a",
-    textPrimary: "#e6edf7",
-    textMuted: "#aebdcd",
-    textInverse: "#0b1220",
-    textAccent: "#ffd166",
-    textHotkey: "#ff7171",
-    buttonFace: "#d4dde8",
-    buttonFaceAlt: "#9baabd",
-    buttonDanger: "#a94d57",
+    titleBackground: "#0b2432",
+    menuBackground: "#1c2945",
+    titleText: "#c2d0e5",
+    textPrimary: "#6b9adb",
+    textMuted: "#65a8ec",
+    textInverse: "#b7caf0",
+    mainMenuText: "#b7caf0",
+    textAccent: "#ffcd57",
+    textHotkey: "#fb0404",
+    buttonFace: "#5074af",
+    buttonFaceAlt: "#3c5372",
+    buttonDanger: "#4e0e15",
     buttonSuccess: "#3c936d",
-    buttonText: "#0b1220",
+    buttonText: "#ffffff",
     fieldBackground: "#09111c",
-    fieldText: "#e6edf7",
-    borderLight: "#e6edf7",
-    borderDark: "#070c14",
-    borderAccent: "#ffd166",
+    fieldText: "#627b9d",
+    borderLight: "#415776",
+    borderDark: "#1d2134",
+    borderAccent: "#3b5681",
     shadowColor: "#070c14",
     panelShadowColor: "rgb(7 12 20 / 0.56)",
-    focusColor: "#ffd166",
+    focusColor: "#af532c",
     windowInactiveOverlay: "rgb(7 12 20 / 0.3)",
     windowModalBackdrop: "rgb(7 12 20 / 0.48)"
+  }
+};
+
+const grayscaleTheme: NuThemeDefinition = {
+  name: "grayscale",
+  label: "Grayscale Monitor",
+  tokens: {
+    desktopBackground: "#808080",
+    desktopPattern: "rgb(0 0 0 / 0.3)",
+    shellBackground: "#202020",
+    appBackground: "#3f3f3f",
+    appBackgroundAlt: "#2b2b2b",
+    chromeBackground: "#727272",
+    panelBackground: "#3f3f3f",
+    panelInsetBackground: "#343434",
+    titleBackground: "#262626",
+    menuBackground: "#262626",
+    titleText: "#d0d0d0",
+    textPrimary: "#c8c8c8",
+    textMuted: "#969696",
+    textInverse: "#d0d0d0",
+    mainMenuText: "#d0d0d0",
+    textAccent: "#e0e0e0",
+    textHotkey: "#ffffff",
+    buttonFace: "#5b5b5b",
+    buttonFaceAlt: "#414141",
+    buttonDanger: "#303030",
+    buttonSuccess: "#6b6b6b",
+    buttonText: "#d0d0d0",
+    fieldBackground: "#0e0e0e",
+    fieldText: "#d8d8d8",
+    borderLight: "#c7c7c7",
+    borderDark: "#000000",
+    borderAccent: "#ffffff",
+    shadowColor: "#000000",
+    panelShadowColor: "rgb(0 0 0 / 0.5)",
+    focusColor: "#ffffff",
+    windowInactiveOverlay: "rgb(0 0 0 / 0.34)",
+    windowModalBackdrop: "rgb(0 0 0 / 0.5)"
   }
 };
 
@@ -198,7 +247,8 @@ export const nuThemes = {
   classic: classicTheme,
   amber: amberTheme,
   phosphor: phosphorTheme,
-  midnight: midnightTheme
+  midnight: midnightTheme,
+  grayscale: grayscaleTheme
 } as const satisfies Record<string, NuThemeDefinition>;
 
 export type NuThemeName = keyof typeof nuThemes;
@@ -224,16 +274,20 @@ export function getNuThemeStyle(theme: NuThemeDefinition): CSSProperties {
     "--nu-color-panel": theme.tokens.panelBackground,
     "--nu-color-panel-inset": theme.tokens.panelInsetBackground,
     "--nu-color-title-bg": theme.tokens.titleBackground,
+    "--nu-color-menu": theme.tokens.menuBackground,
     "--nu-color-title-text": theme.tokens.titleText,
     "--nu-text-primary": theme.tokens.textPrimary,
     "--nu-text-muted": theme.tokens.textMuted,
     "--nu-text-inverse": theme.tokens.textInverse,
+    "--nu-main-menu-text": theme.tokens.mainMenuText,
     "--nu-text-accent": theme.tokens.textAccent,
     "--nu-text-hotkey": theme.tokens.textHotkey,
     "--nu-color-button-face": theme.tokens.buttonFace,
     "--nu-color-button-face-alt": theme.tokens.buttonFaceAlt,
     "--nu-color-button-danger": theme.tokens.buttonDanger,
     "--nu-color-button-success": theme.tokens.buttonSuccess,
+    "--nu-text-danger": theme.tokens.buttonDanger,
+    "--nu-text-success": theme.tokens.buttonSuccess,
     "--nu-color-button-text": theme.tokens.buttonText,
     "--nu-color-field-bg": theme.tokens.fieldBackground,
     "--nu-color-field-text": theme.tokens.fieldText,

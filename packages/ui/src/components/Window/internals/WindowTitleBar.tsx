@@ -1,4 +1,4 @@
-import { CSSProperties, PointerEventHandler } from "react";
+import { CSSProperties, PointerEventHandler, ReactNode } from "react";
 import {
   WindowTitleButton,
   WindowTitleButtonDefinition
@@ -7,6 +7,7 @@ import { renderMnemonicText } from "../../../utils/renderMnemonicText";
 
 type WindowTitleBarProps = {
   draggable: boolean;
+  icon?: ReactNode;
   onDragStart?: PointerEventHandler<HTMLElement>;
   titleButtons: WindowTitleButtonDefinition[];
   title: string;
@@ -14,6 +15,7 @@ type WindowTitleBarProps = {
 
 export function WindowTitleBar({
   draggable,
+  icon,
   onDragStart,
   titleButtons,
   title
@@ -36,6 +38,9 @@ export function WindowTitleBar({
         } as CSSProperties
       }
     >
+      <span aria-hidden className="nu-window__title-icon">
+        {icon}
+      </span>
       <span className="nu-window__title">{renderMnemonicText(title)}</span>
       {titleButtons.length > 0 ? (
         <span className="nu-window__title-controls">

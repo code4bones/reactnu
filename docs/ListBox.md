@@ -20,6 +20,11 @@
 - `checkedIds?: string[]`
 - `onItemCheckChange?: (item, group, checked) => void`
 - `onItemDoubleClick?: (item, group) => void`
+- `onPopupMenu?: (event, item, group) => void`
+- `getDragItem?: (item, group) => NuDragDropItem | false`
+- `onItemDragOut?: (item, group) => void`
+- `acceptsDrop?: (item) => boolean`
+- `onDrop?: (item, context) => boolean | void`
 - `rightCheckBox?: boolean`
 - `emptyText?: string`
 
@@ -33,3 +38,9 @@
 ## Notes
 
 - The same data format supports both grouped and flat lists by using `category: null`.
+- Right-clicking an enabled item activates it, prevents the browser context menu,
+  and calls `onPopupMenu`. Use the event coordinates to open an application-owned
+  `PopupMenu` or another contextual action surface.
+- Inside `NuDragDropProvider`, `getDragItem` makes rows draggable. The
+  application decides accepted data in `acceptsDrop` and updates its collection
+  in `onDrop` / `onItemDragOut`.

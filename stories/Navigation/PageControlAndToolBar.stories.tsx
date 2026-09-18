@@ -7,6 +7,7 @@ import {
   Info,
   InfoAccent,
   PageControl,
+  Spacer,
   Stack,
   ToolBar,
   ToolButton,
@@ -72,6 +73,7 @@ export const Overview: Story = {
                 &Watch
               </ToolButton>
               <ToolSeparator />
+              <Spacer />
               <ToolDropButton
                 icon="gear"
                 menuItems={toolbarMenu}
@@ -81,6 +83,7 @@ export const Overview: Story = {
               >
                 &Export
               </ToolDropButton>
+              <ToolButton icon="gear">&Help</ToolButton>
             </ToolBar>
             <Info>
               Toolbar state: <InfoAccent>{log}</InfoAccent>, watch=

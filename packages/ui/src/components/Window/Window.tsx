@@ -41,12 +41,18 @@ type WindowGeometry = WindowPosition & WindowSize;
 export type WindowProps = PropsWithChildren<
   Omit<HTMLAttributes<HTMLElement>, "title"> & {
     active?: boolean;
+    /** Locks pointer resizing to width / height when set to a positive number. */
+    aspectRatio?: number;
     bodyClassName?: string;
     border?: WindowBorder;
     closeable?: boolean;
     draggable?: boolean;
+    /** Decorative visual rendered in the fixed left title-bar slot. */
+    icon?: ReactNode;
     maximizable?: boolean;
     maximized?: boolean;
+    minHeight?: CSSProperties["minHeight"];
+    minWidth?: CSSProperties["minWidth"];
     minimizable?: boolean;
     minimized?: boolean;
     mode?: WindowMode;
@@ -88,16 +94,26 @@ function getWindowGeometry(node: HTMLElement): WindowGeometry {
   };
 }
 
+function getValidAspectRatio(value: number | undefined) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : undefined;
+}
+
 function WindowInner({
   active = true,
+  aspectRatio,
   bodyClassName,
   border = "single",
   children,
   className,
   closeable = true,
   draggable,
+  icon,
   maximizable,
   maximized = false,
+  minHeight,
+  minWidth,
   minimizable,
   minimized = false,
   mode = "dialog",
@@ -126,7 +142,9 @@ function WindowInner({
   const menuState = useMainMenuState();
   const windowManager = useContext(NuWindowContext);
   const isDraggable = draggable ?? mode === "window";
-  const isMaximizable = maximizable ?? mode === "window";
+  const resolvedAspectRatio = getValidAspectRatio(aspectRatio);
+  const isMaximizable =
+    resolvedAspectRatio === undefined && (maximizable ?? mode === "window");
   const isMinimizable = minimizable ?? mode === "window";
   const isResizable = resizable ?? mode === "window";
   const mdiBridge = useMemo(
@@ -195,8 +213,6 @@ function WindowInner({
     }
 
     onActivate?.();
-    event.preventDefault();
-    event.stopPropagation();
   }
 
   function handleTitlePointerDown(event: ReactPointerEvent<HTMLElement>) {
@@ -325,22 +341,22 @@ function WindowInner({
     } = getWindowGeometry(windowNode);
     const layerBounds = getWindowLayerBounds(windowNode);
     const computedStyle = window.getComputedStyle(windowNode);
-    const minWidth = Math.max(
-      Number.parseFloat(computedStyle.minWidth || "0") || 0,
-      240
-    );
-    const minHeight = Math.max(
-      Number.parseFloat(computedStyle.minHeight || "0") || 0,
-      120
-    );
-    const maxWidth = Math.max(
-      minWidth,
-      (layerBounds?.width ?? window.innerWidth) - left
-    );
-    const maxHeight = Math.max(
-      minHeight,
-      (layerBounds?.height ?? window.innerHeight) - top
-    );
+    const minWidth = Number.parseFloat(computedStyle.minWidth || "0") || 0;
+    const minHeight = Number.parseFloat(computedStyle.minHeight || "0") || 0;
+    const availableWidth = (layerBounds?.width ?? window.innerWidth) - left;
+    const availableHeight = (layerBounds?.height ?? window.innerHeight) - top;
+    const ratioMinWidth = resolvedAspectRatio
+      ? Math.max(minWidth, minHeight * resolvedAspectRatio)
+      : minWidth;
+    const maxWidth = resolvedAspectRatio
+      ? Math.max(
+          ratioMinWidth,
+          Math.min(availableWidth, availableHeight * resolvedAspectRatio)
+        )
+      : Math.max(minWidth, availableWidth);
+    const maxHeight = resolvedAspectRatio
+      ? maxWidth / resolvedAspectRatio
+      : Math.max(minHeight, availableHeight);
     const hadTransform = computedStyle.transform !== "none";
     let didResize = false;
 
@@ -372,14 +388,24 @@ function WindowInner({
     }
 
     function handlePointerMove(moveEvent: PointerEvent) {
-      const nextWidth = Math.min(
-        maxWidth,
-        Math.max(minWidth, startWidth + moveEvent.clientX - startClientX)
-      );
-      const nextHeight = Math.min(
-        maxHeight,
-        Math.max(minHeight, startHeight + moveEvent.clientY - startClientY)
-      );
+      const widthDelta = moveEvent.clientX - startClientX;
+      const heightDelta = moveEvent.clientY - startClientY;
+      const nextWidth = resolvedAspectRatio
+        ? Math.min(
+            maxWidth,
+            Math.max(
+              ratioMinWidth,
+              startWidth +
+                (Math.abs(widthDelta) >=
+                Math.abs(heightDelta * resolvedAspectRatio)
+                  ? widthDelta
+                  : heightDelta * resolvedAspectRatio)
+            )
+          )
+        : Math.min(maxWidth, Math.max(minWidth, startWidth + widthDelta));
+      const nextHeight = resolvedAspectRatio
+        ? nextWidth / resolvedAspectRatio
+        : Math.min(maxHeight, Math.max(minHeight, startHeight + heightDelta));
 
       didResize = true;
       scheduleResize({
@@ -427,7 +453,13 @@ function WindowInner({
       data-mode={mode}
       onPointerDownCapture={handleRootPointerDownCapture}
       ref={windowRef}
-      style={style as CSSProperties}
+      style={
+        {
+          ...style,
+          minHeight: minHeight ?? style?.minHeight ?? 120,
+          minWidth: minWidth ?? style?.minWidth ?? 240
+        } as CSSProperties
+      }
     >
       <span
         aria-hidden
@@ -440,6 +472,7 @@ function WindowInner({
       <WindowMenuContext.Provider value={menuState}>
         <WindowTitleBar
           draggable={isDraggable}
+          icon={icon}
           onDragStart={handleTitlePointerDown}
           title={title}
           titleButtons={resolvedTitleButtons}

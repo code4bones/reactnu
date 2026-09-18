@@ -1,6 +1,11 @@
 import React, { useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ListBox, ListView, TreeListView, TreeView } from "@deadragdoll/reactnu";
+import {
+  ListBox,
+  ListView,
+  TreeListView,
+  TreeView
+} from "@deadragdoll/reactnu";
 import {
   dropdownData,
   listColumns,
@@ -26,6 +31,7 @@ export const Overview: Story = {
     );
     const [selectedTreeId, setSelectedTreeId] = useState("1-1-2");
     const [selectedWeatherId, setSelectedWeatherId] = useState("ap-jp-osaka");
+    const [popupTarget, setPopupTarget] = useState("none");
     const weatherById = useMemo(() => {
       const map = new Map<string, (typeof treeListData)[number]>();
       const visit = (items: typeof treeListData) => {
@@ -46,6 +52,9 @@ export const Overview: Story = {
           <div style={{ maxWidth: "24rem" }}>
             <ListBox
               data={dropdownData}
+              onPopupMenu={(_event, item) =>
+                setPopupTarget(`ListBox: ${String(item.id)}`)
+              }
               onItemSelect={(item) => setSelectedListId(String(item.id))}
               selectedId={selectedListId}
             />
@@ -93,11 +102,17 @@ export const Overview: Story = {
                     return null;
                 }
               }}
+              onPopupMenu={(_event, item, context) =>
+                setPopupTarget(
+                  `TreeListView: ${item.id} (row ${context.rowIndex + 1})`
+                )
+              }
               onItemSelect={(item) => setSelectedWeatherId(item.id)}
               selectedId={selectedWeatherId}
             />
           </div>
         </StoryPanel>
+        <small>Last contextual target: {popupTarget}</small>
       </StoryStack>
     );
   }

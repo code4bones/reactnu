@@ -1,6 +1,4 @@
 .nu-window {
-  --nu-window-title-controls-width: 7.8ch;
-  --nu-window-title-height: calc(1em + 3px);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -79,7 +77,8 @@
     align-items: center;
     justify-content: center;
     min-height: var(--nu-window-title-height);
-    padding: 0 var(--nu-window-title-controls-width) 0 0.45rem;
+    padding: 0 var(--nu-window-title-controls-width) 0
+      calc(0.45rem + var(--nu-window-title-icon-width));
     background: var(--nu-color-title-bg);
     color: var(--nu-color-title-text);
     line-height: 1;
@@ -94,6 +93,26 @@
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &__title-icon {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--nu-window-title-icon-width);
+    overflow: hidden;
+    color: inherit;
+
+    > svg,
+    > img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(var(--nu-window-title-height) - 2px);
+    }
   }
 
   &__title-controls {
@@ -129,12 +148,6 @@
 
     inline-size: 0.95rem;
     block-size: 0.95rem;
-
-    &--close {
-      background: var(--nu-color-title-bg);
-      border: 1px solid var(--nu-border-light);
-      color: var(--nu-text-inverse);
-    }
   }
 
   &__body {
@@ -157,7 +170,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--nu-space-md);
-    min-height: 1.35rem;
+    min-height: var(--nu-window-status-height);
     padding: 0 0.45rem;
     background: var(--nu-color-title-bg);
     color: var(--nu-color-title-text);

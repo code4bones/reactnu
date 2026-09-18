@@ -6,6 +6,7 @@ import {
   InfoAccent,
   MainMenu,
   MainMenuNode,
+  NuGlyph,
   NuWindowProvider,
   StatusBarItem,
   Stack,
@@ -183,6 +184,85 @@ function DialogLauncherSurface() {
   );
 }
 
+function LinkedActivationLauncher() {
+  const windowManager = useNuWindowManager();
+
+  function openLinkedWindows() {
+    const activationGroup = "story-linked-windows";
+
+    windowManager.openWindow({
+      activationGroup,
+      content: <div style={{ padding: "0.75rem 1rem" }}>Overview</div>,
+      style: {
+        height: "12rem",
+        left: "8%",
+        top: "12%",
+        transform: "none",
+        width: "22rem"
+      },
+      title: "Linked overview"
+    });
+    windowManager.openWindow({
+      activationGroup,
+      content: <div style={{ padding: "0.75rem 1rem" }}>Inspector</div>,
+      style: {
+        height: "12rem",
+        left: "52%",
+        top: "42%",
+        transform: "none",
+        width: "22rem"
+      },
+      title: "Linked inspector"
+    });
+    windowManager.openWindow({
+      content: <div style={{ padding: "0.75rem 1rem" }}>Independent</div>,
+      style: {
+        height: "10rem",
+        left: "30%",
+        top: "68%",
+        transform: "none",
+        width: "22rem"
+      },
+      title: "Independent window"
+    });
+  }
+
+  return (
+    <div style={{ padding: "1rem" }}>
+      <Button onClick={openLinkedWindows}>Open &linked windows</Button>
+    </div>
+  );
+}
+
+function AspectRatioWindow() {
+  const [size, setSize] = React.useState({ height: 216, width: 384 });
+
+  return (
+    <Window
+      active
+      aspectRatio={16 / 9}
+      icon={<NuGlyph name="gear" />}
+      minHeight={144}
+      minWidth={256}
+      mode="window"
+      onSizeChange={setSize}
+      statusBar="Drag the resize handle"
+      style={{
+        ...size,
+        left: "50%",
+        position: "absolute",
+        top: "50%",
+        transform: "translate(-50%, -50%)"
+      }}
+      title="Fixed ratio preview"
+    >
+      <div style={{ display: "grid", height: "100%", placeItems: "center" }}>
+        16:9 content remains proportional
+      </div>
+    </Window>
+  );
+}
+
 export const WindowShell: Story = {
   render: () => (
     <div
@@ -201,6 +281,7 @@ export const WindowShell: Story = {
         <MainMenu items={desktopMenuItems} />
         <Window
           active
+          icon={<NuGlyph name="gear" />}
           mode="window"
           statusBar={<StatusBarItem>Ready Geometry test</StatusBarItem>}
           style={{
@@ -268,6 +349,40 @@ export const Dialogs: Story = {
       <NuWindowProvider renderAppBar={false}>
         <DialogLauncherSurface />
       </NuWindowProvider>
+    </div>
+  )
+};
+
+export const LinkedActivation: Story = {
+  render: () => (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "42rem",
+        overflow: "hidden",
+        backgroundColor: "var(--nu-desktop-bg)"
+      }}
+    >
+      <NuWindowProvider renderAppBar={false}>
+        <LinkedActivationLauncher />
+      </NuWindowProvider>
+    </div>
+  )
+};
+
+export const AspectRatioResize: Story = {
+  render: () => (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "32rem",
+        overflow: "hidden",
+        backgroundColor: "var(--nu-desktop-bg)"
+      }}
+    >
+      <AspectRatioWindow />
     </div>
   )
 };

@@ -113,6 +113,7 @@ function buildStandardMdiMenuItems(
     ...mdiWindows.map((windowEntry, index) => ({
       checked: windowEntry.id === activeWindowId,
       id: `mdi.window.${windowEntry.id}`,
+      icon: windowEntry.icon,
       onSelect: () => bridge?.activateWindow(windowEntry.id),
       text: `${index + 1} ${windowEntry.title}`
     })),
@@ -151,7 +152,7 @@ export function resolveMdiMainMenuItems(
       return item;
     }
 
-    if (item.id === MDI_HOST_ID) {
+    if (isMainMenuItem(item) && item.id === MDI_HOST_ID) {
       return {
         ...item,
         items: mergeMdiMenuItems(item.items, bridge)

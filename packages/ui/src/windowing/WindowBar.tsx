@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { ReactNode, useContext } from "react";
 import { AppBarItem } from "./AppBarItem";
 import { NuWindowContext } from "./windowContext";
 import { MdiWindowPickerDialog } from "./internals/MdiWindowPickerDialog";
@@ -8,6 +8,7 @@ export type WindowBarItem = {
   active?: boolean;
   domain?: string;
   id: string;
+  icon?: ReactNode;
   minimized?: boolean;
   title: string;
 };
@@ -21,6 +22,7 @@ type WindowBarGroup = {
   active: boolean;
   domain?: string;
   id: string;
+  icon?: ReactNode;
   items: WindowBarItem[];
   label: string;
 };
@@ -34,6 +36,7 @@ function buildWindowBarGroups(items: WindowBarItem[]): WindowBarGroup[] {
       groups.push({
         active: Boolean(item.active),
         id: item.id,
+        icon: item.icon,
         items: [item],
         label: item.title
       });
@@ -47,6 +50,7 @@ function buildWindowBarGroups(items: WindowBarItem[]): WindowBarGroup[] {
         active: Boolean(item.active),
         domain: item.domain,
         id: item.id,
+        icon: item.icon,
         items: [item],
         label: item.title
       };
@@ -58,10 +62,17 @@ function buildWindowBarGroups(items: WindowBarItem[]): WindowBarGroup[] {
 
     existingGroup.items.push(item);
     existingGroup.active = existingGroup.active || Boolean(item.active);
+    if (item.active) {
+      existingGroup.icon = item.icon;
+    }
     existingGroup.label = `${item.domain} (${existingGroup.items.length})`;
   });
 
   return groups;
+}
+
+function getGroupIcon(group: WindowBarGroup) {
+  return group.items.find((item) => item.active)?.icon ?? group.icon;
 }
 
 export function WindowBar({ items, onActivateWindow }: WindowBarProps) {
@@ -113,17 +124,26 @@ export function WindowBar({ items, onActivateWindow }: WindowBarProps) {
 
   return (
     <div className="nu-window-bar" role="group" aria-label="Open windows">
-      {groups.map((group) => (
-        <AppBarItem
-          active={group.active}
-          className="nu-window-bar__item"
-          interactive
-          key={group.id}
-          onClick={() => activateGroup(group)}
-        >
-          {group.label}
-        </AppBarItem>
-      ))}
+      {groups.map((group) => {
+        const icon = getGroupIcon(group);
+
+        return (
+          <AppBarItem
+            active={group.active}
+            className="nu-window-bar__item"
+            interactive
+            key={group.id}
+            onClick={() => activateGroup(group)}
+          >
+            {icon ? (
+              <span aria-hidden className="nu-window-bar__icon">
+                {icon}
+              </span>
+            ) : null}
+            {group.label}
+          </AppBarItem>
+        );
+      })}
     </div>
   );
 }

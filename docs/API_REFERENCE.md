@@ -21,6 +21,10 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
 
 - `NuThemeProvider`
   docs: [NuThemeProvider](./NuThemeProvider.md)
+- `NuDragDropProvider`
+  coordinates application-owned transfers among `NuIconGrid`, `ListBox`, and
+  `TreeListView`
+  docs: [NuDragDropProvider](./NuDragDropProvider.md)
 - `NuDesktop`
   docs: [Desktop](./Desktop.md)
 - `Dashboard`
@@ -41,6 +45,9 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
   also exposes `showMessageBox(...)` and `showInputBox(...)`
 - `useNuIconManager()`
   manages icons inside a `NuIconProvider`
+- `useNuDragDrop()`
+  internal integration hook for custom shared drag sources and targets; most
+  applications should use component props from [Shared Drag and Drop](./NuDragDropProvider.md)
 - `usePopupMenu()`
   anchor/open helper for `PopupMenu`
 - `useWindowMenu()`
@@ -91,6 +98,8 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
   docs: [TreeView](./TreeView.md)
 - `TreeListView`
   docs: [TreeListView](./TreeListView.md)
+- Shared drag-and-drop contract
+  docs: [NuDragDropProvider](./NuDragDropProvider.md)
 
 ## Layout And Surfaces
 
@@ -106,6 +115,8 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
   docs: [Splitter](./Splitter.md)
 - `Stack`
   docs: [Stack](./Stack.md)
+- `Spacer`
+  docs: [Spacer](./Spacer.md)
 - `ToolBar`, `ToolButton`, `ToolSeparator`
   docs: [ToolBar](./ToolBar.md)
 

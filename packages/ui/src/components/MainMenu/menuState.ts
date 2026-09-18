@@ -3,7 +3,6 @@ import {
   MainMenuItem,
   MainMenuFlags,
   MainMenuNode,
-  isMainMenuDivider,
   isMainMenuItem
 } from "./MainMenu.types";
 
@@ -34,7 +33,7 @@ function patchMenuItem(
   patch: MainMenuItemPatch
 ): MainMenuNode[] {
   return items.map((item) => {
-    if (item.id === id && !isMainMenuDivider(item)) {
+    if (item.id === id && isMainMenuItem(item)) {
       return {
         ...item,
         ...patch
@@ -53,7 +52,7 @@ function patchMenuItem(
 }
 
 export function hasVisibleMainMenuItems(items: MainMenuNode[]) {
-  return items.some((item) => !item.hidden);
+  return items.some((item) => isMainMenuItem(item) && !item.hidden);
 }
 
 export function useMainMenuState(initialMainMenu: MainMenuNode[] = []) {
@@ -136,7 +135,7 @@ export function useMainMenuState(initialMainMenu: MainMenuNode[] = []) {
   const toggleMenuChecked = useCallback((id: string) => {
     setMainMenu((currentMenu) =>
       currentMenu.map((item) => {
-        if (item.id === id && !isMainMenuDivider(item)) {
+        if (item.id === id && isMainMenuItem(item)) {
           return {
             ...item,
             checked: !item.checked
@@ -214,7 +213,7 @@ function toggleMenuCheckedInTree(
   id: string
 ): MainMenuNode[] {
   return items.map((item) => {
-    if (item.id === id && !isMainMenuDivider(item)) {
+    if (item.id === id && isMainMenuItem(item)) {
       return {
         ...item,
         checked: !item.checked

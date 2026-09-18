@@ -9,11 +9,18 @@ import {
   useState
 } from "react";
 import { PopupMenu, usePopupMenu } from "../PopupMenu";
+import {
+  NuDragDropContext,
+  NuDragDropItem,
+  useNuDragDrop,
+  useNuDropTarget
+} from "../DragDrop";
 import { renderMnemonicText } from "../../utils/renderMnemonicText";
 import { useNuIconGridContext, useNuIconManager } from "./iconContext";
 import {
   NuIconContextMenuItems,
   NuIconArrangeMode,
+  NuIconDropContext,
   NuIconInfo,
   NuIconPosition
 } from "./IconGrid.types";
@@ -22,15 +29,44 @@ const DRAG_THRESHOLD = 3;
 
 export type NuIconGridProps = Omit<
   HTMLAttributes<HTMLDivElement>,
-  "children"
+  "children" | "onDrop"
 > & {
+  /** Filters icons accepted from another IconGrid before `onIconDrop` is called. */
+  accepts?: (icon: NuIconInfo) => boolean;
+  /** Filters non-icon shared drag items accepted by this grid. */
+  acceptsDrop?: (item: NuDragDropItem) => boolean;
   contextMenuItems?: NuIconContextMenuItems;
   defaultArrangeMode?: NuIconArrangeMode;
+  /** Enables hit testing for a non-interactive grid surface behind other content. */
+  dropTarget?: boolean;
+  /** Called by the target grid before an icon is transferred. Return false to reject the drop. */
+  onIconDrop?: (icon: NuIconInfo, context: NuIconDropContext) => boolean | void;
+  /** Called by the source grid after its icon was transferred to another grid. */
+  onIconMoveOut?: (icon: NuIconInfo, context: NuIconDropContext) => void;
+  /** Called after an icon was accepted by a non-IconGrid shared drop target. */
+  onDragOut?: (item: NuDragDropItem<NuIconInfo>) => void;
+  /** Receives non-icon shared drag items. Return false to reject the drop. */
+  onDrop?: (
+    item: NuDragDropItem,
+    context: NuDragDropContext
+  ) => boolean | void;
 };
+
+type NuIconGridRegistration = {
+  accepts?: NuIconGridProps["accepts"];
+  dropTarget: boolean;
+  element: HTMLDivElement;
+  manager: ReturnType<typeof useNuIconManager>;
+  onIconDrop?: NuIconGridProps["onIconDrop"];
+};
+
+const gridRegistrations = new Map<HTMLElement, NuIconGridRegistration>();
 
 type NuIconGridItemProps = {
   gridElement: HTMLDivElement | null;
   icon: NuIconInfo;
+  onDragOut?: NuIconGridProps["onDragOut"];
+  onIconMoveOut?: NuIconGridProps["onIconMoveOut"];
 };
 
 function clamp(value: number, minimum: number, maximum: number) {
@@ -51,8 +87,71 @@ function resolveGridContextMenuItems(
   return typeof source === "function" ? source(manager) : (source ?? []);
 }
 
-function NuIconGridItem({ gridElement, icon }: NuIconGridItemProps) {
+function findGridRegistrationAtPoint(clientX: number, clientY: number) {
+  const target = document.elementFromPoint(clientX, clientY);
+  const gridElement = target?.closest<HTMLElement>(".nu-icon-grid");
+
+  if (gridElement) {
+    return gridRegistrations.get(gridElement);
+  }
+
+  if (target?.closest(".nu-window")) {
+    return undefined;
+  }
+
+  return Array.from(gridRegistrations.values())
+    .reverse()
+    .find((registration) => {
+      if (!registration.dropTarget) {
+        return false;
+      }
+
+      const rect = registration.element.getBoundingClientRect();
+
+      return (
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom
+      );
+    });
+}
+
+function getTransferredPosition(
+  targetGrid: HTMLElement,
+  iconElement: HTMLElement,
+  clientX: number,
+  clientY: number
+): NuIconPosition {
+  const targetRect = targetGrid.getBoundingClientRect();
+  const iconRect = iconElement.getBoundingClientRect();
+
+  return {
+    x: Math.round(
+      clamp(
+        clientX - targetRect.left - iconRect.width / 2,
+        0,
+        Math.max(0, targetRect.width - iconRect.width)
+      )
+    ),
+    y: Math.round(
+      clamp(
+        clientY - targetRect.top - iconRect.height / 2,
+        0,
+        Math.max(0, targetRect.height - iconRect.height)
+      )
+    )
+  };
+}
+
+function NuIconGridItem({
+  gridElement,
+  icon,
+  onDragOut,
+  onIconMoveOut
+}: NuIconGridItemProps) {
   const manager = useNuIconGridContext();
+  const dragDrop = useNuDragDrop();
   const contextMenu = usePopupMenu();
   const dragStartRef = useRef<
     | {
@@ -106,8 +205,17 @@ function NuIconGridItem({ gridElement, icon }: NuIconGridItemProps) {
       return;
     }
 
-    isDraggingRef.current = true;
-    setIsDragging(true);
+    if (!isDraggingRef.current) {
+      isDraggingRef.current = true;
+      setIsDragging(true);
+      dragDrop.beginDrag(
+        { data: icon, id: icon.id, type: "icon" },
+        event.currentTarget,
+        "icon-grid"
+      );
+    }
+
+    dragDrop.moveDrag(event.clientX, event.clientY);
     const gridRect = gridElement.getBoundingClientRect();
     const iconRect = event.currentTarget.getBoundingClientRect();
     const position = {
@@ -128,7 +236,6 @@ function NuIconGridItem({ gridElement, icon }: NuIconGridItemProps) {
     };
 
     latestPositionRef.current = position;
-    manager.moveIcon(icon.id, position);
   }
 
   function finishDragging(event: PointerEvent<HTMLButtonElement>) {
@@ -143,7 +250,6 @@ function NuIconGridItem({ gridElement, icon }: NuIconGridItemProps) {
     }
 
     dragStartRef.current = undefined;
-
     if (!isDraggingRef.current) {
       return;
     }
@@ -151,10 +257,67 @@ function NuIconGridItem({ gridElement, icon }: NuIconGridItemProps) {
     suppressClickRef.current = true;
     isDraggingRef.current = false;
     setIsDragging(false);
-    icon.onPositionChange?.(latestPositionRef.current, {
-      ...icon,
-      position: latestPositionRef.current
-    });
+
+    if (event.type === "pointercancel" || !gridElement) {
+      dragDrop.cancelDrag();
+      return;
+    }
+
+    if (dragDrop.dropAt(event.clientX, event.clientY)) {
+      manager.removeIcon(icon.id);
+      onDragOut?.({ data: icon, id: icon.id, type: "icon" });
+      return;
+    }
+
+    const targetRegistration = findGridRegistrationAtPoint(
+      event.clientX,
+      event.clientY
+    );
+
+    if (!targetRegistration) {
+      return;
+    }
+
+    if (targetRegistration.element === gridElement) {
+      manager.moveIcon(icon.id, latestPositionRef.current);
+      icon.onPositionChange?.(latestPositionRef.current, {
+        ...icon,
+        position: latestPositionRef.current
+      });
+      return;
+    }
+
+    if (
+      !targetRegistration.manager.icons.some(
+        (targetIcon) => targetIcon.id === icon.id
+      )
+    ) {
+      const position = getTransferredPosition(
+        targetRegistration.element,
+        event.currentTarget,
+        event.clientX,
+        event.clientY
+      );
+      const transferredIcon = { ...icon, position };
+      const context: NuIconDropContext = {
+        position,
+        source: manager,
+        sourceGrid: gridElement,
+        target: targetRegistration.manager,
+        targetGrid: targetRegistration.element
+      };
+
+      if (
+        targetRegistration.accepts?.(transferredIcon) !== false &&
+        targetRegistration.onIconDrop?.(transferredIcon, context) !== false
+      ) {
+        targetRegistration.manager.addIcon(transferredIcon);
+        targetRegistration.manager.selectIcon(transferredIcon.id);
+        manager.removeIcon(icon.id);
+        onIconMoveOut?.(transferredIcon, context);
+        return;
+      }
+    }
   }
 
   function handleClick(event: MouseEvent<HTMLButtonElement>) {
@@ -178,7 +341,7 @@ function NuIconGridItem({ gridElement, icon }: NuIconGridItemProps) {
     }
 
     event.preventDefault();
-    contextMenu.openAtPoint(event.clientX, event.clientY);
+    contextMenu.openAtPoint(event.clientX, event.clientY, event.currentTarget);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
@@ -236,9 +399,16 @@ function NuIconGridItem({ gridElement, icon }: NuIconGridItemProps) {
 }
 
 export function NuIconGrid({
+  accepts,
+  acceptsDrop,
   className,
   contextMenuItems: contextMenuItemsSource,
   defaultArrangeMode,
+  dropTarget = false,
+  onDragOut,
+  onIconDrop,
+  onIconMoveOut,
+  onDrop,
   onContextMenu,
   onPointerDown,
   ...props
@@ -253,6 +423,20 @@ export function NuIconGrid({
     () => resolveGridContextMenuItems(contextMenuItemsSource, manager),
     [contextMenuItemsSource, manager]
   );
+  const sharedDropTargetOptions = useMemo(
+    () =>
+      onDrop
+        ? {
+            accepts: (item: NuDragDropItem) =>
+              item.type !== "icon" && acceptsDrop?.(item) !== false,
+            onDrop,
+            type: "icon-grid"
+          }
+        : undefined,
+    [acceptsDrop, onDrop]
+  );
+
+  useNuDropTarget(gridElement, sharedDropTargetOptions);
 
   useLayoutEffect(() => {
     if (!gridElement) {
@@ -287,6 +471,24 @@ export function NuIconGrid({
     return () => resizeObserver.disconnect();
   }, [arrangeIcons, defaultArrangeMode, gridElement, setGridSize]);
 
+  useLayoutEffect(() => {
+    if (!gridElement) {
+      return;
+    }
+
+    gridRegistrations.set(gridElement, {
+      accepts,
+      dropTarget,
+      element: gridElement,
+      manager,
+      onIconDrop
+    });
+
+    return () => {
+      gridRegistrations.delete(gridElement);
+    };
+  }, [accepts, dropTarget, gridElement, manager, onIconDrop]);
+
   function handleContextMenu(event: MouseEvent<HTMLDivElement>) {
     onContextMenu?.(event);
 
@@ -296,7 +498,7 @@ export function NuIconGrid({
 
     event.preventDefault();
     manager.selectIcon(null);
-    contextMenu.openAtPoint(event.clientX, event.clientY);
+    contextMenu.openAtPoint(event.clientX, event.clientY, event.currentTarget);
   }
 
   return (
@@ -320,7 +522,13 @@ export function NuIconGrid({
       role="group"
     >
       {manager.icons.map((icon) => (
-        <NuIconGridItem gridElement={gridElement} icon={icon} key={icon.id} />
+        <NuIconGridItem
+          gridElement={gridElement}
+          icon={icon}
+          key={icon.id}
+          onDragOut={onDragOut}
+          onIconMoveOut={onIconMoveOut}
+        />
       ))}
       <PopupMenu
         anchor={contextMenu.anchor}

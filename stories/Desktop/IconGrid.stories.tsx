@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { NuGlyph, NuIconGrid, NuIconProvider } from "@deadragdoll/reactnu";
+import {
+  NuDragDropProvider,
+  NuGlyph,
+  NuIconGrid,
+  NuIconProvider
+} from "@deadragdoll/reactnu";
 
 const meta = {
   title: "Desktop/IconGrid",
@@ -77,5 +82,36 @@ export const Applications: Story = {
         />
       </NuIconProvider>
     </div>
+  )
+};
+
+export const CrossGridTransfer: Story = {
+  render: () => (
+    <NuDragDropProvider>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1rem",
+          height: "22rem"
+        }}
+      >
+        <NuIconProvider
+          defaultIcons={[
+            {
+              icon: <NuGlyph name="folder" />,
+              id: "incoming-report",
+              label: "&Incoming report",
+              payload: { queue: "incoming" }
+            }
+          ]}
+        >
+          <NuIconGrid aria-label="Incoming icons" />
+        </NuIconProvider>
+        <NuIconProvider>
+          <NuIconGrid aria-label="Processed icons" />
+        </NuIconProvider>
+      </div>
+    </NuDragDropProvider>
   )
 };

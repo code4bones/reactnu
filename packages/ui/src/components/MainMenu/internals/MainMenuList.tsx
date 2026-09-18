@@ -1,9 +1,13 @@
 import {
   MainMenuItem,
   MainMenuNode,
-  isMainMenuDivider
+  isMainMenuDivider,
+  isMainMenuItem,
+  isMainMenuSpacer
 } from "../MainMenu.types";
 import { NuGlyph } from "../../Glyph";
+import { Spacer } from "../../Spacer";
+import { MainMenuSubmenuShell } from "./MainMenuSubmenuShell";
 import {
   parseMnemonicText,
   renderMnemonicText
@@ -74,10 +78,23 @@ export function MainMenuList({
           );
         }
 
-        const hasChildren = Boolean(item.items?.some((child) => !child.hidden));
+        if (isMainMenuSpacer(item)) {
+          return isRootBar ? (
+            <Spacer className="nu-main-menu__spacer" key={item.id} />
+          ) : null;
+        }
+
+        const hasChildren = Boolean(
+          item.items?.some((child) => isMainMenuItem(child) && !child.hidden)
+        );
         const isCheckable = item.checkable === true;
         const isOpen = activePath[level] === item.id;
         const isChecked = item.checked === true;
+        const hasCheckMark = isCheckable || isChecked;
+        const hasLeadingAdornment =
+          isPopupRow && (hasCheckMark || Boolean(item.icon));
+        const shortcut =
+          isPopupRow && !hasChildren ? resolveItemShortcut(item) : null;
 
         return (
           <div
@@ -99,53 +116,56 @@ export function MainMenuList({
               aria-expanded={hasChildren ? isOpen : undefined}
               aria-haspopup={hasChildren || undefined}
               className="nu-main-menu__item-button"
+              data-has-leading={hasLeadingAdornment || undefined}
               disabled={item.disabled}
               onClick={() => onActivateItem(item, level)}
               type="button"
             >
-              {isPopupRow ? (
-                <span
-                  aria-hidden="true"
-                  className={[
-                    "nu-main-menu__check",
-                    isChecked ? "nu-main-menu__check--active" : null
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  {isCheckable ? (
+              {hasLeadingAdornment ? (
+                <span aria-hidden="true" className="nu-main-menu__leading">
+                  {hasCheckMark ? (
                     <span
-                      className="nu-main-menu__check-box"
-                      data-unchecked-shape={uncheckedShape}
+                      className={[
+                        "nu-main-menu__check",
+                        isChecked ? "nu-main-menu__check--active" : null
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                     >
-                      {isChecked ? <NuGlyph name="check-mark" /> : null}
+                      {isCheckable ? (
+                        <span
+                          className="nu-main-menu__check-box"
+                          data-unchecked-shape={uncheckedShape}
+                        >
+                          {isChecked ? <NuGlyph name="check-mark" /> : null}
+                        </span>
+                      ) : (
+                        <NuGlyph name="check-mark" />
+                      )}
                     </span>
-                  ) : isChecked ? (
-                    <NuGlyph name="check-mark" />
+                  ) : null}
+                  {item.icon ? (
+                    <span className="nu-main-menu__icon">{item.icon}</span>
                   ) : null}
                 </span>
               ) : null}
               <span className="nu-main-menu__label">
                 {renderItemLabel(item)}
               </span>
-              {isPopupRow ? (
+              {shortcut ? (
                 <span className="nu-main-menu__shortcut">
-                  {resolveItemShortcut(item)}
+                  {shortcut}
                 </span>
               ) : null}
-              {isPopupRow ? (
+              {isPopupRow && hasChildren ? (
                 <span className="nu-main-menu__submenu-arrow">
-                  {hasChildren ? "▶" : ""}
+                  ▶
                 </span>
               ) : null}
             </button>
             {hasChildren && isOpen && item.items ? (
-              <div
-                className={[
-                  isRootBar
-                    ? "nu-main-menu__submenu-shell nu-main-menu__submenu-shell--root"
-                    : "nu-main-menu__submenu-shell nu-main-menu__submenu-shell--submenu"
-                ].join(" ")}
+              <MainMenuSubmenuShell
+                placement={isRootBar ? "root" : "submenu"}
               >
                 <MainMenuList
                   activePath={activePath}
@@ -155,7 +175,7 @@ export function MainMenuList({
                   onHoverItem={onHoverItem}
                   uncheckedShape={uncheckedShape}
                 />
-              </div>
+              </MainMenuSubmenuShell>
             ) : null}
           </div>
         );

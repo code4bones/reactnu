@@ -8,6 +8,7 @@
 - [Contributor Guide](./CONTRIBUTOR_GUIDE.md)
 - [Slot Customization](./SLOT_CUSTOMIZATION.md)
 - [Storybook](./STORYBOOK.md)
+- [Shared Drag and Drop](./NuDragDropProvider.md)
 
 ## Core Components
 
@@ -34,6 +35,7 @@
 - [ReportCell](./ReportCell.md)
 - [SearchBox](./SearchBox.md)
 - [SpinBox](./SpinBox.md)
+- [Spacer](./Spacer.md)
 - [Stack](./Stack.md)
 - [Splitter](./Splitter.md)
 - [TextField](./TextField.md)
@@ -57,6 +59,7 @@
 
 ## Providers
 
+- [NuDragDropProvider](./NuDragDropProvider.md)
 - [NuThemeProvider](./NuThemeProvider.md)
 - [NuAppHostProvider](./NuAppHostProvider.md)
 

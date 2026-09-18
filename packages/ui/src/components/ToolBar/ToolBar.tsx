@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, ReactNode } from "react";
 import {
   SlotCustomizationProps,
   cx,
@@ -11,6 +11,10 @@ import {
 import { MainMenuItem, MainMenuNode } from "../MainMenu/MainMenu.types";
 
 export type ToolBarProps = HTMLAttributes<HTMLDivElement> & {
+  /** Static decorative or informative content before the tool controls. */
+  startContent?: ReactNode;
+  /** Static decorative or informative content after the tool controls. */
+  endContent?: ReactNode;
   fill?: boolean;
   slotClassNames?: SlotCustomizationProps<"root">["slotClassNames"];
   slotStyles?: SlotCustomizationProps<"root">["slotStyles"];
@@ -43,9 +47,11 @@ export type ToolDropButtonProps = ToolButtonProps & {
 export function ToolBar({
   children,
   className,
+  endContent,
   fill = true,
   slotClassNames,
   slotStyles,
+  startContent,
   wrap = false,
   ...props
 }: ToolBarProps) {
@@ -58,7 +64,17 @@ export function ToolBar({
       role="toolbar"
       style={mergeSlotStyle(props.style, slotStyles?.root)}
     >
+      {startContent !== null && startContent !== undefined ? (
+        <span className="nu-toolbar__static nu-toolbar__static--start">
+          {startContent}
+        </span>
+      ) : null}
       {children}
+      {endContent !== null && endContent !== undefined ? (
+        <span className="nu-toolbar__static nu-toolbar__static--end">
+          {endContent}
+        </span>
+      ) : null}
     </div>
   );
 }

@@ -61,6 +61,15 @@ If a component needs a new reusable visual value, add it there first instead of 
   - `--nu-control-height`
   - `--nu-frame-thickness`
   - `--nu-rule-thickness`
+- Toolbar and menu dividers:
+  - `--nu-toolbar-background`
+  - `--nu-toolbar-inset`
+  - `--nu-toolbar-border-color`, `--nu-toolbar-border-style`,
+    `--nu-toolbar-border-width`
+  - `--nu-toolbar-separator-color`, `--nu-toolbar-separator-style`,
+    `--nu-toolbar-separator-width`
+  - `--nu-menu-divider-color`, `--nu-menu-divider-style`,
+    `--nu-menu-divider-width`
 - Button mechanics:
   - `--nu-button-shadow-x`
   - `--nu-button-shadow-y`
@@ -97,7 +106,7 @@ If a component needs a new reusable visual value, add it there first instead of 
 - Shadows:
   - If it is raised, is it reusing button/window shadow logic instead of inventing a new one?
 - Theme coverage:
-  - Would the component still read correctly in `classic`, `amber`, `phosphor`, and `midnight`?
+- Would the component still read correctly in `classic`, `amber`, `phosphor`, `midnight`, and `grayscale`?
 - Hardcoded values:
   - Are any colors or dimensions local only because they are truly component-specific?
 

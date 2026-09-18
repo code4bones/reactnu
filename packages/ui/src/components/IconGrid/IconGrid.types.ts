@@ -19,6 +19,8 @@ export type NuIconDefinition = {
   onContextMenu?: MouseEventHandler<HTMLButtonElement>;
   onDoubleClick?: MouseEventHandler<HTMLButtonElement>;
   onPositionChange?: (position: NuIconPosition, icon: NuIconInfo) => void;
+  /** Application-defined data preserved when the icon moves to another grid. */
+  payload?: unknown;
   position?: NuIconPosition;
 };
 
@@ -44,3 +46,11 @@ export type NuIconManager = {
 export type NuIconContextMenuItems =
   | MainMenuNode[]
   | ((manager: NuIconManager) => MainMenuNode[]);
+
+export type NuIconDropContext = {
+  position: NuIconPosition;
+  source: NuIconManager;
+  sourceGrid: HTMLElement;
+  target: NuIconManager;
+  targetGrid: HTMLElement;
+};

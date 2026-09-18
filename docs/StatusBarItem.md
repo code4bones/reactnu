@@ -29,3 +29,4 @@
 - `StatusBarItem` is layout-only.
 - It does not render its own border or segmented chrome.
 - The host controls the visual content inside the item.
+- Insert `Spacer` between items to pin the following status controls to the end.

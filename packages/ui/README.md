@@ -70,6 +70,7 @@ This package includes the complete Markdown documentation set:
 - [Component Index](./docs/COMPONENT_INDEX.md)
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Theme Provider](./docs/NuThemeProvider.md)
+- [Shared Drag and Drop](./docs/NuDragDropProvider.md)
 - [Window Provider](./docs/NuWindowProvider.md)
 - [Storybook guidance](./docs/STORYBOOK.md)
 
@@ -80,6 +81,7 @@ Each public component has a dedicated page in [`docs/`](./docs/).
 ### Providers and desktop shell
 
 - `NuThemeProvider` — supplies themes, typography, desktop pattern, and theme context.
+- `NuDragDropProvider` — coordinates application-owned transfers among icon grids, lists, and trees.
 - `NuDesktop` — fullscreen desktop shell with workspace and app-bar regions.
 - `NuAppHostProvider` — owns application-level main-menu state.
 - `NuWindowProvider` — manages windows, dialogs, modal state, and window-manager hooks.

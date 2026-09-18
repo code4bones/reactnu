@@ -13,9 +13,15 @@ import {
 } from "../_shared/portalPositioning";
 import { getThemePortalStyle } from "../_shared/themePortal";
 import { MainMenuList } from "../MainMenu/internals/MainMenuList";
-import { MainMenuItem, MainMenuNode } from "../MainMenu/MainMenu.types";
+import {
+  MainMenuItem,
+  MainMenuNode,
+  isMainMenuItem
+} from "../MainMenu/MainMenu.types";
+import { hasVisibleMainMenuItems } from "../MainMenu/menuState";
 
 export type PopupMenuPointAnchor = {
+  themeSource?: HTMLElement;
   type: "point";
   x: number;
   y: number;
@@ -42,7 +48,9 @@ export type PopupMenuProps = Omit<
 };
 
 function hasVisibleChildren(item: MainMenuItem) {
-  return Boolean(item.items?.some((child) => !child.hidden));
+  return Boolean(
+    item.items?.some((child) => isMainMenuItem(child) && !child.hidden)
+  );
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -206,7 +214,7 @@ export function PopupMenu({
     !resolvedOpen ||
     !anchor ||
     !portalRoot ||
-    items.every((item) => item.hidden)
+    !hasVisibleMainMenuItems(items)
   ) {
     return null;
   }
@@ -219,7 +227,9 @@ export function PopupMenu({
       ref={rootRef}
       style={{
         ...getThemePortalStyle(
-          anchor?.type === "element" ? anchor.element : null
+          anchor.type === "element"
+            ? anchor.element
+            : (anchor.themeSource ?? null)
         ),
         ...styleProp,
         left: 0,

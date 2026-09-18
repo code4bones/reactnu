@@ -47,6 +47,8 @@ Supported props:
 - `onFontSizeChange?: (fontSize) => void`
 - `crtGlitch?: boolean | NuCrtGlitchProps`
   enables the ambient CRT-glitch effect (see [CrtGlitch](./CrtGlitch.md)). `true` uses its defaults; pass an options object to tune them. Defaults to `false` — opt-in.
+- `style?: CSSProperties`
+  applies scoped CSS custom-property overrides after the resolved theme tokens. Popup portals mirror the computed values from the theme root.
 
 `useNuTheme()` exposes:
 
@@ -59,7 +61,9 @@ Supported props:
 
 ## Notes
 
-- Built-in themes are `classic` (default), `amber`, `phosphor`, and `midnight`.
-- `midnight` is a restrained dark blue-gray palette with pale chrome and yellow focus accents.
+- Built-in themes are `classic` (default), `amber`, `phosphor`, `midnight`, and
+  `grayscale`.
+- `midnight` is a dark slate-blue palette with blue chrome and a burnt-orange focus accent.
+- `grayscale` is a high-contrast monochrome monitor palette. Semantic button variants use brightness rather than hue.
 - Theme tokens drive desktop, windowing, controls, selection, and inactive overlays.
 - Provider typography affects preview content, managed windows, dialogs, menus, and popup portals rendered inside the theme scope.

@@ -1,6 +1,10 @@
 import { HTMLAttributes, useEffect, useRef, useState } from "react";
 import { MainMenuList } from "./internals/MainMenuList";
-import { MainMenuItem, MainMenuNode } from "./MainMenu.types";
+import {
+  MainMenuItem,
+  MainMenuNode,
+  isMainMenuItem
+} from "./MainMenu.types";
 
 export type MainMenuProps = HTMLAttributes<HTMLDivElement> & {
   items: MainMenuNode[];
@@ -9,7 +13,9 @@ export type MainMenuProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 function hasVisibleChildren(item: MainMenuItem) {
-  return Boolean(item.items?.some((child) => !child.hidden));
+  return Boolean(
+    item.items?.some((child) => isMainMenuItem(child) && !child.hidden)
+  );
 }
 
 export function MainMenu({

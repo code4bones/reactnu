@@ -39,6 +39,7 @@ type NuThemeProviderProps = PropsWithChildren<{
   ) => void;
   onFontFamilyChange?: (fontFamily: string) => void;
   onFontSizeChange?: (fontSize: number) => void;
+  style?: CSSProperties;
   theme?: NuThemeName | NuThemeDefinition;
 }>;
 
@@ -57,6 +58,7 @@ export function NuThemeProvider({
   onFontFamilyChange,
   onFontSizeChange,
   onThemeChange,
+  style,
   theme
 }: NuThemeProviderProps) {
   const generatedId = useId();
@@ -157,7 +159,8 @@ export function NuThemeProvider({
             ...getNuThemeStyle(resolvedTheme),
             "--nu-font-body": resolvedFontFamily,
             fontFamily: resolvedFontFamily,
-            fontSize: `${resolvedFontSize}px`
+            fontSize: `${resolvedFontSize}px`,
+            ...style
           } as CSSProperties
         }
       >

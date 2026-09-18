@@ -2,6 +2,7 @@ import {
   ForwardedRef,
   HTMLAttributes,
   KeyboardEvent,
+  MouseEvent,
   RefAttributes,
   forwardRef,
   useCallback,
@@ -19,6 +20,11 @@ import {
 } from "./internals/helpers";
 import { ListBoxGroupView } from "./internals/ListBoxGroupView";
 import { ListBoxGroup, ListBoxItem } from "./internals/types";
+import {
+  NuDragDropContext,
+  NuDragDropItem,
+  useNuDropTarget
+} from "../DragDrop";
 
 export type {
   ListBoxCategory,
@@ -35,9 +41,24 @@ export type ListBoxHandle = {
   toggleItemCheck: (itemId: string) => void;
 };
 
-export type ListBoxProps = Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> & {
+export type ListBoxProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "onDrop" | "onSelect"
+> & {
+  /** Decides whether this list can receive a shared drag item. */
+  acceptsDrop?: (item: NuDragDropItem) => boolean;
   data: ListBoxGroup[];
   checkedIds?: string[];
+  /** Returns the shared drag item for a row, or false to keep it static. */
+  getDragItem?: (
+    item: ListBoxItem,
+    group: ListBoxGroup
+  ) => NuDragDropItem | false;
+  onPopupMenu?: (
+    event: MouseEvent<HTMLDivElement>,
+    item: ListBoxItem,
+    group: ListBoxGroup
+  ) => void;
   emptyText?: string;
   onItemCheckChange?: (
     item: ListBoxItem,
@@ -45,21 +66,33 @@ export type ListBoxProps = Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> & {
     checked: boolean
   ) => void;
   onItemDoubleClick?: (item: ListBoxItem, group: ListBoxGroup) => void;
+  /** Called after this list row was accepted by a different shared drop target. */
+  onItemDragOut?: (item: ListBoxItem, group: ListBoxGroup) => void;
   rightCheckBox?: boolean;
   selectedId?: string;
   uncheckedShape?: "box" | "none";
   onItemSelect?: (item: ListBoxItem, group: ListBoxGroup) => void;
+  /** Receives a shared drag item. Return false to reject it. */
+  onDrop?: (
+    item: NuDragDropItem,
+    context: NuDragDropContext
+  ) => boolean | void;
 };
 
 function ListBoxInner(
   {
+    acceptsDrop,
     className,
     data,
     checkedIds,
     emptyText = "No items",
+    getDragItem,
+    onPopupMenu,
     onItemCheckChange,
     onItemDoubleClick,
+    onItemDragOut,
     onItemSelect,
+    onDrop,
     rightCheckBox = false,
     selectedId,
     uncheckedShape = "box",
@@ -69,6 +102,7 @@ function ListBoxInner(
 ) {
   const hasItems = data.some((group) => group.items.length > 0);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [rootElement, setRootElement] = useState<HTMLDivElement | null>(null);
   const listboxId = useId();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const flattenedItems = useMemo(
@@ -82,6 +116,20 @@ function ListBoxInner(
   const [activeId, setActiveId] = useState<string | null>(() =>
     getInitialActiveId(selectableItems, selectedId)
   );
+  const dropTargetOptions = useMemo(
+    () =>
+      onDrop
+        ? { accepts: acceptsDrop, onDrop, type: "listbox" }
+        : undefined,
+    [acceptsDrop, onDrop]
+  );
+
+  useNuDropTarget(rootElement, dropTargetOptions);
+
+  const setRootRef = useCallback((node: HTMLDivElement | null) => {
+    rootRef.current = node;
+    setRootElement(node);
+  }, []);
   const resolvedActiveId =
     activeId && selectableItems.some((entry) => entry.itemId === activeId)
       ? activeId
@@ -127,6 +175,25 @@ function ListBoxInner(
       }
     },
     [activateItem, selectableItems]
+  );
+
+  const handleItemPopupMenu = useCallback(
+    (
+      event: MouseEvent<HTMLDivElement>,
+      item: ListBoxItem,
+      group: ListBoxGroup,
+      itemId: string
+    ) => {
+      if (item.disabled || !onPopupMenu) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      activateItem(item, group, itemId);
+      onPopupMenu(event, item, group);
+    },
+    [activateItem, onPopupMenu]
   );
 
   function moveActive(direction: 1 | -1) {
@@ -257,7 +324,7 @@ function ListBoxInner(
       className={["nu-listbox", className].filter(Boolean).join(" ")}
       data-right-checkbox={rightCheckBox || undefined}
       onKeyDown={handleKeyDown}
-      ref={rootRef}
+      ref={setRootRef}
       role="listbox"
       tabIndex={0}
     >
@@ -267,10 +334,13 @@ function ListBoxInner(
             group={group}
             groupIndex={groupIndex}
             isItemChecked={isItemChecked}
+            getDragItem={getDragItem}
             key={`${group.category?.text ?? "group"}-${groupIndex}`}
             listboxId={listboxId}
             onActivateItem={activateItem}
             onDoubleClickItem={onItemDoubleClick}
+            onItemDragOut={onItemDragOut}
+            onPopupMenuItem={handleItemPopupMenu}
             onToggleItemCheck={toggleItemCheck}
             registerItemRef={registerItemRef}
             resolvedActiveId={resolvedActiveId}

@@ -9,8 +9,9 @@ export function usePopupMenu() {
     setOpen(false);
   }
 
-  function openAtPoint(x: number, y: number) {
+  function openAtPoint(x: number, y: number, themeSource?: HTMLElement) {
     setAnchor({
+      themeSource,
       type: "point",
       x,
       y
@@ -32,7 +33,7 @@ export function usePopupMenu() {
 
   function openFromContextMenu(event: MouseEvent<HTMLElement>) {
     event.preventDefault();
-    openAtPoint(event.clientX, event.clientY);
+    openAtPoint(event.clientX, event.clientY, event.currentTarget);
   }
 
   return {

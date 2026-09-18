@@ -101,6 +101,7 @@ export function MdiWindowPickerDialog({
             items: resolvedWindows.map((windowEntry, index) => ({
               id: windowEntry.id,
               name: {
+                icon: windowEntry.icon,
                 text: `${index + 1} ${formatPickerWindowTitle(windows, windowEntry)}`
               },
               selected: windowEntry.id === activeWindowId

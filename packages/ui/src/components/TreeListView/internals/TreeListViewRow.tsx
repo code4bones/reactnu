@@ -1,5 +1,6 @@
 import { CSSProperties, MouseEvent, memo } from "react";
 import { NuGlyph } from "../../Glyph";
+import { NuDragDropItem, useNuDragSource } from "../../DragDrop";
 import {
   TreeListCellContext,
   TreeListColumn,
@@ -15,12 +16,22 @@ type TreeListViewRowProps<T extends TreeListItemBase<T>> = {
   depth: number;
   expandedIdSet: Set<string>;
   getCellContent?: TreeListGetCellContent<T>;
+  getDragItem?: (
+    item: T,
+    context: TreeListCellContext<T>
+  ) => NuDragDropItem | false;
   guideMask: boolean[];
   guideOffsets: number[];
   hasNextSibling: boolean;
   item: T;
   onActivateItem: (item: T, itemId: string) => void;
   onDoubleClickItem?: (item: T) => void;
+  onItemDragOut?: (item: T, context: TreeListCellContext<T>) => void;
+  onPopupMenuItem?: (
+    event: MouseEvent<HTMLDivElement>,
+    item: T,
+    context: TreeListCellContext<T>
+  ) => void;
   onToggleItemCheck?: (item: T, checked: boolean) => void;
   onToggleItemExpanded: (item: T, expanded: boolean) => void;
   originOffset: number;
@@ -104,12 +115,15 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
   depth,
   expandedIdSet,
   getCellContent,
+  getDragItem,
   guideMask,
   guideOffsets,
   hasNextSibling,
   item,
   onActivateItem,
   onDoubleClickItem,
+  onItemDragOut,
+  onPopupMenuItem,
   onToggleItemCheck,
   onToggleItemExpanded,
   originOffset,
@@ -132,6 +146,18 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
   const isSelected = itemId === selectedItemId;
   const rowIndex = rowIndexMap.get(itemId) ?? 0;
   const leadOffset = depth > 0 && hasChildren ? 1 : 0;
+  const dragContext: TreeListCellContext<T> = {
+    depth,
+    isLeaf: !hasChildren,
+    item,
+    rowIndex
+  };
+  const dragSource = useNuDragSource({
+    disabled: item.disabled || !getDragItem,
+    getItem: () => getDragItem?.(item, dragContext) ?? false,
+    onDropAccepted: () => onItemDragOut?.(item, dragContext),
+    sourceType: "tree-list-item"
+  });
 
   function handleActivate() {
     if (item.disabled) {
@@ -156,6 +182,19 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
     }
 
     onDoubleClickItem?.(item);
+  }
+
+  function handleContextMenu(event: MouseEvent<HTMLDivElement>) {
+    if (item.disabled) {
+      return;
+    }
+
+    onPopupMenuItem?.(event, item, {
+      depth,
+      isLeaf: !hasChildren,
+      item,
+      rowIndex
+    });
   }
 
   function handleToggleExpanded(event: MouseEvent<HTMLButtonElement>) {
@@ -198,7 +237,12 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
           .join(" ")}
         id={`${treeId}-${itemId}`}
         onClick={handleActivate}
+        onContextMenu={onPopupMenuItem ? handleContextMenu : undefined}
         onDoubleClick={handleDoubleClick}
+        onPointerCancel={dragSource.onPointerCancel}
+        onPointerDown={dragSource.onPointerDown}
+        onPointerMove={dragSource.onPointerMove}
+        onPointerUp={dragSource.onPointerUp}
         ref={(node) => registerItemRef(itemId, node)}
         role="row"
         style={
@@ -343,6 +387,7 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
               depth={depth + 1}
               expandedIdSet={expandedIdSet}
               getCellContent={getCellContent}
+              getDragItem={getDragItem}
               guideMask={[...guideMask, hasNextSibling]}
               guideOffsets={[...guideOffsets, originOffset]}
               hasNextSibling={index < (item.children?.length ?? 0) - 1}
@@ -350,6 +395,8 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
               key={child.id}
               onActivateItem={onActivateItem}
               onDoubleClickItem={onDoubleClickItem}
+              onItemDragOut={onItemDragOut}
+              onPopupMenuItem={onPopupMenuItem}
               onToggleItemCheck={onToggleItemCheck}
               onToggleItemExpanded={onToggleItemExpanded}
               originOffset={originOffset + leadOffset}
@@ -398,6 +445,7 @@ function areTreeListViewRowPropsEqual<T extends TreeListItemBase<T>>(
     previousProps.item === nextProps.item &&
     previousProps.onActivateItem === nextProps.onActivateItem &&
     previousProps.onDoubleClickItem === nextProps.onDoubleClickItem &&
+    previousProps.onPopupMenuItem === nextProps.onPopupMenuItem &&
     previousProps.onToggleItemCheck === nextProps.onToggleItemCheck &&
     previousProps.onToggleItemExpanded === nextProps.onToggleItemExpanded &&
     previousProps.originOffset === nextProps.originOffset &&

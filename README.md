@@ -65,6 +65,7 @@ ReactNU currently covers several layers of a desktop-style UI stack.
 Providers and shell:
 
 - `NuThemeProvider`
+- `NuDragDropProvider`
 - `NuDesktop`
 - `NuWindowProvider`
 - `NuIconProvider`
@@ -229,6 +230,25 @@ function Applications() {
 See [Icon Grid](./docs/IconGrid.md) for the full API, keyboard behavior, and
 layout-persistence guidance.
 
+## Shared Item Drag and Drop
+
+Wrap a desktop or bounded workspace in `NuDragDropProvider` when `NuIconGrid`,
+`ListBox`, and `TreeListView` must exchange application data. Sources return a
+typed `NuDragDropItem` from `getDragItem`; each target decides whether to accept
+it in `acceptsDrop` and updates its own state in `onDrop`. The source updates or
+removes its own data only in `onItemDragOut` / `onDragOut` after acceptance.
+
+```tsx
+<NuThemeProvider>
+  <NuDragDropProvider>
+    <NuDesktop>{/* windows, icon grids, lists, and trees */}</NuDesktop>
+  </NuDragDropProvider>
+</NuThemeProvider>
+```
+
+See [Shared Drag and Drop](./docs/NuDragDropProvider.md) for the payload and
+acceptance contract.
+
 ## Architecture: Desktop First
 
 `NuDesktop` is the top-level desktop shell. It composes the app host and
@@ -326,6 +346,7 @@ Start here:
 2. [API Reference](./docs/API_REFERENCE.md)
 3. [Architecture](./docs/ARCHITECTURE.md)
 4. [Storybook](./docs/STORYBOOK.md)
+5. [Shared Drag and Drop](./docs/NuDragDropProvider.md)
 
 For internal development and agent work:
 
