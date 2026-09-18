@@ -79,6 +79,14 @@ input {
   gap: 0.5ch;
 }
 
+.sandbox-drag-preview {
+  background: var(--nu-color-panel);
+  border: var(--nu-rule-thickness) solid var(--nu-border-light);
+  color: var(--nu-color-text-primary);
+  display: inline-flex;
+  padding: 0.2em 0.6ch;
+}
+
 .sandbox-splitter-demo {
   width: 100%;
   height: 100%;

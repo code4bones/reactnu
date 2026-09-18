@@ -3,6 +3,7 @@ import {
   ForwardedRef,
   HTMLAttributes,
   KeyboardEvent,
+  ReactNode,
   RefAttributes,
   forwardRef,
   useCallback,
@@ -19,6 +20,13 @@ import {
 } from "./internals/helpers";
 import { ListViewRow } from "./internals/ListViewRow";
 import { ListViewColumn, ListViewRowBase } from "./internals/types";
+import {
+  NuDragDropContext,
+  NuDragDropItem,
+  NuDragDropProvider,
+  NuDropResult,
+  useNuDropTarget
+} from "../DragDrop";
 
 export type { ListViewColumn, ListViewRowBase } from "./internals/types";
 
@@ -34,16 +42,29 @@ export type ListViewProps<T extends ListViewRowBase> = Omit<
   HTMLAttributes<HTMLDivElement>,
   "onSelect"
 > & {
+  /** Decides whether this list can receive a shared drag item. */
+  acceptsDrop?: (item: NuDragDropItem) => boolean;
   activeRowId?: string;
   checkedIds?: string[];
   columns: ListViewColumn<T>[];
   data: T[];
   defaultActiveRowId?: string;
   emptyText?: string;
+  /** Returns the shared drag item for a row, or false to keep it static. */
+  getDragItem?: (row: T) => NuDragDropItem | false;
   onActiveRowChange?: (row: T) => void;
   onRowCheckChange?: (row: T, checked: boolean) => void;
   onRowDoubleClick?: (row: T) => void;
+  /** Called after this list row was accepted by a different shared drop target. */
+  onRowDragOut?: (row: T) => void;
   onRowSelect?: (row: T) => void;
+  /** Receives a shared drag item. Return false to reject it. */
+  onDrop?: (
+    item: NuDragDropItem,
+    context: NuDragDropContext
+  ) => boolean | NuDropResult | void;
+  /** Renders a compact preview for a row dragged from this list. */
+  renderDragPreview?: (row: T) => ReactNode;
   selectedId?: string;
   showCheckBox?: boolean;
   uncheckedShape?: "box" | "none";
@@ -51,6 +72,7 @@ export type ListViewProps<T extends ListViewRowBase> = Omit<
 
 function ListViewInner<T extends ListViewRowBase>(
   {
+    acceptsDrop,
     activeRowId: activeRowIdProp,
     checkedIds,
     className,
@@ -58,10 +80,14 @@ function ListViewInner<T extends ListViewRowBase>(
     data,
     defaultActiveRowId,
     emptyText = "No rows",
+    getDragItem,
     onActiveRowChange,
     onRowCheckChange,
     onRowDoubleClick,
+    onRowDragOut,
     onRowSelect,
+    onDrop,
+    renderDragPreview,
     selectedId,
     showCheckBox = false,
     uncheckedShape = "box",
@@ -70,6 +96,7 @@ function ListViewInner<T extends ListViewRowBase>(
   ref: ForwardedRef<ListViewHandle>
 ) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [rootElement, setRootElement] = useState<HTMLDivElement | null>(null);
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const selectableRows = useMemo(
     () => data.filter((row) => !row.disabled),
@@ -96,6 +123,20 @@ function ListViewInner<T extends ListViewRowBase>(
 
     return [checkboxColumn, ...dataColumns].filter(Boolean).join(" ");
   }, [columns, showCheckBox]);
+  const dropTargetOptions = useMemo(
+    () =>
+      onDrop
+        ? { accepts: acceptsDrop, onDrop, type: "list-view" }
+        : undefined,
+    [acceptsDrop, onDrop]
+  );
+
+  useNuDropTarget(rootElement, dropTargetOptions);
+
+  const setRootRef = useCallback((node: HTMLDivElement | null) => {
+    rootRef.current = node;
+    setRootElement(node);
+  }, []);
 
   useEffect(() => {
     if (!resolvedActiveRowId) {
@@ -260,7 +301,7 @@ function ListViewInner<T extends ListViewRowBase>(
       aria-activedescendant={resolvedActiveRowId ?? undefined}
       className={["nu-list-view", className].filter(Boolean).join(" ")}
       onKeyDown={handleKeyDown}
-      ref={rootRef}
+      ref={setRootRef}
       role="grid"
       tabIndex={0}
     >
@@ -297,14 +338,17 @@ function ListViewInner<T extends ListViewRowBase>(
           data.map((row) => (
             <ListViewRow
               columns={columns}
+              getDragItem={getDragItem}
               isActive={row.id === resolvedActiveRowId}
               isChecked={isRowChecked(row)}
               isSelected={row.id === selectedId}
               key={row.id}
               onActivate={activateRowId}
               onDoubleClick={onRowDoubleClick}
+              onDragOut={onRowDragOut}
               onToggleCheck={toggleRowCheck}
               registerRowRef={registerRowRef}
+              renderDragPreview={renderDragPreview}
               row={row}
               showCheckBox={showCheckBox}
               templateColumns={templateColumns}
@@ -319,7 +363,18 @@ function ListViewInner<T extends ListViewRowBase>(
   );
 }
 
-export const ListView = forwardRef(ListViewInner) as <
+function ListViewWithDragDrop<T extends ListViewRowBase>(
+  props: ListViewProps<T>,
+  ref: ForwardedRef<ListViewHandle>
+) {
+  return (
+    <NuDragDropProvider>
+      {ListViewInner(props, ref)}
+    </NuDragDropProvider>
+  );
+}
+
+export const ListView = forwardRef(ListViewWithDragDrop) as <
   T extends ListViewRowBase
 >(
   props: ListViewProps<T> & RefAttributes<ListViewHandle>

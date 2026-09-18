@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@deadragdoll/reactnu": "0.1.74",
+    "@deadragdoll/reactnu": "0.1.75",
     "@monaco-editor/react": "^4.7.0",
     "lucide-react": "^1.47.0",
     "monaco-editor": "^0.55.1",

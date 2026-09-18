@@ -1,4 +1,4 @@
-import { MouseEvent, memo } from "react";
+import { MouseEvent, ReactNode, memo } from "react";
 import { NuDragDropItem, useNuDragSource } from "../../DragDrop";
 import { ListBoxCheckControl } from "./ListBoxCheckControl";
 import { renderLabel } from "./renderLabel";
@@ -22,6 +22,7 @@ type ListBoxItemViewProps = {
     itemId: string
   ) => void;
   onToggleCheck: (itemId: string) => void;
+  renderDragPreview?: (item: ListBoxItem, group: ListBoxGroup) => ReactNode;
   registerItemRef: (itemId: string, node: HTMLDivElement | null) => void;
   rightCheckBox: boolean;
   uncheckedShape: "box" | "none";
@@ -40,6 +41,7 @@ function ListBoxItemViewInner({
   onDoubleClick,
   onDragOut,
   onToggleCheck,
+  renderDragPreview,
   registerItemRef,
   rightCheckBox,
   uncheckedShape
@@ -48,6 +50,9 @@ function ListBoxItemViewInner({
     disabled: item.disabled || !getDragItem,
     getItem: () => getDragItem?.(item, group) ?? false,
     onDropAccepted: () => onDragOut?.(item, group),
+    renderPreview: renderDragPreview
+      ? () => renderDragPreview(item, group)
+      : undefined,
     sourceType: "listbox-item"
   });
 
@@ -102,11 +107,10 @@ function ListBoxItemViewInner({
       onClick={handleActivate}
       onContextMenu={onPopupMenu ? handleContextMenu : undefined}
       onDoubleClick={handleDoubleClick}
-      onPointerCancel={dragSource.onPointerCancel}
-      onPointerDown={dragSource.onPointerDown}
-      onPointerMove={dragSource.onPointerMove}
-      onPointerUp={dragSource.onPointerUp}
-      ref={(node) => registerItemRef(itemId, node)}
+      ref={(node) => {
+        registerItemRef(itemId, node);
+        dragSource.dragRef(node);
+      }}
       role="option"
     >
       <span className="nu-listbox__item-main">

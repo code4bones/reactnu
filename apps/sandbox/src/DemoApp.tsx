@@ -1890,13 +1890,18 @@ function ListViewWindowContent() {
         <Stack gap="md">
           <p className="sandbox-copy">
             ListView report mode supports fixed columns, row selection, optional
-            checkboxes, and per-column custom cell renderers.
+            checkboxes, custom cell renderers, and compact drag previews.
           </p>
           <ListView
             checkedIds={checkedRowIds}
             className="sandbox-list-view"
             columns={columns}
             data={rows}
+            getDragItem={(row) => ({
+              data: row,
+              id: row.id,
+              type: "sandbox-report"
+            })}
             onRowCheckChange={(row, checked) => {
               setRows((currentRows) =>
                 currentRows.map((currentRow) =>
@@ -1916,6 +1921,9 @@ function ListViewWindowContent() {
             }}
             onRowDoubleClick={(row) => setSelectedRowId(row.id)}
             onRowSelect={(row) => setSelectedRowId(row.id)}
+            renderDragPreview={(row) => (
+              <span className="sandbox-drag-preview">{row.name}</span>
+            )}
             selectedId={selectedRowId}
             showCheckBox
           />

@@ -1,4 +1,4 @@
-import { CSSProperties, MouseEvent, memo } from "react";
+import { CSSProperties, MouseEvent, ReactNode, memo } from "react";
 import { NuGlyph } from "../../Glyph";
 import { NuDragDropItem, useNuDragSource } from "../../DragDrop";
 import {
@@ -27,6 +27,10 @@ type TreeListViewRowProps<T extends TreeListItemBase<T>> = {
   onActivateItem: (item: T, itemId: string) => void;
   onDoubleClickItem?: (item: T) => void;
   onItemDragOut?: (item: T, context: TreeListCellContext<T>) => void;
+  renderDragPreview?: (
+    item: T,
+    context: TreeListCellContext<T>
+  ) => ReactNode;
   onPopupMenuItem?: (
     event: MouseEvent<HTMLDivElement>,
     item: T,
@@ -123,6 +127,7 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
   onActivateItem,
   onDoubleClickItem,
   onItemDragOut,
+  renderDragPreview,
   onPopupMenuItem,
   onToggleItemCheck,
   onToggleItemExpanded,
@@ -156,6 +161,9 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
     disabled: item.disabled || !getDragItem,
     getItem: () => getDragItem?.(item, dragContext) ?? false,
     onDropAccepted: () => onItemDragOut?.(item, dragContext),
+    renderPreview: renderDragPreview
+      ? () => renderDragPreview(item, dragContext)
+      : undefined,
     sourceType: "tree-list-item"
   });
 
@@ -239,11 +247,10 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
         onClick={handleActivate}
         onContextMenu={onPopupMenuItem ? handleContextMenu : undefined}
         onDoubleClick={handleDoubleClick}
-        onPointerCancel={dragSource.onPointerCancel}
-        onPointerDown={dragSource.onPointerDown}
-        onPointerMove={dragSource.onPointerMove}
-        onPointerUp={dragSource.onPointerUp}
-        ref={(node) => registerItemRef(itemId, node)}
+        ref={(node) => {
+          registerItemRef(itemId, node);
+          dragSource.dragRef(node);
+        }}
         role="row"
         style={
           {

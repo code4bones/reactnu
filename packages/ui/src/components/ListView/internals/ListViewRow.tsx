@@ -1,4 +1,5 @@
-import { CSSProperties, MouseEvent, memo } from "react";
+import { CSSProperties, MouseEvent, ReactNode, memo } from "react";
+import { NuDragDropItem, useNuDragSource } from "../../DragDrop";
 import { renderListViewCellValue } from "./helpers";
 import { ListViewColumn, ListViewRowBase } from "./types";
 import { ListViewCheckControl } from "./ListViewCheckControl";
@@ -8,10 +9,13 @@ type ListViewRowProps<T extends ListViewRowBase> = {
   isActive: boolean;
   isChecked: boolean;
   isSelected: boolean;
+  getDragItem?: (row: T) => NuDragDropItem | false;
   onActivate: (rowId: string) => void;
   onDoubleClick?: (row: T) => void;
+  onDragOut?: (row: T) => void;
   onToggleCheck: (rowId: string) => void;
   registerRowRef: (rowId: string, node: HTMLDivElement | null) => void;
+  renderDragPreview?: (row: T) => ReactNode;
   row: T;
   showCheckBox: boolean;
   templateColumns: string;
@@ -23,16 +27,26 @@ function ListViewRowInner<T extends ListViewRowBase>({
   isActive,
   isChecked,
   isSelected,
+  getDragItem,
   onActivate,
   onDoubleClick,
+  onDragOut,
   onToggleCheck,
   registerRowRef,
+  renderDragPreview,
   row,
   showCheckBox,
   templateColumns,
   uncheckedShape
 }: ListViewRowProps<T>) {
   const rowId = row.id;
+  const dragSource = useNuDragSource({
+    disabled: row.disabled || !getDragItem,
+    getItem: () => getDragItem?.(row) ?? false,
+    onDropAccepted: () => onDragOut?.(row),
+    renderPreview: renderDragPreview ? () => renderDragPreview(row) : undefined,
+    sourceType: "list-view-row"
+  });
 
   function handleActivate() {
     if (!row.disabled) {
@@ -69,7 +83,10 @@ function ListViewRowInner<T extends ListViewRowBase>({
       id={rowId}
       onClick={handleActivate}
       onDoubleClick={handleDoubleClick}
-      ref={(node) => registerRowRef(rowId, node)}
+      ref={(node) => {
+        registerRowRef(rowId, node);
+        dragSource.dragRef(node);
+      }}
       role="row"
       style={
         {

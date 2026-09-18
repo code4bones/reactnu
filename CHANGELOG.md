@@ -9,6 +9,21 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.75]
+
+### Added
+
+- Added shared drag-and-drop support to `ListView`, including source, target,
+  and compact preview props.
+- Added compact React drag previews and reactive target hover state
+  (`isOver` / `canDrop`) to the shared DnD contract.
+
+### Changed
+
+- Migrated shared DnD internals to `react-dnd`. `NuIconGrid` external drops
+  now support non-destructive copy behavior through `{ action: "copy" }` or
+  an `onDragOut` callback that returns `false`.
+
 ## [0.1.74]
 
 ### Added

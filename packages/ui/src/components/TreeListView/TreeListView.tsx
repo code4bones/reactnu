@@ -5,6 +5,7 @@ import {
   KeyboardEvent,
   MouseEvent,
   PointerEvent as ReactPointerEvent,
+  ReactNode,
   RefAttributes,
   forwardRef,
   useCallback,
@@ -36,6 +37,8 @@ import {
 import {
   NuDragDropContext,
   NuDragDropItem,
+  NuDragDropProvider,
+  NuDropResult,
   useNuDropTarget
 } from "../DragDrop";
 
@@ -90,12 +93,17 @@ export type TreeListViewProps<T extends TreeListItemBase<T>> = Omit<
   onItemDoubleClick?: (item: T) => void;
   /** Called after this tree row was accepted by a different shared drop target. */
   onItemDragOut?: (item: T, context: TreeListCellContext<T>) => void;
+  /** Renders a compact preview for an item dragged from this tree. */
+  renderDragPreview?: (
+    item: T,
+    context: TreeListCellContext<T>
+  ) => ReactNode;
   onItemSelect?: (item: T) => void;
   /** Receives a shared drag item. Return false to reject it. */
   onDrop?: (
     item: NuDragDropItem,
     context: NuDragDropContext
-  ) => boolean | void;
+  ) => boolean | NuDropResult | void;
   selectedId?: string;
   uncheckedShape?: "box" | "none";
 };
@@ -165,6 +173,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
     onItemCheckChange,
     onItemDoubleClick,
     onItemDragOut,
+    renderDragPreview,
     onItemSelect,
     onDrop,
     selectedId,
@@ -849,6 +858,7 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
                 onItemDoubleClick ? handleItemDoubleClick : undefined
               }
               onItemDragOut={onItemDragOut}
+              renderDragPreview={renderDragPreview}
               onPopupMenuItem={handleItemPopupMenu}
               onToggleItemCheck={handleItemCheckChange}
               onToggleItemExpanded={setExpandedState}
@@ -870,7 +880,18 @@ function TreeListViewInner<T extends TreeListItemBase<T>>(
   );
 }
 
-export const TreeListView = forwardRef(TreeListViewInner) as <
+function TreeListViewWithDragDrop<T extends TreeListItemBase<T>>(
+  props: TreeListViewProps<T>,
+  ref: ForwardedRef<TreeListViewHandle>
+) {
+  return (
+    <NuDragDropProvider>
+      {TreeListViewInner(props, ref)}
+    </NuDragDropProvider>
+  );
+}
+
+export const TreeListView = forwardRef(TreeListViewWithDragDrop) as <
   T extends TreeListItemBase<T>
 >(
   props: TreeListViewProps<T> & RefAttributes<TreeListViewHandle>

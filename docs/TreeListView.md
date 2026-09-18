@@ -58,6 +58,7 @@ const columns: TreeListColumn<Node>[] = [
 - `onItemDoubleClick`
 - `onPopupMenu`
 - `getDragItem`
+- `renderDragPreview`
 - `onItemDragOut`
 - `acceptsDrop`
 - `onDrop`
@@ -99,3 +100,5 @@ const columns: TreeListColumn<Node>[] = [
 - Inside `NuDragDropProvider`, rows may produce shared drag items through
   `getDragItem`; the host filters and applies incoming items with
   `acceptsDrop` and `onDrop`.
+- `renderDragPreview(item, context)` may return a compact React preview, such
+  as a name chip, instead of the complete multi-column row.

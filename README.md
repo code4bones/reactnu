@@ -233,10 +233,11 @@ layout-persistence guidance.
 ## Shared Item Drag and Drop
 
 Wrap a desktop or bounded workspace in `NuDragDropProvider` when `NuIconGrid`,
-`ListBox`, and `TreeListView` must exchange application data. Sources return a
-typed `NuDragDropItem` from `getDragItem`; each target decides whether to accept
-it in `acceptsDrop` and updates its own state in `onDrop`. The source updates or
-removes its own data only in `onItemDragOut` / `onDragOut` after acceptance.
+`ListBox`, `ListView`, and `TreeListView` must exchange application data.
+Sources return a typed `NuDragDropItem` from `getDragItem`; each target decides
+whether to accept it in `acceptsDrop` and updates its own state in `onDrop`.
+The source updates or removes its own data only in `onItemDragOut` /
+`onRowDragOut` / `onDragOut` after acceptance.
 
 ```tsx
 <NuThemeProvider>

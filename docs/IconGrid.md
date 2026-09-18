@@ -72,10 +72,10 @@ function Applications() {
   `onIconMoveOut(icon, context)` runs on the source after a successful transfer.
   `context` exposes both managers, grids, and the target `position`.
 - Within `NuDragDropProvider`, use `acceptsDrop(item)` and `onDrop(item,
-  context)` to accept application-defined items from `ListBox` or
-  `TreeListView`. `onDragOut(item)` runs when an icon is accepted by one of
-  those non-icon targets. The existing `accepts(icon)` API remains specific to
-  icon-to-icon transfers.
+  context)` to accept application-defined items from `ListBox`, `ListView`, or
+  `TreeListView`. Return `{ action: "copy" }` from that target's `onDrop`, or
+  return `false` from `onDragOut(item, result)`, to retain the source icon.
+  The existing `accepts(icon)` API remains specific to icon-to-icon transfers.
 
 `useNuIconManager()`
 

@@ -3,6 +3,7 @@ import {
   HTMLAttributes,
   KeyboardEvent,
   MouseEvent,
+  ReactNode,
   RefAttributes,
   forwardRef,
   useCallback,
@@ -23,6 +24,8 @@ import { ListBoxGroup, ListBoxItem } from "./internals/types";
 import {
   NuDragDropContext,
   NuDragDropItem,
+  NuDragDropProvider,
+  NuDropResult,
   useNuDropTarget
 } from "../DragDrop";
 
@@ -54,6 +57,8 @@ export type ListBoxProps = Omit<
     item: ListBoxItem,
     group: ListBoxGroup
   ) => NuDragDropItem | false;
+  /** Renders a compact preview for an item dragged from this list. */
+  renderDragPreview?: (item: ListBoxItem, group: ListBoxGroup) => ReactNode;
   onPopupMenu?: (
     event: MouseEvent<HTMLDivElement>,
     item: ListBoxItem,
@@ -76,7 +81,7 @@ export type ListBoxProps = Omit<
   onDrop?: (
     item: NuDragDropItem,
     context: NuDragDropContext
-  ) => boolean | void;
+  ) => boolean | NuDropResult | void;
 };
 
 function ListBoxInner(
@@ -93,6 +98,7 @@ function ListBoxInner(
     onItemDragOut,
     onItemSelect,
     onDrop,
+    renderDragPreview,
     rightCheckBox = false,
     selectedId,
     uncheckedShape = "box",
@@ -342,6 +348,7 @@ function ListBoxInner(
             onItemDragOut={onItemDragOut}
             onPopupMenuItem={handleItemPopupMenu}
             onToggleItemCheck={toggleItemCheck}
+            renderDragPreview={renderDragPreview}
             registerItemRef={registerItemRef}
             resolvedActiveId={resolvedActiveId}
             rightCheckBox={rightCheckBox}
@@ -356,6 +363,17 @@ function ListBoxInner(
   );
 }
 
-export const ListBox = forwardRef(ListBoxInner) as (
+function ListBoxWithDragDrop(
+  props: ListBoxProps,
+  ref: ForwardedRef<ListBoxHandle>
+) {
+  return (
+    <NuDragDropProvider>
+      {ListBoxInner(props, ref)}
+    </NuDragDropProvider>
+  );
+}
+
+export const ListBox = forwardRef(ListBoxWithDragDrop) as (
   props: ListBoxProps & RefAttributes<ListBoxHandle>
 ) => ReturnType<typeof ListBoxInner>;

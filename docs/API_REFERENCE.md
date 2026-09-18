@@ -46,8 +46,11 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
 - `useNuIconManager()`
   manages icons inside a `NuIconProvider`
 - `useNuDragDrop()`
-  internal integration hook for custom shared drag sources and targets; most
+  returns the underlying react-dnd manager for advanced integration; most
   applications should use component props from [Shared Drag and Drop](./NuDragDropProvider.md)
+- `useNuDropTarget(element, options)`
+  registers a custom target and returns reactive `isOver`, `canDrop`, and item
+  state; docs: [NuDragDropProvider](./NuDragDropProvider.md)
 - `usePopupMenu()`
   anchor/open helper for `PopupMenu`
 - `useWindowMenu()`

@@ -40,6 +40,11 @@ const columns: ListViewColumn<Row>[] = [
 - `selectedId`
 - `onRowSelect`
 - `onRowDoubleClick`
+- `getDragItem`
+- `onRowDragOut`
+- `acceptsDrop`
+- `onDrop`
+- `renderDragPreview`
 - `showCheckBox`
 - `checkedIds`
 - `onRowCheckChange`
@@ -50,6 +55,11 @@ const columns: ListViewColumn<Row>[] = [
 - Keyboard navigation follows the same pattern as other list-like controls.
 - Column titles support `&` mnemonic markup.
 - A column can use `field` for simple value rendering or `renderCell` for custom content.
+- `getDragItem(row)` makes a row a shared drag source. `onRowDragOut(row)` runs
+  after another target accepts it; `acceptsDrop` and `onDrop` make the list a
+  target. Wrap related controls in `NuDragDropProvider`.
+- `renderDragPreview(row)` can return a compact React node, rather than using
+  the complete report row as the native drag preview.
 
 ## Imperative Handle
 

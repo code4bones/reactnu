@@ -49,7 +49,7 @@ export function App() {
 ## Recommended Order
 
 1. `NuThemeProvider`
-2. `NuDragDropProvider` when ListBox, TreeListView, or IconGrid need to exchange items
+2. `NuDragDropProvider` when ListBox, ListView, TreeListView, or IconGrid need to exchange items
 3. `NuDesktop`
 3. host-driven `appBar`
 4. workspace content

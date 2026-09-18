@@ -1,16 +1,24 @@
 /* eslint-disable react-refresh/only-export-components -- This module intentionally exports the provider, hooks, and shared DnD types together. */
 import {
-  PointerEvent,
   PropsWithChildren,
-  createContext,
+  ReactNode,
+  RefCallback,
+  useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef
 } from "react";
-import { getThemePortalStyle } from "../_shared/themePortal";
+import {
+  DndProvider,
+  DndContext,
+  useDrag,
+  useDragDropManager,
+  useDragLayer,
+  useDrop
+} from "react-dnd";
+import { getEmptyImage, HTML5Backend } from "react-dnd-html5-backend";
 
-const DRAG_THRESHOLD = 3;
+const NU_DRAG_ITEM_TYPE = "reactnu-shared-item";
 
 export type NuDragDropItem<T = unknown> = {
   data: T;
@@ -31,198 +39,189 @@ export type NuDragDropContext = {
   };
 };
 
+export type NuDropAction = "copy" | "move";
+
+export type NuDropResult = {
+  /** Lets a target request whether its source should copy or move after a successful drop. */
+  action?: NuDropAction;
+  /** Identifies the target kind for source-side completion handlers. */
+  targetType?: string;
+};
+
 export type NuDropTargetOptions = {
   accepts?: (item: NuDragDropItem) => boolean;
-  onDrop: (item: NuDragDropItem, context: NuDragDropContext) => boolean | void;
+  onDragEnter?: (item: NuDragDropItem, canDrop: boolean) => void;
+  onDragLeave?: (item: NuDragDropItem) => void;
+  onDrop: (
+    item: NuDragDropItem,
+    context: NuDragDropContext
+  ) => boolean | NuDropResult | void;
   type: string;
 };
 
-type DropTargetRegistration = NuDropTargetOptions & {
-  element: HTMLElement;
+export type NuDropTargetState = {
+  canDrop: boolean;
+  isOver: boolean;
+  item: NuDragDropItem | null;
 };
 
-type ActiveDrag = {
-  item: NuDragDropItem;
-  preview: HTMLElement;
-  sourceElement: HTMLElement;
+type InternalDragItem = NuDragDropItem & {
+  preview?: ReactNode;
+  sourceElement: HTMLElement | null;
   sourceType: string;
 };
 
-type NuDragDropController = {
-  beginDrag: (
-    item: NuDragDropItem,
-    sourceElement: HTMLElement,
-    sourceType: string
-  ) => void;
-  cancelDrag: () => void;
-  dropAt: (clientX: number, clientY: number) => boolean;
-  moveDrag: (clientX: number, clientY: number) => void;
-  registerTarget: (element: HTMLElement, options: NuDropTargetOptions) => () => void;
+type InternalDropResult = NuDropResult & {
+  accepted: boolean;
 };
 
-function createDragPreview(sourceElement: HTMLElement) {
-  const rect = sourceElement.getBoundingClientRect();
-  const preview = sourceElement.cloneNode(true) as HTMLElement;
-
-  preview.removeAttribute("id");
-  preview.setAttribute("aria-hidden", "true");
-  Object.assign(preview.style, {
-    height: `${rect.height}px`,
-    left: `${rect.left}px`,
-    margin: "0",
-    opacity: "0.85",
-    pointerEvents: "none",
-    position: "fixed",
-    top: `${rect.top}px`,
-    width: `${rect.width}px`,
-    zIndex: "2147483647"
-  });
-
-  const themeStyle = getThemePortalStyle(sourceElement);
-
-  Object.entries(themeStyle ?? {}).forEach(([property, value]) => {
-    if (value !== undefined) {
-      preview.style.setProperty(property, String(value));
-    }
-  });
-  document.body.append(preview);
-
-  return preview;
-}
-
-function createController(): NuDragDropController {
-  const targets = new Map<HTMLElement, DropTargetRegistration>();
-  let activeDrag: ActiveDrag | null = null;
-
-  function findTarget(clientX: number, clientY: number) {
-    const elementAtPoint = document.elementFromPoint(clientX, clientY);
-    let candidate = elementAtPoint as HTMLElement | null;
-
-    while (candidate) {
-      const target = targets.get(candidate);
-
-      if (target) {
-        return target;
-      }
-
-      candidate = candidate.parentElement;
-    }
-
-    return Array.from(targets.values())
-      .reverse()
-      .find((target) => {
-        const rect = target.element.getBoundingClientRect();
-
-        return (
-          clientX >= rect.left &&
-          clientX <= rect.right &&
-          clientY >= rect.top &&
-          clientY <= rect.bottom
-        );
-      });
-  }
-
-  function clearActiveDrag() {
-    activeDrag?.preview.remove();
-    activeDrag = null;
-  }
-
+function getDropContext(
+  item: InternalDragItem,
+  element: HTMLElement,
+  type: string,
+  clientOffset: { x: number; y: number } | null
+): NuDragDropContext {
   return {
-    beginDrag(item, sourceElement, sourceType) {
-      clearActiveDrag();
-      activeDrag = {
-        item,
-        preview: createDragPreview(sourceElement),
-        sourceElement,
-        sourceType
-      };
+    clientX: clientOffset?.x ?? 0,
+    clientY: clientOffset?.y ?? 0,
+    source: {
+      element: item.sourceElement ?? element,
+      type: item.sourceType
     },
-    cancelDrag: clearActiveDrag,
-    dropAt(clientX, clientY) {
-      const currentDrag = activeDrag;
-
-      if (!currentDrag) {
-        return false;
-      }
-
-      const target = findTarget(clientX, clientY);
-      clearActiveDrag();
-
-      if (!target || target.element === currentDrag.sourceElement) {
-        return false;
-      }
-
-      if (target.accepts?.(currentDrag.item) === false) {
-        return false;
-      }
-
-      return (
-        target.onDrop(currentDrag.item, {
-          clientX,
-          clientY,
-          source: {
-            element: currentDrag.sourceElement,
-            type: currentDrag.sourceType
-          },
-          target: { element: target.element, type: target.type }
-        }) !== false
-      );
-    },
-    moveDrag(clientX, clientY) {
-      const currentDrag = activeDrag;
-
-      if (!currentDrag) {
-        return;
-      }
-
-      const rect = currentDrag.sourceElement.getBoundingClientRect();
-      currentDrag.preview.style.left = `${Math.round(clientX - rect.width / 2)}px`;
-      currentDrag.preview.style.top = `${Math.round(clientY - rect.height / 2)}px`;
-    },
-    registerTarget(element, options) {
-      targets.set(element, { ...options, element });
-
-      return () => targets.delete(element);
-    }
+    target: { element, type }
   };
 }
 
-const fallbackController = createController();
-const NuDragDropContext = createContext<NuDragDropController | null>(null);
+function NuDragPreviewLayer() {
+  const { isDragging, item, offset } = useDragLayer((monitor) => ({
+    isDragging: monitor.isDragging(),
+    item: monitor.getItem<InternalDragItem>() ?? null,
+    offset: monitor.getClientOffset()
+  }));
 
-export function NuDragDropProvider({ children }: PropsWithChildren) {
-  const controller = useMemo(() => createController(), []);
+  if (!isDragging || !item?.preview || !offset) {
+    return null;
+  }
 
   return (
-    <NuDragDropContext.Provider value={controller}>
-      {children}
-    </NuDragDropContext.Provider>
+    <div
+      aria-hidden="true"
+      style={{
+        left: 0,
+        pointerEvents: "none",
+        position: "fixed",
+        top: 0,
+        transform: `translate(${Math.round(offset.x + 12)}px, ${Math.round(offset.y + 12)}px)`,
+        zIndex: 2147483647
+      }}
+    >
+      {item.preview}
+    </div>
   );
 }
 
+export function NuDragDropProvider({ children }: PropsWithChildren) {
+  const { dragDropManager } = useContext(DndContext);
+
+  if (dragDropManager) {
+    return children;
+  }
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      {children}
+      <NuDragPreviewLayer />
+    </DndProvider>
+  );
+}
+
+/** Returns the underlying react-dnd manager for advanced integrations. */
 export function useNuDragDrop() {
-  return useContext(NuDragDropContext) ?? fallbackController;
+  return useDragDropManager();
 }
 
 export function useNuDropTarget(
   element: HTMLElement | null,
   options: NuDropTargetOptions | undefined
-) {
-  const controller = useNuDragDrop();
+): NuDropTargetState {
+  const [{ canDrop, isOver, item }, drop] = useDrop<
+    InternalDragItem,
+    InternalDropResult,
+    NuDropTargetState
+  >(
+    () => ({
+      accept: NU_DRAG_ITEM_TYPE,
+      canDrop: (dragItem) =>
+        options ? options.accepts?.(dragItem) !== false : false,
+      collect: (monitor) => ({
+        canDrop: monitor.canDrop(),
+        isOver: monitor.isOver({ shallow: true }),
+        item: monitor.isOver({ shallow: true })
+          ? (monitor.getItem<InternalDragItem>() ?? null)
+          : null
+      }),
+      drop: (dragItem, monitor) => {
+        if (!options || monitor.didDrop()) {
+          return undefined;
+        }
+
+        const result = options.onDrop(
+          dragItem,
+          getDropContext(
+            dragItem,
+            element ?? dragItem.sourceElement ?? document.body,
+            options.type,
+            monitor.getClientOffset()
+          )
+        );
+
+        if (result === false) {
+          return { accepted: false };
+        }
+
+        return {
+          ...(typeof result === "object" && result ? result : {}),
+          accepted: true
+        };
+      }
+    }),
+    [element, options]
+  );
 
   useEffect(() => {
     if (!element || !options) {
+      drop(null);
       return undefined;
     }
 
-    return controller.registerTarget(element, options);
-  }, [controller, element, options]);
+    drop(element);
+    return () => {
+      drop(null);
+    };
+  }, [drop, element, options]);
+
+  const previousItemRef = useRef<NuDragDropItem | null>(null);
+
+  useEffect(() => {
+    const previousItem = previousItemRef.current;
+
+    if (isOver && item && (!previousItem || previousItem !== item)) {
+      options?.onDragEnter?.(item, canDrop);
+    } else if (!isOver && previousItem) {
+      options?.onDragLeave?.(previousItem);
+    }
+
+    previousItemRef.current = isOver ? item : null;
+  }, [canDrop, isOver, item, options]);
+
+  return { canDrop, isOver, item };
 }
 
 type NuDragSourceOptions = {
   disabled?: boolean;
   getItem: () => NuDragDropItem | false;
-  onDropAccepted?: () => void;
+  onDropAccepted?: (result: NuDropResult) => void;
+  renderPreview?: (item: NuDragDropItem) => ReactNode;
   sourceType: string;
 };
 
@@ -230,97 +229,63 @@ export function useNuDragSource({
   disabled = false,
   getItem,
   onDropAccepted,
+  renderPreview,
   sourceType
 }: NuDragSourceOptions) {
-  const controller = useNuDragDrop();
-  const stateRef = useRef({
-    dragging: false,
-    pointerId: -1,
-    sourceElement: null as HTMLElement | null,
-    startX: 0,
-    startY: 0
-  });
-  const state = stateRef.current;
-
-  function stop(event: PointerEvent<HTMLElement>, shouldDrop: boolean) {
-    if (state.pointerId !== event.pointerId) {
-      return;
-    }
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    state.pointerId = -1;
-
-    if (state.dragging && shouldDrop && controller.dropAt(event.clientX, event.clientY)) {
-      onDropAccepted?.();
-    } else if (state.dragging) {
-      controller.cancelDrag();
-    }
-
-    state.dragging = false;
-    state.sourceElement = null;
-  }
-
-  return {
-    onPointerCancel(event: PointerEvent<HTMLElement>) {
-      stop(event, false);
-    },
-    onPointerDown(event: PointerEvent<HTMLElement>) {
-      if (disabled || event.button !== 0) {
-        return;
-      }
-
-      if (
-        event.target instanceof HTMLElement &&
-        event.target.closest("button, input, select, textarea, a")
-      ) {
-        return;
-      }
-
-      state.dragging = false;
-      state.pointerId = event.pointerId;
-      state.sourceElement = event.currentTarget;
-      state.startX = event.clientX;
-      state.startY = event.clientY;
-      event.currentTarget.setPointerCapture(event.pointerId);
-    },
-    onPointerMove(event: PointerEvent<HTMLElement>) {
-      if (state.pointerId !== event.pointerId || !state.sourceElement) {
-        return;
-      }
-
-      if (!state.dragging) {
-        const distance = Math.max(
-          Math.abs(event.clientX - state.startX),
-          Math.abs(event.clientY - state.startY)
-        );
-
-        if (distance < DRAG_THRESHOLD) {
-          return;
-        }
-
+  const sourceElementRef = useRef<HTMLElement | null>(null);
+  const [{ isDragging }, drag, preview] = useDrag<
+    InternalDragItem,
+    InternalDropResult,
+    { isDragging: boolean }
+  >(
+    () => ({
+      type: NU_DRAG_ITEM_TYPE,
+      canDrag: () => !disabled && Boolean(getItem()),
+      item: () => {
         const item = getItem();
 
         if (!item) {
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            event.currentTarget.releasePointerCapture(event.pointerId);
-          }
-
-          state.pointerId = -1;
-          state.sourceElement = null;
-          return;
+          throw new Error("getItem must return a drag item when dragging is enabled.");
         }
 
-        state.dragging = true;
-        controller.beginDrag(item, state.sourceElement, sourceType);
+        return {
+          ...item,
+          preview: renderPreview?.(item),
+          sourceElement: sourceElementRef.current,
+          sourceType
+        };
+      },
+      end: (_item, monitor) => {
+        const result = monitor.getDropResult();
+
+        if (monitor.didDrop() && result?.accepted !== false) {
+          onDropAccepted?.(result ?? {});
+        }
+      },
+      collect: (monitor) => ({ isDragging: monitor.isDragging() })
+    }),
+    [disabled, getItem, onDropAccepted, renderPreview, sourceType]
+  );
+
+  const dragRef = useCallback<RefCallback<HTMLElement>>(
+    (element) => {
+      if (disabled) {
+        sourceElementRef.current = null;
+        drag(null);
+        return;
       }
 
-      controller.moveDrag(event.clientX, event.clientY);
+      sourceElementRef.current = element;
+      drag(element);
     },
-    onPointerUp(event: PointerEvent<HTMLElement>) {
-      stop(event, true);
+    [disabled, drag]
+  );
+
+  useEffect(() => {
+    if (renderPreview) {
+      preview(getEmptyImage(), { captureDraggingState: true });
     }
-  };
+  }, [preview, renderPreview]);
+
+  return { dragRef, isDragging };
 }

@@ -1,4 +1,4 @@
-import { MouseEvent } from "react";
+import { MouseEvent, ReactNode } from "react";
 import { buildListBoxItemId } from "./helpers";
 import { ListBoxCategoryView } from "./ListBoxCategoryView";
 import { ListBoxItemView } from "./ListBoxItemView";
@@ -18,6 +18,7 @@ type ListBoxGroupViewProps = {
   ) => void;
   onDoubleClickItem?: (item: ListBoxItem, group: ListBoxGroup) => void;
   onItemDragOut?: (item: ListBoxItem, group: ListBoxGroup) => void;
+  renderDragPreview?: (item: ListBoxItem, group: ListBoxGroup) => ReactNode;
   onPopupMenuItem?: (
     event: MouseEvent<HTMLDivElement>,
     item: ListBoxItem,
@@ -41,6 +42,7 @@ export function ListBoxGroupView({
   onActivateItem,
   onDoubleClickItem,
   onItemDragOut,
+  renderDragPreview,
   onPopupMenuItem,
   onToggleItemCheck,
   registerItemRef,
@@ -79,6 +81,7 @@ export function ListBoxGroupView({
             onActivate={onActivateItem}
             onDoubleClick={onDoubleClickItem}
             onDragOut={onItemDragOut}
+            renderDragPreview={renderDragPreview}
             onPopupMenu={onPopupMenuItem}
             onToggleCheck={onToggleItemCheck}
             registerItemRef={registerItemRef}

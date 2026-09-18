@@ -22,6 +22,7 @@
 - `onItemDoubleClick?: (item, group) => void`
 - `onPopupMenu?: (event, item, group) => void`
 - `getDragItem?: (item, group) => NuDragDropItem | false`
+- `renderDragPreview?: (item, group) => ReactNode`
 - `onItemDragOut?: (item, group) => void`
 - `acceptsDrop?: (item) => boolean`
 - `onDrop?: (item, context) => boolean | void`
@@ -44,3 +45,5 @@
 - Inside `NuDragDropProvider`, `getDragItem` makes rows draggable. The
   application decides accepted data in `acceptsDrop` and updates its collection
   in `onDrop` / `onItemDragOut`.
+- `renderDragPreview(item, group)` may render a compact React preview instead
+  of the full list row while dragging.
