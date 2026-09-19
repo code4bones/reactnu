@@ -29,7 +29,26 @@ Use `useNuWindowManager()` to access:
 
 ## Managed Window Persistence
 
-`NuManagedWindowDefinition` also supports:
+Set `windowStoreKey` to persist a managed window's last position, size, and
+minimized/maximized state automatically. ReactNU stores the snapshot in
+`localStorage` as `reactnu.window.<key>`. Use a stable, unique key for each
+logical window; re-opening that window with the same key restores its saved
+geometry.
+
+```tsx
+windowManager.openWindow({
+  content: <Inspector />,
+  title: "Inspector",
+  windowStoreKey: "workspace.inspector"
+});
+```
+
+Browser storage is optional: malformed or unavailable storage is ignored.
+`onOpen` remains the explicit override for applications that restore state
+from their own storage, and `onClose` still receives the current snapshot.
+Clear `reactnu.window.workspace.inspector` to reset this example.
+
+For host-owned persistence, `NuManagedWindowDefinition` also supports:
 
 - `onOpen?: () => NuManagedWindowSnapshot | void`
 - `onClose?: (snapshot: NuManagedWindowSnapshot) => boolean | void`

@@ -234,6 +234,36 @@ function LinkedActivationLauncher() {
   );
 }
 
+function PersistedWindowLauncher() {
+  const windowManager = useNuWindowManager();
+
+  function openInspector() {
+    windowManager.openWindow({
+      content: (
+        <div style={{ padding: "0.75rem 1rem" }}>
+          Move or resize this window, close it, then open it again. Its geometry
+          is restored from localStorage.
+        </div>
+      ),
+      style: {
+        height: "14rem",
+        left: "18%",
+        top: "20%",
+        transform: "none",
+        width: "26rem"
+      },
+      title: "Persisted inspector",
+      windowStoreKey: "storybook.persisted-inspector"
+    });
+  }
+
+  return (
+    <div style={{ padding: "1rem" }}>
+      <Button onClick={openInspector}>Open &persisted inspector</Button>
+    </div>
+  );
+}
+
 function AspectRatioWindow() {
   const [size, setSize] = React.useState({ height: 216, width: 384 });
 
@@ -366,6 +396,24 @@ export const LinkedActivation: Story = {
     >
       <NuWindowProvider renderAppBar={false}>
         <LinkedActivationLauncher />
+      </NuWindowProvider>
+    </div>
+  )
+};
+
+export const ManagedWindowPersistence: Story = {
+  render: () => (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "42rem",
+        overflow: "hidden",
+        backgroundColor: "var(--nu-desktop-bg)"
+      }}
+    >
+      <NuWindowProvider renderAppBar={false}>
+        <PersistedWindowLauncher />
       </NuWindowProvider>
     </div>
   )

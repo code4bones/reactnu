@@ -56,6 +56,10 @@ to `useNuWindowManager().openWindow(...)`; it is resolved by
 `NuWindowProvider`, rather than by a standalone `Window` instance. See
 [NuWindowProvider](./NuWindowProvider.md#linked-activation).
 
+`windowStoreKey?: string` is also available on a managed window definition.
+It automatically restores and saves that window's geometry in browser storage;
+see [NuWindowProvider](./NuWindowProvider.md#managed-window-persistence).
+
 ## Notes
 
 - Drag and resize are implemented with pointer events and local DOM updates for smoother motion.

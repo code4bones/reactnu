@@ -9,6 +9,24 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [Unreleased]
+
+### Fixed
+
+- `windowStoreKey` persistence no longer writes to `localStorage` on every
+  drag/resize bounds update (it was firing synchronously on effectively
+  every pointermove, visibly janking the drag/resize gesture itself).
+  Writes are now debounced per window (250ms after motion settles) and
+  flushed immediately on close or provider unmount so the final position is
+  never lost.
+
+## [0.1.77]
+
+### Added
+
+- Added `windowStoreKey` to managed windows for automatic local persistence of
+  their position, size, and minimized/maximized state.
+
 ## [0.1.75]
 
 ### Added

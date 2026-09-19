@@ -98,42 +98,151 @@ function getNumericStyleValue(value: CSSProperties["left"]) {
   return undefined;
 }
 
+function getWindowStorageKey(windowStoreKey: string | undefined) {
+  const normalizedKey = windowStoreKey?.trim();
+
+  return normalizedKey ? `reactnu.window.${normalizedKey}` : null;
+}
+
+function readStoredWindowSnapshot(
+  windowStoreKey: string | undefined
+): NuManagedWindowSnapshot | undefined {
+  const storageKey = getWindowStorageKey(windowStoreKey);
+
+  if (!storageKey || typeof window === "undefined") {
+    return undefined;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(storageKey);
+
+    if (!rawValue) {
+      return undefined;
+    }
+
+    const parsedValue: unknown = JSON.parse(rawValue);
+
+    if (!parsedValue || typeof parsedValue !== "object") {
+      return undefined;
+    }
+
+    const storedValue = parsedValue as Record<string, unknown>;
+    const snapshot: NuManagedWindowSnapshot = {};
+
+    for (const property of ["height", "width"] as const) {
+      const value = storedValue[property];
+
+      if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+        snapshot[property] = value;
+      }
+    }
+
+    for (const property of ["left", "top"] as const) {
+      const value = storedValue[property];
+
+      if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+        snapshot[property] = value;
+      }
+    }
+
+    for (const property of ["maximized", "minimized"] as const) {
+      const value = storedValue[property];
+
+      if (typeof value === "boolean") {
+        snapshot[property] = value;
+      }
+    }
+
+    return Object.keys(snapshot).length > 0 ? snapshot : undefined;
+  } catch {
+    // Persistence is optional; unavailable browser storage must not block windows.
+    return undefined;
+  }
+}
+
+function writeStoredWindowSnapshot(
+  windowStoreKey: string | undefined,
+  snapshot: NuManagedWindowSnapshot
+) {
+  const storageKey = getWindowStorageKey(windowStoreKey);
+
+  if (!storageKey || typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(snapshot));
+  } catch {
+    // Persistence is optional; unavailable browser storage must not block windows.
+  }
+}
+
+// A drag or resize gesture updates windowBoundsById on (essentially) every
+// pointermove, and writeStoredWindowSnapshot's JSON.stringify + synchronous
+// localStorage.setItem was firing on every one of those updates -- visibly
+// janking the drag itself. Coalesce into one write per gesture: reset a
+// per-window timer on every bounds change and only persist once motion has
+// settled, flushing immediately on close/unmount instead of dropping the
+// final in-flight position.
+const WINDOW_STORE_WRITE_DEBOUNCE_MS = 250;
+
+type PendingWindowStoreWrite = {
+  timeoutId: ReturnType<typeof setTimeout>;
+  windowStoreKey: string;
+  snapshot: NuManagedWindowSnapshot;
+};
+
 function resolveSavedWindowStyle(
   definition: NuManagedWindowDefinition,
   mode: WindowMode,
   ownerCenteredStyle: CSSProperties,
   index: number
 ) {
-  const snapshot = definition.onOpen?.();
-  const savedStyle = snapshot
-    ? {
-        height: snapshot.height,
-        left: snapshot.left,
-        top: snapshot.top,
-        transform:
-          snapshot.left !== undefined || snapshot.top !== undefined
-            ? "none"
-            : undefined,
-        width: snapshot.width
-      }
-    : undefined;
+  // An explicit host restore hook remains the escape hatch for application
+  // storage. The browser-backed key supplies the default restoration path.
+  const snapshot =
+    definition.onOpen?.() ??
+    readStoredWindowSnapshot(definition.windowStoreKey);
+  const savedStyle: CSSProperties = {};
+
+  if (snapshot) {
+    if (snapshot.height !== undefined) {
+      savedStyle.height = snapshot.height;
+    }
+
+    if (snapshot.left !== undefined) {
+      savedStyle.left = snapshot.left;
+    }
+
+    if (snapshot.top !== undefined) {
+      savedStyle.top = snapshot.top;
+    }
+
+    if (snapshot.width !== undefined) {
+      savedStyle.width = snapshot.width;
+    }
+
+    if (snapshot.left !== undefined || snapshot.top !== undefined) {
+      savedStyle.transform = "none";
+    }
+  }
 
   return {
     maximized: snapshot?.maximized === true,
     minimized: snapshot?.minimized === true,
-    restoreStyle:
-      snapshot?.maximized === true && savedStyle
-        ? {
-            ...getDefaultWindowStyle(mode, index),
-            ...ownerCenteredStyle,
-            ...savedStyle
-          }
-        : undefined,
+    restoreStyle: snapshot?.maximized
+      ? {
+          ...getDefaultWindowStyle(mode, index),
+          ...ownerCenteredStyle,
+          ...definition.style,
+          ...savedStyle
+        }
+      : undefined,
     style: {
       ...getDefaultWindowStyle(mode, index),
       ...ownerCenteredStyle,
-      ...savedStyle,
-      ...definition.style
+      ...definition.style,
+      ...savedStyle
     }
   };
 }
@@ -291,6 +400,9 @@ export function NuWindowProvider({
   const creationOrderRef = useRef(0);
   const idRef = useRef(0);
   const windowBoundsByIdRef = useRef<Record<string, NuWindowBounds>>({});
+  const pendingWindowStoreWritesRef = useRef<
+    Map<string, PendingWindowStoreWrite>
+  >(new Map());
   const [windows, setWindows] = useState<NuManagedWindowRecord[]>([]);
   const [windowBoundsById, setWindowBoundsById] = useState<
     Record<string, NuWindowBounds>
@@ -808,6 +920,68 @@ export function NuWindowProvider({
   useEffect(() => {
     onAppModalChange?.(hasAppModal);
   }, [hasAppModal, onAppModalChange]);
+
+  useEffect(() => {
+    const pendingWindowStoreWrites = pendingWindowStoreWritesRef.current;
+    const windowStoreKeyById = new Map(
+      windows.map((windowEntry) => [windowEntry.id, windowEntry.windowStoreKey])
+    );
+
+    // A closed window, or one whose key changed, must flush its final pending
+    // snapshot before its timer bookkeeping is discarded.
+    for (const [id, pending] of pendingWindowStoreWrites) {
+      if (windowStoreKeyById.get(id) === pending.windowStoreKey) {
+        continue;
+      }
+
+      clearTimeout(pending.timeoutId);
+      pendingWindowStoreWrites.delete(id);
+      writeStoredWindowSnapshot(pending.windowStoreKey, pending.snapshot);
+    }
+
+    for (const windowEntry of windows) {
+      if (!windowEntry.windowStoreKey) {
+        continue;
+      }
+
+      const existing = pendingWindowStoreWrites.get(windowEntry.id);
+
+      if (existing) {
+        clearTimeout(existing.timeoutId);
+      }
+
+      const windowStoreKey = windowEntry.windowStoreKey;
+      const snapshot = resolveManagedWindowSnapshot(
+        windowEntry,
+        windowBoundsById
+      );
+      const timeoutId = setTimeout(() => {
+        writeStoredWindowSnapshot(windowStoreKey, snapshot);
+        pendingWindowStoreWrites.delete(windowEntry.id);
+      }, WINDOW_STORE_WRITE_DEBOUNCE_MS);
+
+      pendingWindowStoreWrites.set(windowEntry.id, {
+        timeoutId,
+        windowStoreKey,
+        snapshot
+      });
+    }
+  }, [windowBoundsById, windows]);
+
+  // Provider unmounting (app closing/navigating away) still shouldn't drop
+  // whatever the debounce above hasn't flushed yet.
+  useEffect(() => {
+    const pendingWindowStoreWrites = pendingWindowStoreWritesRef.current;
+
+    return () => {
+      for (const entry of pendingWindowStoreWrites.values()) {
+        clearTimeout(entry.timeoutId);
+        writeStoredWindowSnapshot(entry.windowStoreKey, entry.snapshot);
+      }
+
+      pendingWindowStoreWrites.clear();
+    };
+  }, []);
 
   return (
     <NuWindowContext.Provider value={contextValue}>

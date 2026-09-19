@@ -128,7 +128,7 @@ function NuIconGridItem({
     icon.contextMenuItems,
     icon
   );
-  const dragSource = useNuDragSource({
+  const { dragRef, isDragging } = useNuDragSource({
     disabled: icon.disabled,
     getItem: () => ({ data: icon, id: icon.id, type: "icon" }),
     onDropAccepted: (result) => {
@@ -184,14 +184,14 @@ function NuIconGridItem({
       <button
         aria-haspopup={contextMenuItems.length > 0 ? "menu" : undefined}
         className="nu-icon-grid__icon"
-        data-dragging={dragSource.isDragging || undefined}
+        data-dragging={isDragging || undefined}
         data-selected={manager.selectedIconId === icon.id || undefined}
         disabled={icon.disabled}
         onClick={handleClick}
         onContextMenu={handleContextMenu}
         onDoubleClick={icon.onDoubleClick}
         onKeyDown={handleKeyDown}
-        ref={dragSource.dragRef}
+        ref={(node) => dragRef(node)}
         style={{ left: icon.position.x, top: icon.position.y }}
         type="button"
       >

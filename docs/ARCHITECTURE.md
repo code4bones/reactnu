@@ -126,6 +126,8 @@ The host owns:
 
 Managed windows can persist geometry with:
 
+- `windowStoreKey?: string` for automatic browser-local persistence under
+  `reactnu.window.<key>`
 - `onOpen?: () => NuManagedWindowSnapshot | void`
 - `onClose?: (snapshot) => boolean | void`
 

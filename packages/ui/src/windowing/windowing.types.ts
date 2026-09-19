@@ -47,6 +47,11 @@ export type NuManagedWindowDefinition = {
   style?: CSSProperties;
   titleButtons?: WindowTitleButtonDefinition[];
   title: string;
+  /**
+   * Persists this managed window's geometry and minimized/maximized state in
+   * localStorage. The key is scoped to `reactnu.window.`.
+   */
+  windowStoreKey?: string;
 };
 
 export type NuManagedWindowControls = {
