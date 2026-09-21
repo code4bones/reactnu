@@ -61,3 +61,4 @@
 - Borders are optional through `bordered`; the default presentation is borderless.
 - Embedded ReactNU field controls have their internal top labels visually suppressed inside the property cell, because the grid already owns the left label column.
 - `PropertyGrid` is already suitable as a practical inspector surface, but it is still not a full schema engine. The next logical expansion would be deeper in-place editing semantics and richer nested property schemas.
+- With the default `fill` behavior, the grid takes its parent’s available space and scrolls its own rows when they exceed that space. Give the parent a bounded height (for example, a window body or a sized `NuView`) rather than relying on the outer page to scroll the inspector.

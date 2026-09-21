@@ -43,7 +43,11 @@ function ListViewRowInner<T extends ListViewRowBase>({
   const dragSource = useNuDragSource({
     disabled: row.disabled || !getDragItem,
     getItem: () => getDragItem?.(row) ?? false,
-    onDropAccepted: () => onDragOut?.(row),
+    onDropAccepted: (result) => {
+      if (result.action !== "copy") {
+        onDragOut?.(row);
+      }
+    },
     renderPreview: renderDragPreview ? () => renderDragPreview(row) : undefined,
     sourceType: "list-view-row"
   });

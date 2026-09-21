@@ -167,6 +167,16 @@ export const THEME_TOKEN_GROUPS: ReadonlyArray<{
         label: "Field text"
       },
       {
+        key: "memoBackground",
+        cssVariable: "--nu-color-memo-bg",
+        label: "Memo background"
+      },
+      {
+        key: "memoText",
+        cssVariable: "--nu-color-memo-text",
+        label: "Memo text"
+      },
+      {
         key: "borderLight",
         cssVariable: "--nu-border-light",
         label: "Light border"
@@ -365,6 +375,11 @@ export const VISUAL_TOKEN_GROUPS: ReadonlyArray<{
         label: "Toolbar inset"
       },
       {
+        cssVariable: "--nu-toolbar-label-offset-y",
+        defaultValue: "1px",
+        label: "Toolbar label vertical offset"
+      },
+      {
         cssVariable: "--nu-toolbar-border-color",
         control: "color",
         defaultValue: "var(--nu-border-dark)",
@@ -557,8 +572,8 @@ export const VISUAL_TOKEN_GROUPS: ReadonlyArray<{
   }
 ];
 
-const INITIAL_FONT_FAMILY = '"Comic Sans MS", "Comic Sans", cursive';
-const INITIAL_FONT_SIZE = 16;
+const INITIAL_FONT_FAMILY = '"Consolas", monospace';
+const INITIAL_FONT_SIZE = 15;
 
 function getInitialVisualTokens() {
   return Object.fromEntries(
@@ -566,6 +581,20 @@ function getInitialVisualTokens() {
       group.fields.map((field) => [field.cssVariable, field.defaultValue])
     )
   ) as Record<string, string>;
+}
+
+function getThemeDesignerDefaults(themeName: NuThemeName) {
+  const theme = nuThemes[themeName];
+
+  return {
+    desktopPatternMode: theme.desktopPatternMode ?? "dot-grid",
+    fontFamily: theme.fontFamily ?? INITIAL_FONT_FAMILY,
+    fontSize: theme.fontSize ?? INITIAL_FONT_SIZE,
+    visualTokens: {
+      ...getInitialVisualTokens(),
+      ...theme.visualTokens
+    }
+  };
 }
 
 function getThemeCss(
@@ -647,13 +676,21 @@ type SandboxThemeHostProps = PropsWithChildren;
 export function SandboxThemeHost({ children }: SandboxThemeHostProps) {
   const [baseThemeName, setBaseThemeName] = useState<NuThemeName>("classic");
   const [desktopPatternMode, setDesktopPatternMode] =
-    useState<NuDesktopPatternMode>("dot-grid");
-  const [fontFamily, setFontFamily] = useState(INITIAL_FONT_FAMILY);
-  const [fontSize, setFontSize] = useState(INITIAL_FONT_SIZE);
+    useState<NuDesktopPatternMode>(
+      () => getThemeDesignerDefaults("classic").desktopPatternMode
+    );
+  const [fontFamily, setFontFamily] = useState(
+    () => getThemeDesignerDefaults("classic").fontFamily
+  );
+  const [fontSize, setFontSize] = useState(
+    () => getThemeDesignerDefaults("classic").fontSize
+  );
   const [themeOverrides, setThemeOverrides] = useState<Partial<NuThemeTokens>>(
     {}
   );
-  const [visualTokens, setVisualTokens] = useState(getInitialVisualTokens);
+  const [visualTokens, setVisualTokens] = useState(
+    () => getThemeDesignerDefaults("classic").visualTokens
+  );
 
   const resolvedTheme = useMemo<NuThemeDefinition>(
     () => ({
@@ -672,19 +709,25 @@ export function SandboxThemeHost({ children }: SandboxThemeHostProps) {
   );
 
   const selectBaseTheme = useCallback((themeName: NuThemeName) => {
+    const defaults = getThemeDesignerDefaults(themeName);
+
     setBaseThemeName(themeName);
     setThemeOverrides({});
-    setVisualTokens(getInitialVisualTokens());
-    setDesktopPatternMode("dot-grid");
+    setVisualTokens(defaults.visualTokens);
+    setDesktopPatternMode(defaults.desktopPatternMode);
+    setFontFamily(defaults.fontFamily);
+    setFontSize(defaults.fontSize);
   }, []);
 
   const resetTheme = useCallback(() => {
+    const defaults = getThemeDesignerDefaults(baseThemeName);
+
     setThemeOverrides({});
-    setVisualTokens(getInitialVisualTokens());
-    setDesktopPatternMode("dot-grid");
-    setFontFamily(INITIAL_FONT_FAMILY);
-    setFontSize(INITIAL_FONT_SIZE);
-  }, []);
+    setVisualTokens(defaults.visualTokens);
+    setDesktopPatternMode(defaults.desktopPatternMode);
+    setFontFamily(defaults.fontFamily);
+    setFontSize(defaults.fontSize);
+  }, [baseThemeName]);
 
   const setThemeToken = useCallback(
     (key: keyof NuThemeTokens, value: string) => {

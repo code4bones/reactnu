@@ -32,6 +32,8 @@ export type NuThemeTokens = {
   buttonText: string;
   fieldBackground: string;
   fieldText: string;
+  memoBackground: string;
+  memoText: string;
   borderLight: string;
   borderDark: string;
   borderAccent: string;
@@ -42,13 +44,86 @@ export type NuThemeTokens = {
   windowModalBackdrop: string;
 };
 
+export type NuThemeVisualTokens = Record<`--nu-${string}`, string>;
+
 export type NuThemeDefinition = {
+  desktopPatternMode?: NuDesktopPatternMode;
+  fontFamily?: string;
+  fontSize?: number;
   name: string;
   label: string;
   tokens: NuThemeTokens;
+  visualTokens?: NuThemeVisualTokens;
+};
+
+const classicVisualTokens: NuThemeVisualTokens = {
+  "--nu-glyph-cell-size": "1em",
+  "--nu-content-inset": "1em 1ch",
+  "--nu-control-height": "1.2em",
+  "--nu-space-xs": "0.25rem",
+  "--nu-space-sm": "0.5rem",
+  "--nu-space-md": "0.75rem",
+  "--nu-space-lg": "1rem",
+  "--nu-space-xl": "1.5rem",
+  "--nu-radius-none": "0",
+  "--nu-window-title-height": "calc(1em + 10px)",
+  "--nu-window-status-height": "1.35rem",
+  "--nu-window-title-controls-width": "7.8ch",
+  "--nu-window-title-icon-width": "1em",
+  "--nu-frame-thickness": "1px",
+  "--nu-rule-thickness": "1px",
+  "--nu-window-shadow-offset-x": "1ch",
+  "--nu-window-shadow-offset-y": "1em",
+  "--nu-button-shadow-x": "1ch",
+  "--nu-button-shadow-y": "calc(var(--nu-control-height) / 2)",
+  "--nu-button-shadow-offset-x": "var(--nu-button-shadow-x)",
+  "--nu-button-shadow-offset-y": "calc(var(--nu-control-height) / 2)",
+  "--nu-button-press-depth-x": "0.18em",
+  "--nu-button-press-depth-y": "0.1em",
+  "--nu-app-bar-height": "2.1rem",
+  "--nu-app-bar-padding": "0.2rem 0.35rem",
+  "--nu-toolbar-background": "#798ee2",
+  "--nu-toolbar-inset": "1ch",
+  "--nu-toolbar-label-offset-y": "1px",
+  "--nu-toolbar-border-color": "transparent",
+  "--nu-toolbar-border-style": "solid",
+  "--nu-toolbar-border-width": "var(--nu-rule-thickness)",
+  "--nu-toolbar-separator-color": "#ffffff",
+  "--nu-toolbar-separator-style": "solid",
+  "--nu-toolbar-separator-width": "var(--nu-rule-thickness)",
+  "--nu-menu-divider-color": "#000000",
+  "--nu-menu-divider-style": "solid",
+  "--nu-menu-divider-width": "var(--nu-rule-thickness)",
+  "--nu-window-shadow-bg": "rgb(0 0 0 / 0.38)",
+  "--nu-window-inactive-border":
+    "color-mix(in srgb, var(--nu-border-light) 78%, var(--nu-border-dark))",
+  "--nu-scrollbar-track": "transparent",
+  "--nu-scrollbar-thumb": "var(--nu-color-button-face)",
+  "--nu-scrollbar-button-bg": "var(--nu-color-button-face)",
+  "--nu-scrollbar-button-size": "0.875rem",
+  "--nu-icon-grid-icon-background": "transparent",
+  "--nu-icon-grid-icon-border-color": "transparent",
+  "--nu-icon-grid-icon-border-style": "solid",
+  "--nu-icon-grid-icon-opacity": "1",
+  "--nu-icon-grid-icon-selected-background": "var(--nu-color-title-bg)",
+  "--nu-icon-grid-icon-inactive-selected-background":
+    "color-mix(in srgb, var(--nu-icon-grid-icon-selected-background) 65%, var(--nu-color-app-bg-alt))",
+  "--nu-icon-grid-icon-selected-border-color": "var(--nu-focus-color)",
+  "--nu-icon-grid-icon-selected-border-style": "solid",
+  "--nu-icon-grid-icon-selected-opacity": "1",
+  "--nu-icon-grid-icon-focus-background": "var(--nu-color-title-bg)",
+  "--nu-icon-grid-icon-focus-border-color": "var(--nu-focus-color)",
+  "--nu-icon-grid-icon-focus-border-style": "solid",
+  "--nu-icon-grid-icon-focus-opacity": "1",
+  "--nu-icon-grid-icon-disabled-opacity": "0.6",
+  "--nu-icon-grid-icon-drag-opacity": "0.35",
+  "--nu-icon-grid-icon-drag-preview-opacity": "0.85"
 };
 
 const classicTheme: NuThemeDefinition = {
+  desktopPatternMode: "dot-grid",
+  fontFamily: '"Consolas", monospace',
+  fontSize: 15,
   name: "classic",
   label: "Classic Blue",
   tokens: {
@@ -76,6 +151,8 @@ const classicTheme: NuThemeDefinition = {
     buttonText: "#000000",
     fieldBackground: "#000000",
     fieldText: "#ffffff",
+    memoBackground: "#8ae8ff",
+    memoText: "#000000",
     borderLight: "#ffffff",
     borderDark: "#000000",
     borderAccent: "#ffff55",
@@ -84,7 +161,8 @@ const classicTheme: NuThemeDefinition = {
     focusColor: "#ffff55",
     windowInactiveOverlay: "rgb(0 0 0 / 0.22)",
     windowModalBackdrop: "rgb(0 0 0 / 0.32)"
-  }
+  },
+  visualTokens: classicVisualTokens
 };
 
 const amberTheme: NuThemeDefinition = {
@@ -115,6 +193,8 @@ const amberTheme: NuThemeDefinition = {
     buttonText: "#201000",
     fieldBackground: "#201000",
     fieldText: "#ffd28f",
+    memoBackground: "#ffd28f",
+    memoText: "#201000",
     borderLight: "#ffd28f",
     borderDark: "#000000",
     borderAccent: "#fff27a",
@@ -154,6 +234,8 @@ const phosphorTheme: NuThemeDefinition = {
     buttonText: "#061208",
     fieldBackground: "#061208",
     fieldText: "#b7ffbf",
+    memoBackground: "#b7ffbf",
+    memoText: "#061208",
     borderLight: "#b7ffbf",
     borderDark: "#000000",
     borderAccent: "#f7ff7a",
@@ -168,6 +250,7 @@ const phosphorTheme: NuThemeDefinition = {
 const midnightTheme: NuThemeDefinition = {
   name: "midnight",
   label: "Midnight Slate",
+  desktopPatternMode: "coarse-dots",
   tokens: {
     desktopBackground: "#1b2430",
     desktopPattern: "rgb(156 177 201 / 0.24)",
@@ -177,10 +260,10 @@ const midnightTheme: NuThemeDefinition = {
     chromeBackground: "#36547d",
     panelBackground: "#192c43",
     panelInsetBackground: "#111e2e",
-    titleBackground: "#0b2432",
-    menuBackground: "#1c2945",
-    titleText: "#c2d0e5",
-    textPrimary: "#6b9adb",
+    titleBackground: "#1b3550",
+    menuBackground: "#1a2337",
+    titleText: "#a8cbff",
+    textPrimary: "#b3d2ff",
     textMuted: "#65a8ec",
     textInverse: "#b7caf0",
     mainMenuText: "#b7caf0",
@@ -189,18 +272,82 @@ const midnightTheme: NuThemeDefinition = {
     buttonFace: "#5074af",
     buttonFaceAlt: "#3c5372",
     buttonDanger: "#4e0e15",
-    buttonSuccess: "#3c936d",
+    buttonSuccess: "#275214",
     buttonText: "#ffffff",
     fieldBackground: "#09111c",
     fieldText: "#627b9d",
+    memoBackground: "#243751",
+    memoText: "#9ac8f9",
     borderLight: "#415776",
-    borderDark: "#1d2134",
+    borderDark: "#848bae",
     borderAccent: "#3b5681",
     shadowColor: "#070c14",
     panelShadowColor: "rgb(7 12 20 / 0.56)",
     focusColor: "#af532c",
     windowInactiveOverlay: "rgb(7 12 20 / 0.3)",
     windowModalBackdrop: "rgb(7 12 20 / 0.48)"
+  },
+  visualTokens: {
+    "--nu-glyph-cell-size": "1em",
+    "--nu-content-inset": "1em 1ch",
+    "--nu-control-height": "1.2em",
+    "--nu-space-xs": "0.25rem",
+    "--nu-space-sm": "0.5rem",
+    "--nu-space-md": "0.75rem",
+    "--nu-space-lg": "1rem",
+    "--nu-space-xl": "1.5rem",
+    "--nu-radius-none": "0",
+    "--nu-window-title-height": "calc(1em + 10px)",
+    "--nu-window-status-height": "1.35rem",
+    "--nu-window-title-controls-width": "7.8ch",
+    "--nu-window-title-icon-width": "1em",
+    "--nu-frame-thickness": "1px",
+    "--nu-rule-thickness": "1px",
+    "--nu-window-shadow-offset-x": "1ch",
+    "--nu-window-shadow-offset-y": "1em",
+    "--nu-button-shadow-x": "1ch",
+    "--nu-button-shadow-y": "calc(var(--nu-control-height) / 2)",
+    "--nu-button-shadow-offset-x": "var(--nu-button-shadow-x)",
+    "--nu-button-shadow-offset-y": "calc(var(--nu-control-height) / 2)",
+    "--nu-button-press-depth-x": "0.18em",
+    "--nu-button-press-depth-y": "0.1em",
+    "--nu-app-bar-height": "2.1rem",
+    "--nu-app-bar-padding": "0.2rem 0.35rem",
+    "--nu-toolbar-background": "#1b3550",
+    "--nu-toolbar-inset": "1ch",
+    "--nu-toolbar-border-color": "var(--nu-border-dark)",
+    "--nu-toolbar-border-style": "none",
+    "--nu-toolbar-border-width": "var(--nu-rule-thickness)",
+    "--nu-toolbar-separator-color": "#6184bd",
+    "--nu-toolbar-separator-style": "solid",
+    "--nu-toolbar-separator-width": "var(--nu-rule-thickness)",
+    "--nu-menu-divider-color": "#3d5a8a",
+    "--nu-menu-divider-style": "solid",
+    "--nu-menu-divider-width": "var(--nu-rule-thickness)",
+    "--nu-window-shadow-bg": "rgb(0 0 0 / 0.38)",
+    "--nu-window-inactive-border":
+      "color-mix(in srgb, var(--nu-border-light) 78%, var(--nu-border-dark))",
+    "--nu-scrollbar-track": "transparent",
+    "--nu-scrollbar-thumb": "var(--nu-color-button-face)",
+    "--nu-scrollbar-button-bg": "var(--nu-color-button-face)",
+    "--nu-scrollbar-button-size": "0.875rem",
+    "--nu-icon-grid-icon-background": "transparent",
+    "--nu-icon-grid-icon-border-color": "transparent",
+    "--nu-icon-grid-icon-border-style": "solid",
+    "--nu-icon-grid-icon-opacity": "1",
+    "--nu-icon-grid-icon-selected-background": "var(--nu-color-title-bg)",
+    "--nu-icon-grid-icon-inactive-selected-background":
+      "color-mix(in srgb, var(--nu-icon-grid-icon-selected-background) 65%, var(--nu-color-app-bg-alt))",
+    "--nu-icon-grid-icon-selected-border-color": "transparent",
+    "--nu-icon-grid-icon-selected-border-style": "none",
+    "--nu-icon-grid-icon-selected-opacity": "1",
+    "--nu-icon-grid-icon-focus-background": "#153051",
+    "--nu-icon-grid-icon-focus-border-color": "#5672bd",
+    "--nu-icon-grid-icon-focus-border-style": "solid",
+    "--nu-icon-grid-icon-focus-opacity": "1",
+    "--nu-icon-grid-icon-disabled-opacity": "0.6",
+    "--nu-icon-grid-icon-drag-opacity": "0.35",
+    "--nu-icon-grid-icon-drag-preview-opacity": "0.85"
   }
 };
 
@@ -232,6 +379,8 @@ const grayscaleTheme: NuThemeDefinition = {
     buttonText: "#d0d0d0",
     fieldBackground: "#0e0e0e",
     fieldText: "#d8d8d8",
+    memoBackground: "#d8d8d8",
+    memoText: "#000000",
     borderLight: "#c7c7c7",
     borderDark: "#000000",
     borderAccent: "#ffffff",
@@ -291,6 +440,8 @@ export function getNuThemeStyle(theme: NuThemeDefinition): CSSProperties {
     "--nu-color-button-text": theme.tokens.buttonText,
     "--nu-color-field-bg": theme.tokens.fieldBackground,
     "--nu-color-field-text": theme.tokens.fieldText,
+    "--nu-color-memo-bg": theme.tokens.memoBackground,
+    "--nu-color-memo-text": theme.tokens.memoText,
     "--nu-border-light": theme.tokens.borderLight,
     "--nu-border-dark": theme.tokens.borderDark,
     "--nu-border-accent": theme.tokens.borderAccent,
@@ -298,7 +449,8 @@ export function getNuThemeStyle(theme: NuThemeDefinition): CSSProperties {
     "--nu-panel-shadow-color": theme.tokens.panelShadowColor,
     "--nu-focus-color": theme.tokens.focusColor ?? theme.tokens.borderAccent,
     "--nu-window-inactive-overlay": theme.tokens.windowInactiveOverlay,
-    "--nu-window-modal-backdrop": theme.tokens.windowModalBackdrop
+    "--nu-window-modal-backdrop": theme.tokens.windowModalBackdrop,
+    ...theme.visualTokens
   } as CSSProperties;
 }
 

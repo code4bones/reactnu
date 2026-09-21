@@ -89,3 +89,20 @@ export const NestedEditorRows: Story = {
     );
   }
 };
+
+export const ScrollsWithinItsContainer: Story = {
+  render: function ScrollsWithinItsContainerStory() {
+    return (
+      <div style={{ height: "12rem", minWidth: "32rem" }}>
+        <PropertyGrid
+          bordered
+          entries={Array.from({ length: 18 }, (_, index) => ({
+            id: `property-${index + 1}`,
+            label: `Property ${index + 1}`,
+            content: `Value ${index + 1}`
+          }))}
+        />
+      </div>
+    );
+  }
+};

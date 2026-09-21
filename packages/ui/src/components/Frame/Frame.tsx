@@ -70,6 +70,7 @@ export function Frame({
       {...props}
       className={cx("nu-frame", slotClassNames?.root, className)}
       data-fill={fill || undefined}
+      data-has-title={hasTitleShell || undefined}
       data-title-align={titleAlign}
       data-title-bold={titleBold || undefined}
       data-variant={variant}

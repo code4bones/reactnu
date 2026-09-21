@@ -15,6 +15,7 @@ import {
   mergeSlotStyle
 } from "../_shared/slotProps";
 import { ControlOpener } from "../_shared/ControlOpener";
+import { getThemePortalStyle } from "../_shared/themePortal";
 import { usePopupPosition } from "../_shared/usePopupPosition";
 import { NuGlyph } from "../Glyph";
 import { ListBox } from "../ListBox";
@@ -131,6 +132,9 @@ export function Dropdown({
   const popupRef = useRef<HTMLDivElement | null>(null);
   const popupListRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [themePortalStyle, setThemePortalStyle] = useState<
+    ReturnType<typeof getThemePortalStyle>
+  >(() => undefined);
   const options = useMemo(() => flattenDropdownOptions(data), [data]);
   const generatedId = useId();
   const fieldId = `${generatedId}-dropdown`;
@@ -240,6 +244,10 @@ export function Dropdown({
       return;
     }
 
+    if (!open) {
+      setThemePortalStyle(getThemePortalStyle(rootRef.current));
+    }
+
     setOpen((currentOpen) => !currentOpen);
   }
 
@@ -270,6 +278,7 @@ export function Dropdown({
       case "Enter":
       case " ":
         event.preventDefault();
+        setThemePortalStyle(getThemePortalStyle(rootRef.current));
         setOpen(true);
         break;
       default:
@@ -383,7 +392,13 @@ export function Dropdown({
               className={cx("nu-dropdown__popup", slotClassNames?.popup)}
               ref={popupRef}
               style={mergeSlotStyle(
-                { left: 0, top: 0, visibility: "hidden", width: 0 },
+                {
+                  ...themePortalStyle,
+                  left: 0,
+                  top: 0,
+                  visibility: "hidden",
+                  width: 0
+                },
                 slotStyles?.popup
               )}
             >

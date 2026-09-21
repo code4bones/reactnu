@@ -3,9 +3,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   Button,
   CommandButton,
-  Frame,
   Info,
   InfoAccent,
+  NuView,
   PageControl,
   Spacer,
   Stack,
@@ -110,46 +110,34 @@ export const Overview: Story = {
             pages={[
               {
                 content: (
-                  <Frame
-                    contentStyle={{ padding: "0.75rem 1rem" }}
-                    fill
-                    title="Summary"
-                  >
+                  <NuView>
                     <Info>
                       Current target is <InfoAccent bold>Drive C:</InfoAccent>.
                     </Info>
-                  </Frame>
+                  </NuView>
                 ),
                 id: "summary",
                 label: "&Summary"
               },
               {
                 content: (
-                  <Frame
-                    contentStyle={{ padding: "0.75rem 1rem" }}
-                    fill
-                    title="Actions"
-                  >
+                  <NuView>
                     <Stack direction="row" gap="sm">
                       <Button>&Run</Button>
                       <Button variant="secondary">&Preview</Button>
                     </Stack>
-                  </Frame>
+                  </NuView>
                 ),
                 id: "actions",
                 label: "&Actions"
               },
               {
                 content: (
-                  <Frame
-                    contentStyle={{ padding: "0.75rem 1rem" }}
-                    fill
-                    title="Archive"
-                  >
+                  <NuView>
                     <Info>
                       Archive remains <InfoAccent>disabled</InfoAccent>.
                     </Info>
-                  </Frame>
+                  </NuView>
                 ),
                 disabled: true,
                 id: "archive",
@@ -161,4 +149,63 @@ export const Overview: Story = {
       </StoryStack>
     );
   }
+};
+
+export const Overflow: Story = {
+  render: () => (
+    <div style={{ width: "20rem" }}>
+      <PageControl
+        pages={[
+          {
+            content: <NuView>Summary page content.</NuView>,
+            id: "summary",
+            label: "&Summary"
+          },
+          {
+            content: <NuView>Actions page content.</NuView>,
+            id: "actions",
+            label: "&Actions"
+          },
+          {
+            content: <NuView>Archive page content.</NuView>,
+            id: "archive",
+            label: "&Archive"
+          },
+          {
+            content: <NuView>Reports page content.</NuView>,
+            id: "reports",
+            label: "&Reports"
+          },
+          {
+            content: <NuView>Schedule page content.</NuView>,
+            id: "schedule",
+            label: "&Schedule"
+          },
+          {
+            content: <NuView>History page content.</NuView>,
+            id: "history",
+            label: "&History"
+          }
+        ]}
+      />
+    </div>
+  )
+};
+
+export const ToolBarOverflow: Story = {
+  render: () => (
+    <div style={{ width: "20rem" }}>
+      <ToolBar>
+        <ToolButton icon="folder">&Scan</ToolButton>
+        <ToolButton icon="star">&Watch</ToolButton>
+        <ToolButton icon="gear">&Trace</ToolButton>
+        <ToolDropButton icon="gear" menuItems={toolbarMenu}>
+          &Export
+        </ToolDropButton>
+        <ToolButton>&Verify</ToolButton>
+        <ToolButton>&Repair</ToolButton>
+        <ToolButton>&Defragment</ToolButton>
+      </ToolBar>
+    </div>
+  )
 };

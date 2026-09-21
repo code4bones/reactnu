@@ -33,6 +33,9 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
   docs: [NuAppHostProvider](./NuAppHostProvider.md)
 - `NuWindowProvider`
   docs: [NuWindowProvider](./NuWindowProvider.md)
+- `NuWorkspaceProvider`
+  opt-in save/load lifecycle for managed window sets
+  docs: [NuWorkspaceProvider](./NuWorkspaceProvider.md)
 
 ## Hooks
 
@@ -43,6 +46,9 @@ See: [Slot Customization](./SLOT_CUSTOMIZATION.md)
 - `useNuWindowManager()`
   opens, updates, activates, and closes managed windows
   also exposes `showMessageBox(...)` and `showInputBox(...)`
+- `useNuWorkspace()`
+  saves and restores opted-in managed windows through registered factories
+  docs: [NuWorkspaceProvider](./NuWorkspaceProvider.md)
 - `useNuIconManager()`
   manages icons inside a `NuIconProvider`
 - `useNuDragDrop()`

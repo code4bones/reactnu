@@ -72,10 +72,26 @@ function Applications() {
   `onIconMoveOut(icon, context)` runs on the source after a successful transfer.
   `context` exposes both managers, grids, and the target `position`.
 - Within `NuDragDropProvider`, use `acceptsDrop(item)` and `onDrop(item,
-  context)` to accept application-defined items from `ListBox`, `ListView`, or
-  `TreeListView`. Return `{ action: "copy" }` from that target's `onDrop`, or
+context)` to accept application-defined items from `ListBox`, `ListView`,
+  TreeListView, another IconGrid, or a custom `useNuDragSource`. If `onDrop`
+  is present, it receives every payload; IconGrid does not route by the item's
+  `type`. `acceptsDrop` is the target's only filter. Return `{ action: "copy" }`
+  from that target's `onDrop`, or
   return `false` from `onDragOut(item, result)`, to retain the source icon.
-  The existing `accepts(icon)` API remains specific to icon-to-icon transfers.
+  Without `onDrop`, IconGrid retains its legacy automatic icon-to-icon-grid
+  transfer using `accepts(icon)`, `onIconDrop`, and `onIconMoveOut`.
+
+For a purely application-owned target, accepting every shared item is valid:
+
+```tsx
+<NuIconGrid
+  acceptsDrop={() => true}
+  onDrop={(item, context) => {
+    addBlockToCanvas(item.data, context.clientX, context.clientY);
+    return { action: "copy" };
+  }}
+/>
+```
 
 `useNuIconManager()`
 

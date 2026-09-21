@@ -1,3 +1,4 @@
+import { MouseEvent, PointerEvent as ReactPointerEvent, useRef } from "react";
 import {
   MainMenuItem,
   MainMenuNode,
@@ -54,9 +55,41 @@ export function MainMenuList({
   rootVariant = "bar",
   uncheckedShape = "box"
 }: MainMenuListProps) {
+  const touchActivatedItemRef = useRef<string | null>(null);
   const visibleItems = getVisibleItems(items);
   const isRootBar = level === 0 && rootVariant === "bar";
   const isPopupRow = !isRootBar;
+
+  function handlePointerDown(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    item: MainMenuItem
+  ) {
+    if (event.pointerType === "mouse" || item.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.focus({ preventScroll: true });
+    touchActivatedItemRef.current = item.id;
+    window.setTimeout(() => {
+      if (touchActivatedItemRef.current === item.id) {
+        touchActivatedItemRef.current = null;
+      }
+    }, 500);
+    onActivateItem(item, level);
+  }
+
+  function handleClick(
+    event: MouseEvent<HTMLButtonElement>,
+    item: MainMenuItem
+  ) {
+    if (event.detail > 0 && touchActivatedItemRef.current === item.id) {
+      touchActivatedItemRef.current = null;
+      return;
+    }
+
+    onActivateItem(item, level);
+  }
 
   return (
     <div
@@ -118,7 +151,8 @@ export function MainMenuList({
               className="nu-main-menu__item-button"
               data-has-leading={hasLeadingAdornment || undefined}
               disabled={item.disabled}
-              onClick={() => onActivateItem(item, level)}
+              onClick={(event) => handleClick(event, item)}
+              onPointerDown={(event) => handlePointerDown(event, item)}
               type="button"
             >
               {hasLeadingAdornment ? (
@@ -153,20 +187,14 @@ export function MainMenuList({
                 {renderItemLabel(item)}
               </span>
               {shortcut ? (
-                <span className="nu-main-menu__shortcut">
-                  {shortcut}
-                </span>
+                <span className="nu-main-menu__shortcut">{shortcut}</span>
               ) : null}
               {isPopupRow && hasChildren ? (
-                <span className="nu-main-menu__submenu-arrow">
-                  ▶
-                </span>
+                <span className="nu-main-menu__submenu-arrow">▶</span>
               ) : null}
             </button>
             {hasChildren && isOpen && item.items ? (
-              <MainMenuSubmenuShell
-                placement={isRootBar ? "root" : "submenu"}
-              >
+              <MainMenuSubmenuShell placement={isRootBar ? "root" : "submenu"}>
                 <MainMenuList
                   activePath={activePath}
                   items={item.items}

@@ -26,6 +26,10 @@ export type ButtonSlot =
 
 export type ButtonProps = PropsWithChildren<
   ButtonHTMLAttributes<HTMLButtonElement> & {
+    /** Marks this button as the dialog action invoked with Enter. */
+    isDefault?: boolean;
+    /** Marks this button as the dialog action invoked with Escape. */
+    isCancel?: boolean;
     defaultFocused?: boolean;
     focused?: boolean;
     slotClassNames?: SlotCustomizationProps<ButtonSlot>["slotClassNames"];
@@ -40,6 +44,8 @@ export function Button({
   defaultFocused = false,
   disabled = false,
   focused,
+  isCancel = false,
+  isDefault = false,
   onBlur,
   onClick,
   onFocus,
@@ -95,6 +101,8 @@ export function Button({
     <button
       {...props}
       className={cx("nu-button", slotClassNames?.root, className)}
+      data-nu-cancel={isCancel || undefined}
+      data-nu-default={isDefault || undefined}
       data-focused={resolvedFocused || undefined}
       data-variant={variant}
       disabled={disabled}

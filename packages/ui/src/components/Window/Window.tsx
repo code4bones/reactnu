@@ -153,7 +153,11 @@ function WindowInner({
       openDialog: windowManager?.openDialog ?? (() => ""),
       windows: windowManager?.windows ?? []
     }),
-    [windowManager?.activateWindow, windowManager?.openDialog, windowManager?.windows]
+    [
+      windowManager?.activateWindow,
+      windowManager?.openDialog,
+      windowManager?.windows
+    ]
   );
   const resolvedMainMenu = useMemo(
     () => resolveMdiMainMenuItems(menuState.mainMenu, mdiBridge),
@@ -219,6 +223,7 @@ function WindowInner({
     onActivate?.();
 
     if (
+      event.button !== 0 ||
       !isDraggable ||
       maximized ||
       minimized ||
@@ -232,6 +237,8 @@ function WindowInner({
     event.stopPropagation();
 
     const commitPosition = onPositionChange;
+    const pointerId = event.pointerId;
+    const dragHandle = event.currentTarget;
     const { clientX: startClientX, clientY: startClientY } = event;
     const rect = windowRef.current.getBoundingClientRect();
     const windowNode = windowRef.current;
@@ -247,6 +254,8 @@ function WindowInner({
       (layerBounds?.height ?? window.innerHeight) - rect.height
     );
     let didMove = false;
+
+    dragHandle.setPointerCapture(pointerId);
 
     function flushDragPosition() {
       if (!dragPositionRef.current) {
@@ -271,6 +280,10 @@ function WindowInner({
     }
 
     function handlePointerMove(moveEvent: PointerEvent) {
+      if (moveEvent.pointerId !== pointerId) {
+        return;
+      }
+
       const nextLeft = Math.min(
         maxLeft,
         Math.max(0, startLeft + moveEvent.clientX - startClientX)
@@ -287,9 +300,18 @@ function WindowInner({
       });
     }
 
-    function handlePointerUp() {
+    function handlePointerUp(upEvent: PointerEvent) {
+      if (upEvent.pointerId !== pointerId) {
+        return;
+      }
+
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+
+      if (dragHandle.hasPointerCapture(pointerId)) {
+        dragHandle.releasePointerCapture(pointerId);
+      }
 
       if (!didMove) {
         dragPositionRef.current = null;
@@ -310,6 +332,7 @@ function WindowInner({
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   }
 
   function handleResizePointerDown(
@@ -318,6 +341,7 @@ function WindowInner({
     onActivate?.();
 
     if (
+      event.button !== 0 ||
       !isResizable ||
       maximized ||
       minimized ||
@@ -331,6 +355,8 @@ function WindowInner({
     event.stopPropagation();
 
     const commitSize = onSizeChange;
+    const pointerId = event.pointerId;
+    const resizeHandle = event.currentTarget;
     const { clientX: startClientX, clientY: startClientY } = event;
     const windowNode = windowRef.current;
     const {
@@ -360,6 +386,8 @@ function WindowInner({
     const hadTransform = computedStyle.transform !== "none";
     let didResize = false;
 
+    resizeHandle.setPointerCapture(pointerId);
+
     if (hadTransform) {
       windowNode.style.left = `${left}px`;
       windowNode.style.top = `${top}px`;
@@ -388,6 +416,10 @@ function WindowInner({
     }
 
     function handlePointerMove(moveEvent: PointerEvent) {
+      if (moveEvent.pointerId !== pointerId) {
+        return;
+      }
+
       const widthDelta = moveEvent.clientX - startClientX;
       const heightDelta = moveEvent.clientY - startClientY;
       const nextWidth = resolvedAspectRatio
@@ -414,9 +446,18 @@ function WindowInner({
       });
     }
 
-    function handlePointerUp() {
+    function handlePointerUp(upEvent: PointerEvent) {
+      if (upEvent.pointerId !== pointerId) {
+        return;
+      }
+
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+
+      if (resizeHandle.hasPointerCapture(pointerId)) {
+        resizeHandle.releasePointerCapture(pointerId);
+      }
 
       if (!didResize) {
         resizeSizeRef.current = null;
@@ -441,6 +482,7 @@ function WindowInner({
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   }
 
   return (

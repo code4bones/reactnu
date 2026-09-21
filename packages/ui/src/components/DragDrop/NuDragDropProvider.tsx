@@ -17,6 +17,7 @@ import {
   useDrop
 } from "react-dnd";
 import { getEmptyImage, HTML5Backend } from "react-dnd-html5-backend";
+import { TouchBackend } from "react-dnd-touch-backend";
 
 const NU_DRAG_ITEM_TYPE = "reactnu-shared-item";
 
@@ -127,11 +128,24 @@ export function NuDragDropProvider({ children }: PropsWithChildren) {
     return children;
   }
 
-  return (
-    <DndProvider backend={HTML5Backend}>
+  const useTouchBackend =
+    typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
+  const providerChildren = (
+    <>
       {children}
       <NuDragPreviewLayer />
+    </>
+  );
+
+  return useTouchBackend ? (
+    <DndProvider
+      backend={TouchBackend}
+      options={{ delayTouchStart: 120, enableMouseEvents: true, touchSlop: 8 }}
+    >
+      {providerChildren}
     </DndProvider>
+  ) : (
+    <DndProvider backend={HTML5Backend}>{providerChildren}</DndProvider>
   );
 }
 
@@ -245,7 +259,9 @@ export function useNuDragSource({
         const item = getItem();
 
         if (!item) {
-          throw new Error("getItem must return a drag item when dragging is enabled.");
+          throw new Error(
+            "getItem must return a drag item when dragging is enabled."
+          );
         }
 
         return {

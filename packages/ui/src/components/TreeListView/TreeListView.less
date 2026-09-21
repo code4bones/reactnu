@@ -131,6 +131,15 @@
       color: var(--nu-text-muted);
       --nu-tree-connector-color: var(--nu-text-primary);
     }
+
+    &[data-drop-over] {
+      outline: 1px solid var(--nu-focus-color);
+      outline-offset: -1px;
+    }
+
+    &[data-drop-rejected] {
+      outline-color: var(--nu-text-hotkey);
+    }
   }
 
   &__cell {

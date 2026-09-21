@@ -27,6 +27,9 @@ Use `useNuWindowManager()` to access:
 - `closeAll()`
 - `windows`
 
+For persistence of an entire opt-in set of windows, rather than one window's
+geometry, see [NuWorkspaceProvider](./NuWorkspaceProvider.md).
+
 ## Managed Window Persistence
 
 Set `windowStoreKey` to persist a managed window's last position, size, and
@@ -162,6 +165,32 @@ const value = await windowManager.showInputBox({
 ```
 
 See [Dialog Helpers](./DialogHelpers.md) for the full option list.
+
+## Dialog Keyboard Actions
+
+Managed dialogs handle `Enter` and `Escape` at the dialog boundary. Mark a
+custom dialog button with `isDefault` to invoke it from an ordinary text input,
+and `isCancel` to invoke it from `Escape`. `defaultFocused` remains an
+independent request for initial focus.
+
+```tsx
+windowManager.openDialog({
+  content: ({ close }) => (
+    <Stack direction="row">
+      <Button isDefault onClick={close}>
+        Apply
+      </Button>
+      <Button isCancel onClick={close} variant="secondary">
+        Cancel
+      </Button>
+    </Stack>
+  ),
+  title: "Settings"
+});
+```
+
+Enter is not taken from `textarea`, `Memo`, contenteditable content, active
+dropdowns, or controls that have already prevented the key event.
 
 ## Notes
 

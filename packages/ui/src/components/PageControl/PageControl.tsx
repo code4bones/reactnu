@@ -3,6 +3,7 @@ import {
   HTMLAttributes,
   KeyboardEvent,
   ReactNode,
+  useEffect,
   useId,
   useMemo,
   useRef,
@@ -13,9 +14,16 @@ import {
   cx,
   mergeSlotStyle
 } from "../_shared/slotProps";
+import { CommandButton } from "../CommandButton";
+import { type NuGlyphName } from "../Glyph";
 import { renderMnemonicText } from "../../utils/renderMnemonicText";
 
-export type PageControlSlot = "root" | "tabs" | "tab" | "panel";
+export type PageControlSlot =
+  | "root"
+  | "tabs"
+  | "tab"
+  | "overflowButton"
+  | "panel";
 
 export type PageControlPage = {
   content: ReactNode;
@@ -32,6 +40,8 @@ export type PageControlProps = Omit<
   defaultActivePageId?: string;
   fill?: boolean;
   onActivePageChange?: (page: PageControlPage) => void;
+  overflowButtonIcon?: NuGlyphName | ReactNode;
+  overflowButtonLabel?: ReactNode;
   pages: PageControlPage[];
   slotClassNames?: SlotCustomizationProps<PageControlSlot>["slotClassNames"];
   slotStyles?: SlotCustomizationProps<PageControlSlot>["slotStyles"];
@@ -43,6 +53,8 @@ export function PageControl({
   defaultActivePageId,
   fill = true,
   onActivePageChange,
+  overflowButtonIcon,
+  overflowButtonLabel,
   pages,
   slotClassNames,
   slotStyles,
@@ -51,6 +63,8 @@ export function PageControl({
   const generatedId = useId();
   const isControlled = activePageIdProp !== undefined;
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const tabScrollerRef = useRef<HTMLDivElement | null>(null);
+  const [overflowPageIds, setOverflowPageIds] = useState<string[]>([]);
   const [uncontrolledActivePageId, setUncontrolledActivePageId] = useState<
     string | undefined
   >(
@@ -73,6 +87,62 @@ export function PageControl({
 
     return pages.find((page) => !page.disabled) ?? pages[0] ?? null;
   }, [activePageId, pages]);
+
+  useEffect(() => {
+    const tabScroller = tabScrollerRef.current;
+
+    if (!tabScroller) {
+      return;
+    }
+
+    const tabScrollerElement = tabScroller;
+
+    function updateOverflowPages() {
+      const visibleWidth = tabScrollerElement.clientWidth;
+      const nextOverflowPageIds = pages
+        .filter((page) => {
+          const tab = tabRefs.current[page.id];
+
+          return tab
+            ? tab.offsetLeft - tabScrollerElement.offsetLeft + tab.offsetWidth >
+                visibleWidth + 1
+            : false;
+        })
+        .map((page) => page.id);
+
+      setOverflowPageIds((currentPageIds) =>
+        currentPageIds.length === nextOverflowPageIds.length &&
+        currentPageIds.every(
+          (pageId, index) => pageId === nextOverflowPageIds[index]
+        )
+          ? currentPageIds
+          : nextOverflowPageIds
+      );
+    }
+
+    updateOverflowPages();
+    const resizeObserver = new ResizeObserver(updateOverflowPages);
+    resizeObserver.observe(tabScrollerElement);
+    pages.forEach((page) => {
+      const tab = tabRefs.current[page.id];
+
+      if (tab) {
+        resizeObserver.observe(tab);
+      }
+    });
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [pages]);
+
+  const overflowPages = useMemo(
+    () => pages.filter((page) => overflowPageIds.includes(page.id)),
+    [overflowPageIds, pages]
+  );
+  const resolvedOverflowButtonIcon = overflowButtonIcon ?? "dropdown-arrow";
+  const hasOverflowButtonLabel =
+    overflowButtonLabel !== undefined && overflowButtonLabel !== null;
 
   function updateActivePage(nextPage: PageControlPage) {
     if (nextPage.disabled) {
@@ -155,37 +225,68 @@ export function PageControl({
     >
       <div
         className={cx("nu-page-control__tabs", slotClassNames?.tabs)}
-        onKeyDown={handleKeyDown}
-        role="tablist"
         style={slotStyles?.tabs}
       >
-        {pages.map((page) => {
-          const isActive = page.id === resolvedActivePage?.id;
-          const panelId = `${generatedId}-panel-${page.id}`;
-          const tabId = `${generatedId}-tab-${page.id}`;
+        <div
+          className="nu-page-control__tab-scroller"
+          onKeyDown={handleKeyDown}
+          ref={tabScrollerRef}
+          role="tablist"
+        >
+          {pages.map((page) => {
+            const isActive = page.id === resolvedActivePage?.id;
+            const panelId = `${generatedId}-panel-${page.id}`;
+            const tabId = `${generatedId}-tab-${page.id}`;
 
-          return (
-            <button
-              key={page.id}
-              aria-controls={panelId}
-              aria-selected={isActive}
-              className={cx("nu-page-control__tab", slotClassNames?.tab)}
-              data-active={isActive || undefined}
-              disabled={page.disabled}
-              id={tabId}
-              onClick={() => updateActivePage(page)}
-              ref={(node) => {
-                tabRefs.current[page.id] = node;
-              }}
-              role="tab"
-              style={slotStyles?.tab}
-              tabIndex={isActive ? 0 : -1}
-              type="button"
-            >
-              {renderMnemonicText(page.label)}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={page.id}
+                aria-controls={panelId}
+                aria-selected={isActive}
+                className={cx("nu-page-control__tab", slotClassNames?.tab)}
+                data-active={isActive || undefined}
+                disabled={page.disabled}
+                id={tabId}
+                onClick={() => updateActivePage(page)}
+                ref={(node) => {
+                  tabRefs.current[page.id] = node;
+                }}
+                role="tab"
+                style={slotStyles?.tab}
+                tabIndex={isActive ? 0 : -1}
+                type="button"
+              >
+                {renderMnemonicText(page.label)}
+              </button>
+            );
+          })}
+        </div>
+        {overflowPages.length > 0 ? (
+          <CommandButton
+            className={cx(
+              "nu-page-control__overflow-button",
+              slotClassNames?.overflowButton
+            )}
+            icon={resolvedOverflowButtonIcon}
+            menuItems={overflowPages.map((page) => ({
+              checked: page.id === resolvedActivePage?.id,
+              checkable: true,
+              disabled: page.disabled,
+              id: page.id,
+              text: page.label
+            }))}
+            onMenuItemSelect={(item) => {
+              const page = pages.find((candidate) => candidate.id === item.id);
+
+              if (page) {
+                updateActivePage(page);
+              }
+            }}
+            style={slotStyles?.overflowButton}
+          >
+            {hasOverflowButtonLabel ? overflowButtonLabel : null}
+          </CommandButton>
+        ) : null}
       </div>
       <div
         aria-labelledby={

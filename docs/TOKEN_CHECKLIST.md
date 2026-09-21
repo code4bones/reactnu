@@ -36,6 +36,8 @@ If a component needs a new reusable visual value, add it there first instead of 
   - `--nu-color-button-text`
   - `--nu-color-field-bg`
   - `--nu-color-field-text`
+  - `--nu-color-memo-bg`
+  - `--nu-color-memo-text`
 - Borders, focus, shadow:
   - `--nu-border-light`
   - `--nu-border-dark`
@@ -64,6 +66,7 @@ If a component needs a new reusable visual value, add it there first instead of 
 - Toolbar and menu dividers:
   - `--nu-toolbar-background`
   - `--nu-toolbar-inset`
+  - `--nu-toolbar-label-offset-y`
   - `--nu-toolbar-border-color`, `--nu-toolbar-border-style`,
     `--nu-toolbar-border-width`
   - `--nu-toolbar-separator-color`, `--nu-toolbar-separator-style`,

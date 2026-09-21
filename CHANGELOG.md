@@ -9,6 +9,316 @@ This project follows a simple changelog policy:
 - prefer `Added`, `Changed`, `Fixed`, `Removed`
 - do not dump raw commit history
 
+## [0.1.119]
+
+### Added
+
+- Added managed-dialog default and cancel keyboard actions through Button
+  `isDefault` and `isCancel` markers.
+
+### Fixed
+
+- Made InputBox retain text-field focus while Enter confirms and Escape
+  cancels.
+
+## [0.1.118]
+
+### Fixed
+
+- Restored Classic Blue Memo text to black while retaining its updated cyan
+  background preset.
+
+## [0.1.117]
+
+### Changed
+
+- Updated the Classic Blue and Midnight Slate Memo color presets.
+
+## [0.1.116]
+
+### Fixed
+
+- Made the Sandbox Memo demo inherit its background and text colors from the
+  active theme instead of using a local teal override.
+
+## [0.1.115]
+
+### Added
+
+- Added theme-controlled Memo background and text colors, including controls in
+  the Sandbox Theme Designer.
+
+## [0.1.114]
+
+### Added
+
+- Added automatic react-dnd touch-backend support for drag sources and targets
+  on touch-capable devices.
+
+### Fixed
+
+- Hardened window drag, resize, and tree-column resize gestures for touch and
+  pen cancellation; desktop chrome now suppresses static-text selection and
+  native touch callouts.
+
+## [0.1.113]
+
+### Fixed
+
+- Made MainMenu and PopupMenu activate touch and pen pointers on the first tap
+  instead of consuming it as focus-only interaction.
+
+## [0.1.112]
+
+### Fixed
+
+- Made Dropdown popup lists inherit the nearest theme when rendered through a
+  document-body portal.
+
+## [0.1.111]
+
+### Fixed
+
+- Restored ordinary Dropdown, ComboBox, ListBox, ListView, and TreeListView
+  usage without an application-level NuDragDropProvider.
+- Made ToolBar and its native tool buttons use their own border-box sizing.
+
+## [0.1.110]
+
+### Added
+
+- Added a URL-switchable Sandbox Workspace mode for exercising save, close,
+  and restore flows against live managed windows.
+
+### Fixed
+
+- Made bounded PropertyGrid instances scroll their own rows instead of clipping
+  overflow inside windows and other sized containers.
+
+## [0.1.109]
+
+### Added
+
+- Added opt-in `NuWorkspaceProvider` and `useNuWorkspace()` for saving and
+  restoring managed-window sets through application-owned factories and metadata.
+
+## [0.1.108]
+
+### Changed
+
+- Updated component documentation for DnD callback ownership, copy semantics,
+  PageControl geometry, and Panel body behavior.
+
+## [0.1.107]
+
+### Changed
+
+- Made IconGrid generic DnD callback-driven: when `onDrop` is supplied,
+  `acceptsDrop` and `onDrop` receive every payload without type-specific
+  routing. Legacy automatic icon-grid transfer remains available without
+  `onDrop`.
+
+## [0.1.106]
+
+### Added
+
+- Added initial generic IconGrid shared-drop support.
+
+## [0.1.105]
+
+### Fixed
+
+- Reserved top content space in outlined Frames with titles, preventing titles
+  from overlapping the first child.
+
+## [0.1.104]
+
+### Fixed
+
+- Removed the redundant internal rule above Panel footers so it no longer
+  doubles the Panel frame line.
+
+## [0.1.103]
+
+### Fixed
+
+- Removed the redundant internal rule below Panel headers so it no longer
+  doubles the Panel frame line.
+
+## [0.1.102]
+
+### Fixed
+
+- Made `{ action: "copy" }` retain ListBox, ListView, and TreeListView source
+  items by suppressing their move-only source callbacks.
+
+## [0.1.101]
+
+### Added
+
+- Added row-aware shared DnD to TreeListView through `onItemDrop`, including
+  target-node metadata and drop-pointer coordinates.
+
+### Fixed
+
+- Kept custom TreeListView drag previews available for nested rows.
+
+## [0.1.100]
+
+### Changed
+
+- Set Midnight Slate's dark-border token to `#848bae`.
+
+## [0.1.99]
+
+### Fixed
+
+- Enabled wrapping for the sandbox theme-switcher Stack so all theme buttons
+  remain inside the System Core Panel at narrow widths.
+
+## [0.1.98]
+
+### Added
+
+- Added `Stack wrap` for rows of controls that need to flow within a bounded
+  container; the sandbox Panel uses it for its control row.
+
+### Changed
+
+- Restored Panel as a neutral surface without forced clipping or text wrapping.
+
+## [0.1.97]
+
+### Changed
+
+- Let Panel body content wrap instead of clipping it; consumers can still set
+  an explicit overflow behavior through the body slot.
+
+## [0.1.96]
+
+### Fixed
+
+- Aligned the PageControl overflow trigger one pixel higher with the tab
+  strip.
+
+## [0.1.95]
+
+### Fixed
+
+- Restored the valid vertical offset expression for Classic Blue button right
+  shadows, preventing the right edge from dropping below the button face.
+
+## [0.1.94]
+
+### Changed
+
+- Synchronized Classic Blue window-title height, frame thickness, and toolbar
+  inset with Midnight Slate geometry while preserving Classic colors and
+  chrome styles.
+
+## [0.1.93]
+
+### Changed
+
+- Applied the supplied visual-token, desktop-pattern, and Consolas 15px
+  configuration as the built-in Classic Blue theme and sandbox default.
+
+## [0.1.92]
+
+### Added
+
+- Added a dynamic overflow dropdown for non-wrapping `ToolBar` commands and
+  customizable overflow-trigger content.
+
+### Changed
+
+- Added the `--nu-toolbar-label-offset-y` token to align toolbar text with SVG
+  icons for the default Consolas typography.
+
+## [0.1.91]
+
+### Changed
+
+- Standardized built-in theme typography on Consolas at 15px for more stable
+  visual text alignment in controls and titles.
+
+## [0.1.90]
+
+### Added
+
+- Added `PageControl` overflow-trigger label and icon props; its default
+  trigger now renders only the dropdown icon.
+
+## [0.1.89]
+
+### Added
+
+- Added a dynamic `More` dropdown for `PageControl` tabs that do not fit their
+  containing surface.
+
+## [0.1.87]
+
+### Changed
+
+- Extended the sandbox `PageControl` demo with five additional tabs for dense
+  tab-row evaluation.
+
+## [0.1.86]
+
+### Fixed
+
+- Continued the active `PageControl` page-frame color through the lower edge
+  of adjacent inactive tabs.
+
+## [0.1.85]
+
+### Fixed
+
+- Removed the inherited top border from active `PageControl` tabs so their
+  surface remains visually continuous with the page frame.
+
+## [0.1.84]
+
+### Changed
+
+- Added a `1ch` content inset inside the transparent `PageControl` page frame.
+
+## [0.1.83]
+
+### Changed
+
+- Made `PageControl` page surfaces transparent and switched its demos to
+  padded `NuView` viewport content without `Panel` shadows.
+
+## [0.1.82]
+
+### Fixed
+
+- Kept the active `PageControl` tab within the page-frame bounds and replaced
+  framed page-demo content with padded `Panel` surfaces.
+
+## [0.1.81]
+
+### Changed
+
+- Matched the `PageControl` page-frame border to the active tab surface in
+  every theme.
+
+## [0.1.80]
+
+### Changed
+
+- Made the active `PageControl` tab a continuous part of its page frame,
+  removing the dividing edge below the selected tab.
+
+## [0.1.79]
+
+### Changed
+
+- Replaced the `midnight` built-in theme with the complete Midnight Slate
+  palette and visual-token configuration, including its coarse-dot desktop
+  pattern and typography defaults.
+
 ## [Unreleased]
 
 ### Fixed

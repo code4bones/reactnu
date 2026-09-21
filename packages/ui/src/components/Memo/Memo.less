@@ -2,8 +2,8 @@
   display: block;
   min-width: 0;
   min-height: 0;
-  background: var(--nu-memo-bg, #dbc78d);
-  color: var(--nu-memo-text, #000000);
+  background: var(--nu-memo-bg, var(--nu-color-memo-bg));
+  color: var(--nu-memo-text, var(--nu-color-memo-text));
   overflow: hidden;
 
   &[data-fill] {
@@ -84,9 +84,18 @@
     .nu-scrollbar-chrome();
 
     &:focus {
-      background: var(--nu-memo-focus-bg, var(--nu-memo-bg, #dbc78d));
-      color: var(--nu-memo-focus-text, var(--nu-memo-text, #000000));
-      caret-color: var(--nu-memo-focus-text, var(--nu-memo-text, #000000));
+      background: var(
+        --nu-memo-focus-bg,
+        var(--nu-memo-bg, var(--nu-color-memo-bg))
+      );
+      color: var(
+        --nu-memo-focus-text,
+        var(--nu-memo-text, var(--nu-color-memo-text))
+      );
+      caret-color: var(
+        --nu-memo-focus-text,
+        var(--nu-memo-text, var(--nu-color-memo-text))
+      );
     }
   }
 }

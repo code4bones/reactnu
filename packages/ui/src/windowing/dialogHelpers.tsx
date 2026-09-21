@@ -212,6 +212,7 @@ export function MessageBoxDialogContent({
             <Button
               className="nu-dialog-helper__button"
               defaultFocused
+              isDefault
               onClick={() => onResolve("ok")}
             >
               {okLabel}
@@ -221,6 +222,7 @@ export function MessageBoxDialogContent({
             <Button
               className="nu-dialog-helper__button"
               defaultFocused={!ok}
+              isDefault={!ok}
               onClick={() => onResolve("yes")}
             >
               {yesLabel}
@@ -230,6 +232,8 @@ export function MessageBoxDialogContent({
             <Button
               className="nu-dialog-helper__button"
               defaultFocused={!ok && !yes}
+              isCancel={!cancel}
+              isDefault={!ok && !yes}
               onClick={() => onResolve("no")}
             >
               {noLabel}
@@ -238,6 +242,7 @@ export function MessageBoxDialogContent({
           {cancel ? (
             <Button
               className="nu-dialog-helper__button"
+              isCancel
               onClick={() => onResolve("cancel")}
               variant="secondary"
             >
@@ -275,13 +280,14 @@ export function InputBoxDialogContent({
         <Stack direction="row" gap="sm" justify="center">
           <Button
             className="nu-dialog-helper__button"
-            defaultFocused
+            isDefault
             onClick={() => onResolve(value)}
           >
             {okLabel}
           </Button>
           <Button
             className="nu-dialog-helper__button"
+            isCancel
             onClick={() => onResolve(null)}
             variant="secondary"
           >

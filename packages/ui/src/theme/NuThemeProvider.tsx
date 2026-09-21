@@ -47,9 +47,9 @@ export function NuThemeProvider({
   children,
   className,
   crtGlitch = false,
-  defaultDesktopPatternMode = "dot-grid",
-  defaultFontFamily = '"IBM Plex Mono", "Cascadia Mono", "Consolas", monospace',
-  defaultFontSize = 16,
+  defaultDesktopPatternMode,
+  defaultFontFamily,
+  defaultFontSize,
   defaultTheme = "classic",
   desktopPatternMode,
   fontFamily,
@@ -62,12 +62,24 @@ export function NuThemeProvider({
   theme
 }: NuThemeProviderProps) {
   const generatedId = useId();
+  const defaultThemeDefinition = resolveNuTheme(theme ?? defaultTheme);
   const [internalTheme, setInternalTheme] = useState<NuThemeName>(defaultTheme);
   const [internalDesktopPatternMode, setInternalDesktopPatternMode] =
-    useState<NuDesktopPatternMode>(defaultDesktopPatternMode);
-  const [internalFontFamily, setInternalFontFamily] =
-    useState(defaultFontFamily);
-  const [internalFontSize, setInternalFontSize] = useState(defaultFontSize);
+    useState<NuDesktopPatternMode>(
+      () =>
+        defaultDesktopPatternMode ??
+        defaultThemeDefinition.desktopPatternMode ??
+        "dot-grid"
+    );
+  const [internalFontFamily, setInternalFontFamily] = useState(
+    () =>
+      defaultFontFamily ??
+      defaultThemeDefinition.fontFamily ??
+      '"Consolas", monospace'
+  );
+  const [internalFontSize, setInternalFontSize] = useState(
+    () => defaultFontSize ?? defaultThemeDefinition.fontSize ?? 15
+  );
   const currentTheme = theme ?? internalTheme;
   const resolvedDesktopPatternMode =
     desktopPatternMode ?? internalDesktopPatternMode;

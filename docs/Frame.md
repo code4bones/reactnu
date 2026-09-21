@@ -29,6 +29,9 @@
 
 - `fill` defaults to `true`, so `Frame` stretches naturally inside flex/grid parents and also fills block-style hosts such as window bodies.
 - `outline` keeps the title floating over the top border.
+- An outlined Frame with a title automatically reserves space below the border
+  so the title does not overlap its first child. An explicit `contentStyle`
+  padding can override that local spacing.
 - `title-bar` renders a solid title strip across the full width.
 - `titleProps` controls frame chrome around the title area: title background, title text color, and frame border color.
 - `titleStyle` and `contentStyle` remain available for additional local overrides without creating a separate Frame variant.

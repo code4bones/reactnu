@@ -56,8 +56,9 @@ const columns: ListViewColumn<Row>[] = [
 - Column titles support `&` mnemonic markup.
 - A column can use `field` for simple value rendering or `renderCell` for custom content.
 - `getDragItem(row)` makes a row a shared drag source. `onRowDragOut(row)` runs
-  after another target accepts it; `acceptsDrop` and `onDrop` make the list a
-  target. Wrap related controls in `NuDragDropProvider`.
+  after another target accepts a `move`; `acceptsDrop` and `onDrop` make the
+  list a target. Return `{ action: "copy" }` from `onDrop` to retain the
+  source row. Wrap related controls in `NuDragDropProvider`.
 - `renderDragPreview(row)` can return a compact React node, rather than using
   the complete report row as the native drag preview.
 

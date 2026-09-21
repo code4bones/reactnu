@@ -31,22 +31,36 @@ host list or tree data.
 
 - A source uses `getDragItem` to opt a displayed item into dragging. Return a
   stable `type`, an ID, and any host payload in `data`.
-- A target uses `acceptsDrop(item)` to filter drag item types and `onDrop` to
-  perform its own state update. Returning `false` rejects the transfer.
-- `onItemDragOut` / `onDragOut` run only after a target accepted the item;
+- A target uses `acceptsDrop(item)` to decide whether it accepts an item and
+  `onDrop` to perform its own state update. `item.type` is application metadata,
+  not a built-in routing rule: a target may inspect `data`, `type`, both, or
+  simply accept every item. Returning `false` rejects the transfer.
+- `onItemDragOut` / `onDragOut` run only after a target accepted a `move`;
   remove or update the source data there.
-- A target may return `{ action: "copy" }` from `onDrop`. `NuIconGrid` then
-  leaves its source icon in place; `{ action: "move" }` is the default. List
-  and tree sources always leave source-data mutation to their host callback.
+- A target may return `{ action: "copy" }` from `onDrop`. The source remains
+  in place; `{ action: "move" }` is the default.
 - `renderDragPreview` on `ListBox`, `ListView`, and `TreeListView` renders a
   compact React preview instead of the browser's full-row preview.
 - `NuIconGrid` keeps `accepts(icon)`, `onIconDrop`, and `onIconMoveOut` for
-  its existing icon-to-icon transfer. Its `acceptsDrop` and `onDrop` receive
-  non-icon shared drag items.
+  its existing automatic icon-to-icon transfer. When `onDrop` is supplied,
+  its `acceptsDrop` and `onDrop` receive every shared drag item without
+  type-specific routing; without it,
+  the legacy icon-transfer callbacks remain in effect.
+- `NuDragDropContext` includes the drop pointer's `clientX` and `clientY`. For
+  canvas-local coordinates, subtract the target element's bounding-rect origin.
+- `TreeListView onItemDrop` receives the target row as well as its depth and
+  visible row index, so a host can distinguish drops onto individual tree nodes.
 
-Wrap a workspace once when sources and targets must interact. The controls can
-also mount independently, but one provider gives cross-control dragging and a
-single custom-preview layer an explicit scope.
+`Dropdown`, `ComboBox`, `ListBox`, `ListView`, and `TreeListView` work without
+an outer provider when they are used as ordinary selection controls. Wrap a
+workspace once in `NuDragDropProvider` only when drag sources and targets must
+interact across controls (or when using `useNuDragSource` / `useNuDropTarget`
+directly); the shared provider supplies one manager and one custom-preview
+layer for that scope.
+
+On touch-capable devices, ReactNU uses the touch backend automatically. Drag
+starts after a short hold and small movement threshold, so ordinary taps still
+select controls and vertical scrolling remains available until a drag begins.
 
 ## Hover feedback
 
@@ -66,7 +80,9 @@ const dropState = useNuDropTarget(element, {
 });
 
 <div
-  className={dropState.isOver && dropState.canDrop ? "group group--accept" : "group"}
+  className={
+    dropState.isOver && dropState.canDrop ? "group group--accept" : "group"
+  }
   ref={setElement}
 />;
 ```

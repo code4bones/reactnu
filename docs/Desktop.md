@@ -38,3 +38,8 @@ See [Icon Grid](./IconGrid.md) for the full API and interaction contract.
 
 - The desktop owns the browser viewport and is intended to behave like a bounded screen.
 - `appBarContent` is kept as a compatibility alias, but `appBar` is the preferred entry point.
+- Window title bars and resize handles use Pointer Events, so they work with
+  touch and pen as well as a mouse. Desktop chrome and static control surfaces
+  suppress text selection and native touch callouts; editable inputs and
+  textareas remain selectable. Custom content can restore selection with
+  `user-select: text` when needed.

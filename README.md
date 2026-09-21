@@ -109,6 +109,7 @@ Surfaces and windowing:
 - `PopupMenu`
 - `WindowBar`
 - dialog helpers via `showMessageBox(...)` and `showInputBox(...)`
+- dialog keyboard actions through `Button` `isDefault` and `isCancel`
 
 ## Install
 
@@ -183,6 +184,32 @@ function Launcher() {
   );
 }
 ```
+
+## Dialog Keyboard Actions
+
+Managed dialogs follow conventional desktop keyboard behavior. `Enter` invokes
+the button marked `isDefault`; `Escape` invokes `isCancel` or dismisses the
+dialog. `defaultFocused` remains only an initial-focus request, so an
+`InputBox` keeps focus in its text field while still accepting Enter.
+
+```tsx
+windowManager.openDialog({
+  content: ({ close }) => (
+    <Stack direction="row">
+      <Button isDefault onClick={close}>
+        Apply
+      </Button>
+      <Button isCancel onClick={close} variant="secondary">
+        Cancel
+      </Button>
+    </Stack>
+  ),
+  title: "Settings"
+});
+```
+
+Multiline and editing controls (`Memo`, `textarea`, contenteditable), IME
+composition, and active popups retain their own Enter behavior.
 
 ## Application Icon Grids
 
@@ -348,6 +375,7 @@ Start here:
 3. [Architecture](./docs/ARCHITECTURE.md)
 4. [Storybook](./docs/STORYBOOK.md)
 5. [Shared Drag and Drop](./docs/NuDragDropProvider.md)
+6. [Workspace Provider](./docs/NuWorkspaceProvider.md)
 
 For internal development and agent work:
 

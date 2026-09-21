@@ -6,7 +6,10 @@ import { ListBoxGroup, ListBoxItem } from "./types";
 
 type ListBoxItemViewProps = {
   group: ListBoxGroup;
-  getDragItem?: (item: ListBoxItem, group: ListBoxGroup) => NuDragDropItem | false;
+  getDragItem?: (
+    item: ListBoxItem,
+    group: ListBoxGroup
+  ) => NuDragDropItem | false;
   isActive: boolean;
   isChecked: boolean;
   isSelected: boolean;
@@ -49,7 +52,11 @@ function ListBoxItemViewInner({
   const dragSource = useNuDragSource({
     disabled: item.disabled || !getDragItem,
     getItem: () => getDragItem?.(item, group) ?? false,
-    onDropAccepted: () => onDragOut?.(item, group),
+    onDropAccepted: (result) => {
+      if (result.action !== "copy") {
+        onDragOut?.(item, group);
+      }
+    },
     renderPreview: renderDragPreview
       ? () => renderDragPreview(item, group)
       : undefined,

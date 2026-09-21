@@ -35,6 +35,28 @@ input {
   overflow: hidden;
 }
 
+.sandbox-workspace {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--nu-space-md);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 24px;
+}
+
+.sandbox-workspace__snapshot {
+  min-height: 0;
+  max-height: 100%;
+  margin: 0;
+  padding: var(--nu-content-inset);
+  overflow: auto;
+  color: var(--nu-text-primary);
+  font: inherit;
+  white-space: pre-wrap;
+}
+
 .sandbox-desktop-drop-target {
   position: absolute;
   z-index: 0;

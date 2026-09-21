@@ -25,7 +25,7 @@
 - `renderDragPreview?: (item, group) => ReactNode`
 - `onItemDragOut?: (item, group) => void`
 - `acceptsDrop?: (item) => boolean`
-- `onDrop?: (item, context) => boolean | void`
+- `onDrop?: (item, context) => boolean | NuDropResult | void`
 - `rightCheckBox?: boolean`
 - `emptyText?: string`
 
@@ -44,6 +44,7 @@
   `PopupMenu` or another contextual action surface.
 - Inside `NuDragDropProvider`, `getDragItem` makes rows draggable. The
   application decides accepted data in `acceptsDrop` and updates its collection
-  in `onDrop` / `onItemDragOut`.
+  in `onDrop` / `onItemDragOut`; the latter only runs for a `move` result.
+  Return `{ action: "copy" }` from `onDrop` to leave the source intact.
 - `renderDragPreview(item, group)` may render a compact React preview instead
   of the full list row while dragging.

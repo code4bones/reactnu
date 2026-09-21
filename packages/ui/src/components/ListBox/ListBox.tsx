@@ -71,7 +71,7 @@ export type ListBoxProps = Omit<
     checked: boolean
   ) => void;
   onItemDoubleClick?: (item: ListBoxItem, group: ListBoxGroup) => void;
-  /** Called after this list row was accepted by a different shared drop target. */
+  /** Called after this list row was moved to a different shared drop target. */
   onItemDragOut?: (item: ListBoxItem, group: ListBoxGroup) => void;
   rightCheckBox?: boolean;
   selectedId?: string;
@@ -124,9 +124,7 @@ function ListBoxInner(
   );
   const dropTargetOptions = useMemo(
     () =>
-      onDrop
-        ? { accepts: acceptsDrop, onDrop, type: "listbox" }
-        : undefined,
+      onDrop ? { accepts: acceptsDrop, onDrop, type: "listbox" } : undefined,
     [acceptsDrop, onDrop]
   );
 
@@ -363,13 +361,15 @@ function ListBoxInner(
   );
 }
 
+const ListBoxContent = forwardRef(ListBoxInner);
+
 function ListBoxWithDragDrop(
   props: ListBoxProps,
   ref: ForwardedRef<ListBoxHandle>
 ) {
   return (
     <NuDragDropProvider>
-      {ListBoxInner(props, ref)}
+      <ListBoxContent {...props} ref={ref} />
     </NuDragDropProvider>
   );
 }

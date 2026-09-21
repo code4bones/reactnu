@@ -17,13 +17,7 @@ export function StoryStack({
 
 export function StoryRow({ children }: { children: ReactNode }) {
   return (
-    <Stack
-      align="start"
-      direction="row"
-      gap="md"
-      justify="start"
-      style={{ flexWrap: "wrap" }}
-    >
+    <Stack align="start" direction="row" gap="md" justify="start" wrap>
       {children}
     </Stack>
   );

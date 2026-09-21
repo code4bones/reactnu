@@ -1,4 +1,9 @@
-import React, { useEffect } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef
+} from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   Button,
@@ -7,11 +12,14 @@ import {
   MainMenu,
   MainMenuNode,
   NuGlyph,
+  NuWorkspaceProvider,
+  NuWorkspaceSnapshot,
   NuWindowProvider,
   StatusBarItem,
   Stack,
   Window,
-  useNuWindowManager
+  useNuWindowManager,
+  useNuWorkspace
 } from "@deadragdoll/reactnu";
 import { useWindowMenu } from "../../packages/ui/src/components/Window/windowMenuContext";
 import { StoryFrame } from "../helpers/StoryLayout";
@@ -264,6 +272,140 @@ function PersistedWindowLauncher() {
   );
 }
 
+type ReceiverWorkspaceMeta = {
+  activeTab: "overview" | "history";
+  receiverId: string;
+};
+
+type ReceiverDetailsHandle = {
+  loadWorkspace: (meta: ReceiverWorkspaceMeta) => void;
+  saveWorkspace: () => ReceiverWorkspaceMeta;
+};
+
+const ReceiverDetails = forwardRef<
+  ReceiverDetailsHandle,
+  { receiverId: string }
+>(function ReceiverDetails({ receiverId }, ref) {
+  const [activeTab, setActiveTab] =
+    React.useState<ReceiverWorkspaceMeta["activeTab"]>("overview");
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      loadWorkspace: (meta) => setActiveTab(meta.activeTab),
+      saveWorkspace: () => ({ activeTab, receiverId })
+    }),
+    [activeTab, receiverId]
+  );
+
+  return (
+    <div style={{ padding: "0.75rem 1rem" }}>
+      <Stack gap="sm">
+        <div>Receiver {receiverId}</div>
+        <Stack direction="row" gap="sm">
+          <Button
+            onClick={() => setActiveTab("overview")}
+            variant={activeTab === "overview" ? "primary" : "secondary"}
+          >
+            &Overview
+          </Button>
+          <Button
+            onClick={() => setActiveTab("history")}
+            variant={activeTab === "history" ? "primary" : "secondary"}
+          >
+            &History
+          </Button>
+        </Stack>
+        <Info>
+          Restorable local tab: <InfoAccent>{activeTab}</InfoAccent>
+        </Info>
+      </Stack>
+    </div>
+  );
+});
+
+function createReceiverDetailsWindow(receiverId: string) {
+  const detailsRef = React.createRef<ReceiverDetailsHandle>();
+
+  return {
+    activationGroup: `receiver-${receiverId}`,
+    content: <ReceiverDetails receiverId={receiverId} ref={detailsRef} />,
+    domain: "Receivers",
+    onLoadWorkspace: (meta: unknown) => {
+      detailsRef.current?.loadWorkspace(meta as ReceiverWorkspaceMeta);
+    },
+    onSaveWorkspace: () => detailsRef.current?.saveWorkspace(),
+    style: {
+      height: "13rem",
+      left: "28%",
+      top: "22%",
+      transform: "none",
+      width: "25rem"
+    },
+    title: `Receiver ${receiverId}`,
+    workspaceFactoryKey: "receiver-details"
+  };
+}
+
+const workspaceFactories = {
+  "receiver-details": (savedWindow: { meta: unknown }) => {
+    const meta = savedWindow.meta as ReceiverWorkspaceMeta;
+
+    return createReceiverDetailsWindow(meta.receiverId);
+  }
+};
+
+function WorkspaceLauncher() {
+  const windowManager = useNuWindowManager();
+  const { loadWorkspace, saveWorkspace } = useNuWorkspace();
+  const savedWorkspaceRef = useRef<NuWorkspaceSnapshot | null>(null);
+  const [status, setStatus] = React.useState("Open a receiver details window.");
+
+  function openReceiver() {
+    windowManager.openWindow(createReceiverDetailsWindow("42"));
+  }
+
+  function saveCurrentWorkspace() {
+    const snapshot = saveWorkspace();
+    savedWorkspaceRef.current = snapshot;
+    setStatus(`Saved ${snapshot.windows.length} workspace window(s).`);
+  }
+
+  function restoreSavedWorkspace() {
+    const snapshot = savedWorkspaceRef.current;
+
+    if (!snapshot) {
+      setStatus("Save a workspace first.");
+      return;
+    }
+
+    const result = loadWorkspace(snapshot);
+    setStatus(
+      `Restored ${result.restoredIds.length}; skipped ${result.skipped.length}.`
+    );
+  }
+
+  return (
+    <div style={{ padding: "1rem" }}>
+      <Stack gap="md">
+        <Stack direction="row" gap="sm" wrap>
+          <Button onClick={openReceiver}>Open &receiver</Button>
+          <Button onClick={saveCurrentWorkspace} variant="secondary">
+            &Save workspace
+          </Button>
+          <Button onClick={() => windowManager.closeAll()} variant="secondary">
+            Close &all
+          </Button>
+          <Button onClick={restoreSavedWorkspace} variant="secondary">
+            &Restore workspace
+          </Button>
+        </Stack>
+        <Info>{status}</Info>
+      </Stack>
+    </div>
+  );
+}
+
 function AspectRatioWindow() {
   const [size, setSize] = React.useState({ height: 216, width: 384 });
 
@@ -414,6 +556,26 @@ export const ManagedWindowPersistence: Story = {
     >
       <NuWindowProvider renderAppBar={false}>
         <PersistedWindowLauncher />
+      </NuWindowProvider>
+    </div>
+  )
+};
+
+export const WorkspacePersistence: Story = {
+  render: () => (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "42rem",
+        overflow: "hidden",
+        backgroundColor: "var(--nu-desktop-bg)"
+      }}
+    >
+      <NuWindowProvider renderAppBar={false}>
+        <NuWorkspaceProvider factories={workspaceFactories}>
+          <WorkspaceLauncher />
+        </NuWorkspaceProvider>
       </NuWindowProvider>
     </div>
   )

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   NuDragDropProvider,
@@ -114,4 +115,49 @@ export const CrossGridTransfer: Story = {
       </div>
     </NuDragDropProvider>
   )
+};
+
+export const SharedIconDrop: Story = {
+  render: function SharedIconDropStory() {
+    const [lastDrop, setLastDrop] = useState(
+      "Drop an icon on the target grid."
+    );
+
+    return (
+      <NuDragDropProvider>
+        <div
+          style={{
+            display: "grid",
+            gap: "1rem",
+            gridTemplateColumns: "1fr 1fr",
+            height: "22rem"
+          }}
+        >
+          <NuIconProvider
+            defaultIcons={[
+              {
+                icon: <NuGlyph name="folder" />,
+                id: "source-report",
+                label: "&Source report",
+                payload: { source: "incoming" }
+              }
+            ]}
+          >
+            <NuIconGrid aria-label="Source icons" />
+          </NuIconProvider>
+          <NuIconProvider>
+            <NuIconGrid
+              acceptsDrop={() => true}
+              aria-label="Generic icon drop target"
+              onDrop={(item) => {
+                setLastDrop(`Received ${item.id} through onDrop.`);
+                return { action: "copy" };
+              }}
+            />
+          </NuIconProvider>
+        </div>
+        <small>{lastDrop}</small>
+      </NuDragDropProvider>
+    );
+  }
 };

@@ -1,4 +1,6 @@
 .nu-page-control {
+  --nu-page-control-active-tab-bg: var(--nu-color-button-face);
+
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
@@ -15,17 +17,30 @@
   &__tabs {
     display: flex;
     align-items: flex-end;
-    gap: 0.5ch;
+    position: relative;
+    z-index: 1;
     min-width: 0;
+    margin-bottom: -1px;
     padding-left: 1ch;
+  }
+
+  &__tab-scroller {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: flex-end;
+    min-width: 0;
+    overflow: hidden;
   }
 
   &__tab {
     display: inline-flex;
     align-items: center;
+    position: relative;
     min-height: 1em;
+    margin-right: -1px;
     padding: 0.1em 1.25ch;
-    border: 0;
+    border: 1px solid var(--nu-border-light);
+    border-bottom-color: var(--nu-page-control-active-tab-bg);
     border-radius: 0;
     background: var(--nu-color-button-face-alt);
     box-shadow: none;
@@ -35,16 +50,19 @@
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
+    flex: 0 0 auto;
 
     &[data-active] {
-      background: var(--nu-color-button-face);
+      z-index: 1;
+      border-color: var(--nu-page-control-active-tab-bg);
+      background: var(--nu-page-control-active-tab-bg);
       color: var(--nu-color-title-text);
-      transform: translateY(1px);
     }
 
     &:focus-visible {
       color: var(--nu-text-accent);
-      outline: none;
+      outline: 1px solid var(--nu-focus-color);
+      outline-offset: -2px;
     }
 
     &:disabled {
@@ -53,11 +71,52 @@
     }
   }
 
+  &__overflow-button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    bottom: 1px;
+    gap: 0.5ch;
+    min-height: 1em;
+    margin-left: 0.5ch;
+    padding: 0.1em 0.85ch;
+    border: 1px solid var(--nu-border-light);
+    border-bottom-color: var(--nu-page-control-active-tab-bg);
+    border-radius: 0;
+    background: var(--nu-color-button-face-alt);
+    color: var(--nu-text-inverse);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:focus-visible {
+      color: var(--nu-text-accent);
+      outline: 1px solid var(--nu-focus-color);
+      outline-offset: -2px;
+    }
+
+    & .nu-command-button__icon,
+    & .nu-command-button__label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    & .nu-command-button__caret {
+      display: none;
+    }
+  }
+
   &__panel {
     min-width: 0;
     min-height: 0;
-    border: 1px solid var(--nu-border-light);
-    background: var(--nu-color-button-face);
+    padding: 1ch;
+    border: 1px solid var(--nu-page-control-active-tab-bg);
+    background: transparent;
     overflow: clip;
   }
 }

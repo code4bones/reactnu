@@ -55,7 +55,7 @@ export type ListViewProps<T extends ListViewRowBase> = Omit<
   onActiveRowChange?: (row: T) => void;
   onRowCheckChange?: (row: T, checked: boolean) => void;
   onRowDoubleClick?: (row: T) => void;
-  /** Called after this list row was accepted by a different shared drop target. */
+  /** Called after this list row was moved to a different shared drop target. */
   onRowDragOut?: (row: T) => void;
   onRowSelect?: (row: T) => void;
   /** Receives a shared drag item. Return false to reject it. */
@@ -125,9 +125,7 @@ function ListViewInner<T extends ListViewRowBase>(
   }, [columns, showCheckBox]);
   const dropTargetOptions = useMemo(
     () =>
-      onDrop
-        ? { accepts: acceptsDrop, onDrop, type: "list-view" }
-        : undefined,
+      onDrop ? { accepts: acceptsDrop, onDrop, type: "list-view" } : undefined,
     [acceptsDrop, onDrop]
   );
 
@@ -363,13 +361,19 @@ function ListViewInner<T extends ListViewRowBase>(
   );
 }
 
+const ListViewContent = forwardRef(ListViewInner) as <
+  T extends ListViewRowBase
+>(
+  props: ListViewProps<T> & RefAttributes<ListViewHandle>
+) => ReturnType<typeof ListViewInner>;
+
 function ListViewWithDragDrop<T extends ListViewRowBase>(
   props: ListViewProps<T>,
   ref: ForwardedRef<ListViewHandle>
 ) {
   return (
     <NuDragDropProvider>
-      {ListViewInner(props, ref)}
+      <ListViewContent {...props} ref={ref} />
     </NuDragDropProvider>
   );
 }

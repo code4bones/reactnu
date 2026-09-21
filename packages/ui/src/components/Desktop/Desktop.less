@@ -11,6 +11,32 @@
   background-image: var(--nu-desktop-pattern-image);
   background-size: var(--nu-desktop-pattern-size);
   background-repeat: var(--nu-desktop-pattern-repeat);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+
+  :is(
+    button,
+    [role="button"],
+    [role="menuitem"],
+    [role="option"],
+    [role="row"],
+    [role="treeitem"],
+    [role="slider"],
+    [role="separator"],
+    .nu-info,
+    .nu-panel__header,
+    .nu-panel__footer,
+    .nu-frame__title
+  ) {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  :is(input, textarea, [contenteditable="true"]) {
+    user-select: text;
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+  }
 
   &__menu {
     grid-column: 1;

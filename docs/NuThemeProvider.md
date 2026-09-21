@@ -63,7 +63,15 @@ Supported props:
 
 - Built-in themes are `classic` (default), `amber`, `phosphor`, `midnight`, and
   `grayscale`.
-- `midnight` is a dark slate-blue palette with blue chrome and a burnt-orange focus accent.
+- All built-in themes default to `Consolas` at 15px. Explicit typography props
+  and custom-theme typography still take precedence.
+- Built-in themes may also define default desktop patterns and visual CSS-token
+  overrides. Custom-theme typography and explicit provider props still take
+  precedence.
+- `midnight` is a dark slate-blue palette with blue chrome, a burnt-orange
+  focus accent, coarse dots, and dedicated window, toolbar, menu, and icon-grid
+  chrome tokens.
 - `grayscale` is a high-contrast monochrome monitor palette. Semantic button variants use brightness rather than hue.
-- Theme tokens drive desktop, windowing, controls, selection, and inactive overlays.
+- Theme tokens drive desktop, windowing, controls (including Memo surfaces),
+  selection, and inactive overlays.
 - Provider typography affects preview content, managed windows, dialogs, menus, and popup portals rendered inside the theme scope.

@@ -1,4 +1,8 @@
-import { AppBarHost, WindowBar, useNuWindowManager } from "@deadragdoll/reactnu";
+import {
+  AppBarHost,
+  WindowBar,
+  useNuWindowManager
+} from "@deadragdoll/reactnu";
 import { CalendarAppBarItem } from "./CalendarAppBarItem";
 
 export function SandboxAppBar() {

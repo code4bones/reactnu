@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { TreeDataItemBase, VisibleTreeDataItem } from "../../_shared/treeData";
+import type { NuDragDropContext } from "../../DragDrop";
 
 export type TreeListColumnAlign = "left" | "center" | "right" | "start" | "end";
 
@@ -32,6 +33,9 @@ export type TreeListCellContext<T extends TreeListItemBase<T>> = {
   item: T;
   rowIndex: number;
 };
+
+export type TreeListItemDropContext<T extends TreeListItemBase<T>> =
+  NuDragDropContext & TreeListCellContext<T>;
 
 export type TreeListGetCellContent<T extends TreeListItemBase<T>> = (
   itemId: string,

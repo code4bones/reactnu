@@ -129,8 +129,12 @@ export function TickBar({
     }
 
     window.addEventListener("pointerup", cancelDrag);
+    window.addEventListener("pointercancel", cancelDrag);
 
-    return () => window.removeEventListener("pointerup", cancelDrag);
+    return () => {
+      window.removeEventListener("pointerup", cancelDrag);
+      window.removeEventListener("pointercancel", cancelDrag);
+    };
   }, [dragging]);
 
   function commitValue(nextValue: number) {

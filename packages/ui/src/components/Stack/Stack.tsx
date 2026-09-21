@@ -15,6 +15,7 @@ export type StackProps = HTMLAttributes<HTMLDivElement> & {
   direction?: StackDirection;
   gap?: StackGap;
   justify?: StackJustify;
+  wrap?: boolean;
 };
 
 function resolveFlexAlign(align?: StackAlign) {
@@ -49,6 +50,7 @@ export function Stack({
   gap = "md",
   justify,
   style,
+  wrap = false,
   ...props
 }: StackProps) {
   return (
@@ -59,6 +61,7 @@ export function Stack({
       data-direction={direction}
       data-gap={gap}
       data-justify={justify}
+      data-wrap={wrap || undefined}
       style={
         {
           ...style,

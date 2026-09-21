@@ -41,6 +41,8 @@ For the same button behavior outside a toolbar container, use [CommandButton](./
 - `wrap?: boolean`
 - `startContent?: ReactNode`
 - `endContent?: ReactNode`
+- `overflowButtonLabel?: ReactNode`
+- `overflowButtonIcon?: NuGlyphName | ReactNode`
 - `slotStyles`
 - `slotClassNames`
 
@@ -52,6 +54,9 @@ For the same button behavior outside a toolbar container, use [CommandButton](./
   the controls. Use them for decorative icons or compact status text, not for
   actions that need toolbar keyboard semantics.
 - `wrap={true}` lets tools continue on the next row when the container is too narrow.
+- Without `wrap`, tool controls that do not fit move into a dynamic dropdown
+  trigger. It defaults to the dropdown icon alone and can be customized with
+  `overflowButtonLabel` and `overflowButtonIcon`.
 - `ToolButton` supports `toggled` for toggle-style tools. `pressed` is kept as a legacy alias through the shared command-button layer.
 - `ToolButton` also supports `icon` and optional `dropdown`.
 - `ToolDropButton` is a convenience wrapper for `ToolButton dropdown`.
@@ -61,4 +66,6 @@ For the same button behavior outside a toolbar container, use [CommandButton](./
   `--nu-toolbar-border-style`, and `--nu-toolbar-border-width`; separators
   use the corresponding `--nu-toolbar-separator-*` tokens.
 - `--nu-toolbar-inset` controls Toolbar padding on all four sides.
+- `--nu-toolbar-label-offset-y` adjusts text independently of the centered
+  SVG icon box; it defaults to `1px` for Consolas.
 - `Spacer` fills free space and moves following tools to the opposite edge.

@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
+  ComboBox,
+  Dropdown,
   ListBox,
   ListView,
   TreeListView,
@@ -113,6 +115,53 @@ export const Overview: Story = {
           </div>
         </StoryPanel>
         <small>Last contextual target: {popupTarget}</small>
+      </StoryStack>
+    );
+  }
+};
+
+export const OrdinaryControlsWithoutDragDropProvider: Story = {
+  render: function OrdinaryControlsWithoutDragDropProviderStory() {
+    const [dropdownValue, setDropdownValue] = useState("alpha");
+    const [comboValue, setComboValue] = useState("beta");
+
+    return (
+      <StoryStack>
+        <small>
+          No NuDragDropProvider is mounted around these ordinary selection
+          controls.
+        </small>
+        <Dropdown
+          data={[
+            {
+              category: null,
+              items: [
+                { id: "alpha", name: { text: "Alpha" } },
+                { id: "beta", name: { text: "Beta" } }
+              ]
+            }
+          ]}
+          label="Dropdown"
+          onValueChange={setDropdownValue}
+          value={dropdownValue}
+        />
+        <ComboBox
+          data={[
+            {
+              category: null,
+              items: [
+                { id: "alpha", name: { text: "Alpha" } },
+                { id: "beta", name: { text: "Beta" } }
+              ]
+            }
+          ]}
+          label="ComboBox"
+          onValueChange={setComboValue}
+          value={comboValue}
+        />
+        <div style={{ maxWidth: "24rem" }}>
+          <ListBox data={dropdownData} />
+        </div>
       </StoryStack>
     );
   }

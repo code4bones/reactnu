@@ -27,6 +27,8 @@ Check drive map before running repair.`}
 ## Notes
 
 - `Memo` uses a native `textarea` and preserves line breaks.
-- By default it uses a sand-colored background and black text.
+- Its default colors come from the active theme: `memoBackground` /
+  `--nu-color-memo-bg` and `memoText` / `--nu-color-memo-text`.
+- `background` and `textColor` override those theme defaults for one instance.
 - `content` works as convenient initial text for uncontrolled usage.
 - Focus colors are configurable and default to the same surface colors unless overridden.

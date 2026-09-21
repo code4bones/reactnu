@@ -48,6 +48,9 @@ Notes:
 - `preset` provides the starting button set, but explicit button flags still override it.
 - Button labels can be overridden without changing the result values.
 - If the dialog is closed through the title bar, the helper resolves to the best dismiss result for the configured buttons.
+- `Enter` invokes the default action (`OK`, or `Yes` when `OK` is absent).
+  `Escape` invokes `Cancel`, or the normal dismiss result when no Cancel button
+  exists.
 
 ## InputBox
 
@@ -83,3 +86,7 @@ Notes:
 
 - `null` means the dialog was cancelled or closed.
 - `InputBox` uses the same managed dialog layer as all other windowed UI.
+- Its text field keeps initial focus. `Enter` resolves the typed value and
+  `Escape` resolves `null`.
+- A multiline `textarea`, `Memo`, contenteditable region, active popup, or an
+  IME composition keeps ownership of Enter instead of submitting the dialog.

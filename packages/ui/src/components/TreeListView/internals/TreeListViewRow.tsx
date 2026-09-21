@@ -1,16 +1,31 @@
-import { CSSProperties, MouseEvent, ReactNode, memo } from "react";
+import {
+  CSSProperties,
+  MouseEvent,
+  ReactNode,
+  memo,
+  useMemo,
+  useState
+} from "react";
 import { NuGlyph } from "../../Glyph";
-import { NuDragDropItem, useNuDragSource } from "../../DragDrop";
+import {
+  NuDragDropItem,
+  NuDropResult,
+  NuDropTargetOptions,
+  useNuDragSource,
+  useNuDropTarget
+} from "../../DragDrop";
 import {
   TreeListCellContext,
   TreeListColumn,
   TreeListGetCellContent,
+  TreeListItemDropContext,
   TreeListItemBase
 } from "./types";
 import { getTreeListCellAlign, renderTreeListCellValue } from "./helpers";
 
 type TreeListViewRowProps<T extends TreeListItemBase<T>> = {
   activeItemId: string | null;
+  acceptsDrop?: (item: NuDragDropItem) => boolean;
   checkedIds?: string[];
   columns: TreeListColumn<T>[];
   depth: number;
@@ -26,11 +41,13 @@ type TreeListViewRowProps<T extends TreeListItemBase<T>> = {
   item: T;
   onActivateItem: (item: T, itemId: string) => void;
   onDoubleClickItem?: (item: T) => void;
+  onItemDrop?: (
+    item: NuDragDropItem,
+    targetItem: T,
+    context: TreeListItemDropContext<T>
+  ) => boolean | NuDropResult | void;
   onItemDragOut?: (item: T, context: TreeListCellContext<T>) => void;
-  renderDragPreview?: (
-    item: T,
-    context: TreeListCellContext<T>
-  ) => ReactNode;
+  renderDragPreview?: (item: T, context: TreeListCellContext<T>) => ReactNode;
   onPopupMenuItem?: (
     event: MouseEvent<HTMLDivElement>,
     item: T,
@@ -114,6 +131,7 @@ function treeListItemContainsId<T extends TreeListItemBase<T>>(
 
 function TreeListViewRowInner<T extends TreeListItemBase<T>>({
   activeItemId,
+  acceptsDrop,
   checkedIds,
   columns,
   depth,
@@ -126,6 +144,7 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
   item,
   onActivateItem,
   onDoubleClickItem,
+  onItemDrop,
   onItemDragOut,
   renderDragPreview,
   onPopupMenuItem,
@@ -140,6 +159,7 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
   treeId,
   uncheckedShape
 }: TreeListViewRowProps<T>) {
+  const [rowElement, setRowElement] = useState<HTMLDivElement | null>(null);
   const itemId = item.id;
   const hasChildren = Boolean(item.children?.length);
   const isExpanded = expandedIdSet.has(itemId);
@@ -151,18 +171,38 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
   const isSelected = itemId === selectedItemId;
   const rowIndex = rowIndexMap.get(itemId) ?? 0;
   const leadOffset = depth > 0 && hasChildren ? 1 : 0;
-  const dragContext: TreeListCellContext<T> = {
-    depth,
-    isLeaf: !hasChildren,
-    item,
-    rowIndex
-  };
+  const itemContext = useMemo<TreeListCellContext<T>>(
+    () => ({
+      depth,
+      isLeaf: !hasChildren,
+      item,
+      rowIndex
+    }),
+    [depth, hasChildren, item, rowIndex]
+  );
+  const itemDropTargetOptions = useMemo<NuDropTargetOptions | undefined>(
+    () =>
+      onItemDrop
+        ? {
+            accepts: acceptsDrop,
+            onDrop: (dragItem, dropContext) =>
+              onItemDrop(dragItem, item, { ...dropContext, ...itemContext }),
+            type: "tree-list-item"
+          }
+        : undefined,
+    [acceptsDrop, item, itemContext, onItemDrop]
+  );
+  const itemDropState = useNuDropTarget(rowElement, itemDropTargetOptions);
   const dragSource = useNuDragSource({
     disabled: item.disabled || !getDragItem,
-    getItem: () => getDragItem?.(item, dragContext) ?? false,
-    onDropAccepted: () => onItemDragOut?.(item, dragContext),
+    getItem: () => getDragItem?.(item, itemContext) ?? false,
+    onDropAccepted: (result) => {
+      if (result.action !== "copy") {
+        onItemDragOut?.(item, itemContext);
+      }
+    },
     renderPreview: renderDragPreview
-      ? () => renderDragPreview(item, dragContext)
+      ? () => renderDragPreview(item, itemContext)
       : undefined,
     sourceType: "tree-list-item"
   });
@@ -243,12 +283,17 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
         ]
           .filter(Boolean)
           .join(" ")}
+        data-drop-over={itemDropState.isOver || undefined}
+        data-drop-rejected={
+          itemDropState.isOver && !itemDropState.canDrop ? true : undefined
+        }
         id={`${treeId}-${itemId}`}
         onClick={handleActivate}
         onContextMenu={onPopupMenuItem ? handleContextMenu : undefined}
         onDoubleClick={handleDoubleClick}
         ref={(node) => {
           registerItemRef(itemId, node);
+          setRowElement(node);
           dragSource.dragRef(node);
         }}
         role="row"
@@ -389,6 +434,7 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
           {(item.children ?? []).map((child, index) => (
             <TreeListViewRow
               activeItemId={activeItemId}
+              acceptsDrop={acceptsDrop}
               checkedIds={checkedIds}
               columns={columns}
               depth={depth + 1}
@@ -402,8 +448,10 @@ function TreeListViewRowInner<T extends TreeListItemBase<T>>({
               key={child.id}
               onActivateItem={onActivateItem}
               onDoubleClickItem={onDoubleClickItem}
+              onItemDrop={onItemDrop}
               onItemDragOut={onItemDragOut}
               onPopupMenuItem={onPopupMenuItem}
+              renderDragPreview={renderDragPreview}
               onToggleItemCheck={onToggleItemCheck}
               onToggleItemExpanded={onToggleItemExpanded}
               originOffset={originOffset + leadOffset}

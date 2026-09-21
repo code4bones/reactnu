@@ -18,6 +18,48 @@ export type NuManagedWindowSnapshot = {
   width?: number;
 };
 
+/** A serializable workspace record for one managed window. */
+export type NuWorkspaceWindowSnapshot = {
+  activationGroup?: string;
+  domain?: string;
+  /** Stable key used to locate the application's restoration factory. */
+  factoryKey: string;
+  /** Application-owned serializable state returned by `onSaveWorkspace`. */
+  meta: unknown;
+  mode: WindowMode;
+  window: NuManagedWindowSnapshot;
+};
+
+export type NuWorkspaceSnapshot = {
+  version: 1;
+  windows: NuWorkspaceWindowSnapshot[];
+};
+
+export type NuWorkspaceWindowSaveContext = {
+  id: string;
+  window: NuManagedWindowSnapshot;
+};
+
+export type NuWorkspaceWindowLoadContext = {
+  id: string;
+  savedWindow: NuWorkspaceWindowSnapshot;
+  window: NuManagedWindowSnapshot;
+};
+
+export type NuWorkspaceWindowFactory = (
+  savedWindow: NuWorkspaceWindowSnapshot
+) => NuManagedWindowDefinition | null | undefined;
+
+export type NuWorkspaceWindowFactories = Record<
+  string,
+  NuWorkspaceWindowFactory
+>;
+
+export type NuWorkspaceLoadResult = {
+  restoredIds: string[];
+  skipped: NuWorkspaceWindowSnapshot[];
+};
+
 export type NuManagedWindowDefinition = {
   /** Windows with the same value share their active/inactive chrome state. */
   activationGroup?: string;
@@ -41,7 +83,19 @@ export type NuManagedWindowDefinition = {
   minimizable?: boolean;
   mode?: WindowMode;
   onClose?: (snapshot: NuManagedWindowSnapshot) => boolean | void;
+  /** Runs after this window was recreated through `loadWorkspace`. */
+  onLoadWorkspace?: (
+    meta: unknown,
+    context: NuWorkspaceWindowLoadContext
+  ) => void;
   onOpen?: () => NuManagedWindowSnapshot | void;
+  /**
+   * Returns application-owned state for a workspace snapshot. Return
+   * `undefined` to omit this window from `saveWorkspace`.
+   */
+  onSaveWorkspace?: (
+    context: NuWorkspaceWindowSaveContext
+  ) => unknown | undefined;
   resizable?: boolean;
   statusBar?: ReactNode;
   style?: CSSProperties;
@@ -52,6 +106,8 @@ export type NuManagedWindowDefinition = {
    * localStorage. The key is scoped to `reactnu.window.`.
    */
   windowStoreKey?: string;
+  /** Stable key of a factory registered with `NuWorkspaceProvider`. */
+  workspaceFactoryKey?: string;
 };
 
 export type NuManagedWindowControls = {

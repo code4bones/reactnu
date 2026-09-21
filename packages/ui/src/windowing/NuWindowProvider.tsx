@@ -1,6 +1,7 @@
 import {
   CSSProperties,
   Fragment,
+  KeyboardEvent as ReactKeyboardEvent,
   PropsWithChildren,
   useCallback,
   useContext,
@@ -20,6 +21,7 @@ import { AppHostMenuContext } from "../appHost/appHostContext";
 import { AppBarHost } from "./AppBarHost";
 import { WindowBar } from "./WindowBar";
 import { NuWindowContext, NuWindowContextValue } from "./windowContext";
+import { NuWindowWorkspaceContext } from "./windowWorkspaceContext";
 import {
   getInputBoxDomain,
   getInputBoxStyle,
@@ -38,7 +40,8 @@ import {
   NuManagedWindowDefinition,
   NuManagedWindowInfo,
   NuManagedWindowSnapshot,
-  NuWindowBounds
+  NuWindowBounds,
+  NuWorkspaceSnapshot
 } from "./windowing.types";
 
 export type {
@@ -364,6 +367,115 @@ function findTopmostAppModalIndex(windows: NuManagedWindowRecord[]) {
   return -1;
 }
 
+const nonTextInputTypes = new Set([
+  "button",
+  "checkbox",
+  "color",
+  "file",
+  "hidden",
+  "image",
+  "radio",
+  "range",
+  "reset",
+  "submit"
+]);
+
+function isTextInput(target: Element) {
+  const input = target.closest("input");
+
+  return (
+    input instanceof HTMLInputElement && !nonTextInputTypes.has(input.type)
+  );
+}
+
+function shouldHandleDialogEnter(target: EventTarget | null) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  if (
+    target.closest(
+      "button, textarea, select, a[href], [role=button], [role=listbox], [role=grid], [role=menuitem], [role=option], [role=tree], [role=treegrid]"
+    )
+  ) {
+    return false;
+  }
+
+  const editableAncestor = target.closest("[contenteditable]");
+
+  if (
+    editableAncestor instanceof HTMLElement &&
+    editableAncestor.isContentEditable
+  ) {
+    return false;
+  }
+
+  if (target.closest('[aria-expanded="true"][aria-haspopup]')) {
+    return false;
+  }
+
+  return !target.closest("input") || isTextInput(target);
+}
+
+function findDialogAction(root: HTMLElement, attribute: string) {
+  return root.querySelector<HTMLButtonElement>(
+    `button[${attribute}]:not(:disabled)`
+  );
+}
+
+function handleDialogKeyDown(
+  event: ReactKeyboardEvent<HTMLElement>,
+  onDismiss: () => void
+) {
+  if (
+    event.defaultPrevented ||
+    event.nativeEvent.isComposing ||
+    event.nativeEvent.keyCode === 229
+  ) {
+    return;
+  }
+
+  if (event.key === "Escape") {
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[aria-expanded="true"][aria-haspopup]')
+    ) {
+      return;
+    }
+
+    const cancelButton = findDialogAction(
+      event.currentTarget,
+      "data-nu-cancel"
+    );
+
+    event.preventDefault();
+
+    if (cancelButton) {
+      cancelButton.click();
+    } else {
+      onDismiss();
+    }
+
+    return;
+  }
+
+  if (event.key !== "Enter" || !shouldHandleDialogEnter(event.target)) {
+    return;
+  }
+
+  const defaultButton = findDialogAction(
+    event.currentTarget,
+    "data-nu-default"
+  );
+
+  if (!defaultButton) {
+    return;
+  }
+
+  event.preventDefault();
+  defaultButton.click();
+}
+
 function getActivationChain(
   windows: NuManagedWindowRecord[],
   id: string
@@ -590,7 +702,8 @@ export function NuWindowProvider({
   );
 
   const handleWindowSizeChange = useCallback(
-    (id: string, size: WindowSize) => updateWindowSize(id, size.width, size.height),
+    (id: string, size: WindowSize) =>
+      updateWindowSize(id, size.width, size.height),
     [updateWindowSize]
   );
 
@@ -812,9 +925,8 @@ export function NuWindowProvider({
   const activeWindow = activeWindowId
     ? windows.find((windowEntry) => windowEntry.id === activeWindowId)
     : undefined;
-  const activeActivationGroup = topmostAppModalIndex >= 0
-    ? undefined
-    : activeWindow?.activationGroup;
+  const activeActivationGroup =
+    topmostAppModalIndex >= 0 ? undefined : activeWindow?.activationGroup;
   const hasAppModal = topmostAppModalIndex >= 0;
   const isWindowActive = useCallback(
     (windowEntry: NuManagedWindowRecord) =>
@@ -859,6 +971,41 @@ export function NuWindowProvider({
         })),
     [isWindowActive, windows]
   );
+  const createWorkspaceSnapshot = useCallback<() => NuWorkspaceSnapshot>(
+    () => ({
+      version: 1,
+      windows: windows.flatMap((windowEntry) => {
+        if (!windowEntry.workspaceFactoryKey || !windowEntry.onSaveWorkspace) {
+          return [];
+        }
+
+        const window = resolveManagedWindowSnapshot(
+          windowEntry,
+          windowBoundsByIdRef.current
+        );
+        const meta = windowEntry.onSaveWorkspace({
+          id: windowEntry.id,
+          window
+        });
+
+        if (meta === undefined) {
+          return [];
+        }
+
+        return [
+          {
+            activationGroup: windowEntry.activationGroup,
+            domain: windowEntry.domain,
+            factoryKey: windowEntry.workspaceFactoryKey,
+            meta,
+            mode: windowEntry.mode,
+            window
+          }
+        ];
+      })
+    }),
+    [windows]
+  );
   const mdiBridge = useMemo(
     () => ({
       activateWindow,
@@ -897,6 +1044,10 @@ export function NuWindowProvider({
       updateWindow,
       windowsInfo
     ]
+  );
+  const workspaceContextValue = useMemo(
+    () => ({ createWorkspaceSnapshot }),
+    [createWorkspaceSnapshot]
   );
 
   useEffect(() => {
@@ -985,125 +1136,138 @@ export function NuWindowProvider({
 
   return (
     <NuWindowContext.Provider value={contextValue}>
-      <div className={["nu-window-host", className].filter(Boolean).join(" ")}>
-        {children}
-        <div className="nu-window-layer">
-          {renderWindows.map((windowEntry) => {
-            const isActiveWindow = isWindowActive(windowEntry);
-            const stackIndex = stackIndexById.get(windowEntry.id);
-            const isTopmostAppModal = windowEntry.id === topmostAppModalId;
-            const ownerBounds = windowEntry.modalOwnerId
-              ? windowBoundsById[windowEntry.modalOwnerId]
-              : undefined;
-            const ownerBackdropStyle =
-              !windowEntry.appModal && ownerBounds && stackIndex !== undefined
-                ? {
-                    height: ownerBounds.height,
-                    left: ownerBounds.left,
-                    top: ownerBounds.top,
-                    width: ownerBounds.width,
-                    zIndex: stackIndex + 1
-                  }
-                : null;
-            const handleClose = () => closeWindow(windowEntry.id);
-            const handleActivate = () => activateWindow(windowEntry.id);
-            const handleBringToFront = () => bringToFront(windowEntry.id);
-            const handleToggleMaximized = () =>
-              toggleWindowMaximized(windowEntry.id);
-            const handleToggleMinimized = () =>
-              toggleWindowMinimized(windowEntry.id);
-            const handlePositionChange = (position: WindowPosition) =>
-              updateWindowPosition(windowEntry.id, position);
-            const handleSizeChange = (size: WindowSize) =>
-              handleWindowSizeChange(windowEntry.id, size);
-            const handleUpdate = (patch: Partial<NuManagedWindowDefinition>) =>
-              updateWindow(windowEntry.id, patch);
-            const controls: NuManagedWindowControls = {
-              bringToFront: handleBringToFront,
-              close: handleClose,
-              id: windowEntry.id,
-              toggleMaximized: handleToggleMaximized,
-              toggleMinimized: handleToggleMinimized,
-              update: handleUpdate
-            };
-            const content =
-              typeof windowEntry.content === "function"
-                ? windowEntry.content(controls)
-                : windowEntry.content;
-
-            return (
-              <Fragment key={windowEntry.id}>
-                {isTopmostAppModal ? (
-                  <div
-                    className="nu-window-layer__modal-backdrop"
-                    style={{ zIndex: visibleWindows.length + 1 }}
-                  />
-                ) : ownerBackdropStyle ? (
-                  <div
-                    className="nu-window-layer__modal-backdrop"
-                    style={ownerBackdropStyle}
-                  />
-                ) : null}
-                <Window
-                  active={isActiveWindow}
-                  aspectRatio={windowEntry.aspectRatio}
-                  bodyClassName={windowEntry.bodyClassName}
-                  border={windowEntry.border}
-                  className={windowEntry.className}
-                  closeable={windowEntry.closeable}
-                  draggable={windowEntry.draggable}
-                  icon={windowEntry.icon}
-                  maximizable={windowEntry.maximizable}
-                  minHeight={windowEntry.minHeight}
-                  minWidth={windowEntry.minWidth}
-                  minimizable={windowEntry.minimizable}
-                  maximized={windowEntry.maximized}
-                  minimized={windowEntry.minimized}
-                  mode={windowEntry.mode}
-                  onActivate={handleActivate}
-                  onBoundsChange={(bounds) =>
-                    updateWindowBounds(windowEntry.id, bounds)
-                  }
-                  onClose={handleClose}
-                  onPositionChange={handlePositionChange}
-                  onSizeChange={handleSizeChange}
-                  onToggleMaximized={handleToggleMaximized}
-                  onToggleMinimized={handleToggleMinimized}
-                  resizable={windowEntry.resizable}
-                  statusBar={windowEntry.statusBar}
-                  style={{
-                    ...windowEntry.style,
-                    zIndex:
-                      isTopmostAppModal && topmostAppModalIndex >= 0
-                        ? visibleWindows.length + 2
-                        : ownerBackdropStyle
-                          ? ownerBackdropStyle.zIndex + 1
-                          : (stackIndex ?? 0) + 1
-                  }}
-                  title={windowEntry.title}
-                >
-                  {content}
-                </Window>
-              </Fragment>
-            );
-          })}
-        </div>
-        {renderAppBar ? (
-          <AppBarHost>
-            <WindowBar
-              items={windowsInfo.map((windowEntry) => ({
-                active: windowEntry.active,
-                domain: windowEntry.domain,
+      <NuWindowWorkspaceContext.Provider value={workspaceContextValue}>
+        <div
+          className={["nu-window-host", className].filter(Boolean).join(" ")}
+        >
+          {children}
+          <div className="nu-window-layer">
+            {renderWindows.map((windowEntry) => {
+              const isActiveWindow = isWindowActive(windowEntry);
+              const stackIndex = stackIndexById.get(windowEntry.id);
+              const isTopmostAppModal = windowEntry.id === topmostAppModalId;
+              const ownerBounds = windowEntry.modalOwnerId
+                ? windowBoundsById[windowEntry.modalOwnerId]
+                : undefined;
+              const ownerBackdropStyle =
+                !windowEntry.appModal && ownerBounds && stackIndex !== undefined
+                  ? {
+                      height: ownerBounds.height,
+                      left: ownerBounds.left,
+                      top: ownerBounds.top,
+                      width: ownerBounds.width,
+                      zIndex: stackIndex + 1
+                    }
+                  : null;
+              const handleClose = () => closeWindow(windowEntry.id);
+              const handleManagedDialogKeyDown = (
+                event: ReactKeyboardEvent<HTMLElement>
+              ) => {
+                if (windowEntry.mode === "dialog") {
+                  handleDialogKeyDown(event, handleClose);
+                }
+              };
+              const handleActivate = () => activateWindow(windowEntry.id);
+              const handleBringToFront = () => bringToFront(windowEntry.id);
+              const handleToggleMaximized = () =>
+                toggleWindowMaximized(windowEntry.id);
+              const handleToggleMinimized = () =>
+                toggleWindowMinimized(windowEntry.id);
+              const handlePositionChange = (position: WindowPosition) =>
+                updateWindowPosition(windowEntry.id, position);
+              const handleSizeChange = (size: WindowSize) =>
+                handleWindowSizeChange(windowEntry.id, size);
+              const handleUpdate = (
+                patch: Partial<NuManagedWindowDefinition>
+              ) => updateWindow(windowEntry.id, patch);
+              const controls: NuManagedWindowControls = {
+                bringToFront: handleBringToFront,
+                close: handleClose,
                 id: windowEntry.id,
-                icon: windowEntry.icon,
-                minimized: windowEntry.minimized,
-                title: windowEntry.title
-              }))}
-              onActivateWindow={activateWindow}
-            />
-          </AppBarHost>
-        ) : null}
-      </div>
+                toggleMaximized: handleToggleMaximized,
+                toggleMinimized: handleToggleMinimized,
+                update: handleUpdate
+              };
+              const content =
+                typeof windowEntry.content === "function"
+                  ? windowEntry.content(controls)
+                  : windowEntry.content;
+
+              return (
+                <Fragment key={windowEntry.id}>
+                  {isTopmostAppModal ? (
+                    <div
+                      className="nu-window-layer__modal-backdrop"
+                      style={{ zIndex: visibleWindows.length + 1 }}
+                    />
+                  ) : ownerBackdropStyle ? (
+                    <div
+                      className="nu-window-layer__modal-backdrop"
+                      style={ownerBackdropStyle}
+                    />
+                  ) : null}
+                  <Window
+                    active={isActiveWindow}
+                    aspectRatio={windowEntry.aspectRatio}
+                    bodyClassName={windowEntry.bodyClassName}
+                    border={windowEntry.border}
+                    className={windowEntry.className}
+                    closeable={windowEntry.closeable}
+                    draggable={windowEntry.draggable}
+                    icon={windowEntry.icon}
+                    maximizable={windowEntry.maximizable}
+                    minHeight={windowEntry.minHeight}
+                    minWidth={windowEntry.minWidth}
+                    minimizable={windowEntry.minimizable}
+                    maximized={windowEntry.maximized}
+                    minimized={windowEntry.minimized}
+                    mode={windowEntry.mode}
+                    onActivate={handleActivate}
+                    onBoundsChange={(bounds) =>
+                      updateWindowBounds(windowEntry.id, bounds)
+                    }
+                    onClose={handleClose}
+                    onKeyDown={handleManagedDialogKeyDown}
+                    onPositionChange={handlePositionChange}
+                    onSizeChange={handleSizeChange}
+                    onToggleMaximized={handleToggleMaximized}
+                    onToggleMinimized={handleToggleMinimized}
+                    resizable={windowEntry.resizable}
+                    statusBar={windowEntry.statusBar}
+                    style={{
+                      ...windowEntry.style,
+                      zIndex:
+                        isTopmostAppModal && topmostAppModalIndex >= 0
+                          ? visibleWindows.length + 2
+                          : ownerBackdropStyle
+                            ? ownerBackdropStyle.zIndex + 1
+                            : (stackIndex ?? 0) + 1
+                    }}
+                    title={windowEntry.title}
+                  >
+                    {content}
+                  </Window>
+                </Fragment>
+              );
+            })}
+          </div>
+          {renderAppBar ? (
+            <AppBarHost>
+              <WindowBar
+                items={windowsInfo.map((windowEntry) => ({
+                  active: windowEntry.active,
+                  domain: windowEntry.domain,
+                  id: windowEntry.id,
+                  icon: windowEntry.icon,
+                  minimized: windowEntry.minimized,
+                  title: windowEntry.title
+                }))}
+                onActivateWindow={activateWindow}
+              />
+            </AppBarHost>
+          ) : null}
+        </div>
+      </NuWindowWorkspaceContext.Provider>
     </NuWindowContext.Provider>
   );
 }

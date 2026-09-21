@@ -15,9 +15,7 @@ export type NuWindowContextValue = {
   openDialog: (definition: NuManagedWindowDefinition) => string;
   openWindow: (definition: NuManagedWindowDefinition) => string;
   showInputBox: (options: NuInputBoxOptions) => Promise<string | null>;
-  showMessageBox: (
-    options: NuMessageBoxOptions
-  ) => Promise<NuMessageBoxResult>;
+  showMessageBox: (options: NuMessageBoxOptions) => Promise<NuMessageBoxResult>;
   toggleWindowMaximized: (id: string) => void;
   toggleWindowMinimized: (id: string) => void;
   updateWindow: (id: string, patch: Partial<NuManagedWindowDefinition>) => void;

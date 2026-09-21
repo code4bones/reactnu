@@ -72,6 +72,7 @@ This package includes the complete Markdown documentation set:
 - [Theme Provider](./docs/NuThemeProvider.md)
 - [Shared Drag and Drop](./docs/NuDragDropProvider.md)
 - [Window Provider](./docs/NuWindowProvider.md)
+- [Workspace Provider](./docs/NuWorkspaceProvider.md)
 - [Storybook guidance](./docs/STORYBOOK.md)
 
 Each public component has a dedicated page in [`docs/`](./docs/).
@@ -84,7 +85,7 @@ Each public component has a dedicated page in [`docs/`](./docs/).
 - `NuDragDropProvider` — coordinates application-owned transfers among icon grids, lists, and trees.
 - `NuDesktop` — fullscreen desktop shell with workspace and app-bar regions.
 - `NuAppHostProvider` — owns application-level main-menu state.
-- `NuWindowProvider` — manages windows, dialogs, modal state, and window-manager hooks.
+- `NuWindowProvider` — manages windows, dialogs, modal state, and window-manager hooks. Managed dialogs support `Enter` default actions and `Escape` cancel actions through Button `isDefault` and `isCancel` markers.
 - `Dashboard` — static grid or lane-based workspace layout.
 
 ### Actions and input

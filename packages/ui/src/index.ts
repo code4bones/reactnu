@@ -41,6 +41,7 @@ export * from "./theme/NuThemeProvider";
 export * from "./theme/themeContext";
 export * from "./theme/themes";
 export * from "./windowing/NuWindowProvider";
+export * from "./windowing/NuWorkspaceProvider";
 export * from "./windowing/AppBarItem";
 export * from "./windowing/AppBarHost";
 export * from "./windowing/WindowBar";

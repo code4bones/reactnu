@@ -1,10 +1,4 @@
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import {
   Bell,
@@ -313,7 +307,7 @@ const SANDBOX_FONT_OPTIONS = [
   {
     id: "consolas",
     label: "Consolas",
-    value: '"Consolas", "Cascadia Mono", "IBM Plex Mono", monospace'
+    value: '"Consolas", monospace'
   },
   {
     id: "lucida-console",
@@ -452,7 +446,7 @@ function ThemeSwitcher() {
   const themeNames = Object.keys(nuThemes) as Array<keyof typeof nuThemes>;
 
   return (
-    <Stack direction="row" gap="sm">
+    <Stack direction="row" gap="sm" wrap>
       {themeNames.map((currentThemeName) => {
         const theme = nuThemes[currentThemeName];
 
@@ -472,10 +466,12 @@ function ThemeSwitcher() {
 
 function DesktopMenuSync({
   editorFontFamily,
-  editorFontSize
+  editorFontSize,
+  onWorkspaceModeChange
 }: {
   editorFontFamily: string;
   editorFontSize: number;
+  onWorkspaceModeChange?: () => void;
 }) {
   const { setMainMenu } = useAppHostMenu();
   const windowManager = useNuWindowManager();
@@ -601,6 +597,17 @@ function DesktopMenuSync({
         id: "mdi.host",
         text: "&Window"
       },
+      {
+        id: "workspace",
+        items: [
+          {
+            id: "workspace-mode",
+            onSelect: onWorkspaceModeChange,
+            text: "&Workspace mode"
+          }
+        ],
+        text: "W&orkspace"
+      },
       { id: "desktop-menu-spacer", type: "spacer" },
       {
         id: "profile",
@@ -676,7 +683,7 @@ function DesktopMenuSync({
     return () => {
       setMainMenu([]);
     };
-  }, [openEditorWindow, openThemeDesigner, setMainMenu]);
+  }, [onWorkspaceModeChange, openEditorWindow, openThemeDesigner, setMainMenu]);
 
   return null;
 }
@@ -2105,7 +2112,6 @@ function MemoWindowContent() {
   return (
     <SandboxWindowView>
       <Memo
-        background="#8ddbcd"
         content={`Operator memo:
 
 - Verify allocation map before repair.
@@ -2117,7 +2123,6 @@ TreeListView host callbacks now update live report cells without breaking tree g
 
 Warning:
 Do not interrupt rebuild while background telemetry sync is active.`}
-        focusBackground="#8ddbcd"
       />
     </SandboxWindowView>
   );
@@ -2230,11 +2235,7 @@ function PageControlWindowContent() {
         pages={[
           {
             content: (
-              <Frame
-                contentStyle={{ padding: "var(--nu-content-inset)" }}
-                fill
-                variant="outline"
-              >
+              <NuView>
                 <Stack gap="md">
                   <Info>
                     Current workspace target is{" "}
@@ -2245,45 +2246,52 @@ function PageControlWindowContent() {
                     <InfoAccent upper>three</InfoAccent> pending actions.
                   </Info>
                 </Stack>
-              </Frame>
+              </NuView>
             ),
             id: "summary",
             label: "&Summary"
           },
           {
             content: (
-              <Frame
-                contentStyle={{ padding: "var(--nu-content-inset)" }}
-                fill
-                variant="outline"
-              >
+              <NuView>
                 <Stack gap="sm">
                   <Button>&Run diagnostics</Button>
                   <Button variant="secondary">&Preview report</Button>
                   <Button variant="danger">&Abort queue</Button>
                 </Stack>
-              </Frame>
+              </NuView>
             ),
             id: "actions",
             label: "&Actions"
           },
           {
             content: (
-              <Frame
-                contentStyle={{ padding: "var(--nu-content-inset)" }}
-                fill
-                variant="outline"
-              >
+              <NuView>
                 <Info>
                   Archive review remains <InfoAccent bold>disabled</InfoAccent>{" "}
                   until the workspace is verified.
                 </Info>
-              </Frame>
+              </NuView>
             ),
             disabled: true,
             id: "archive",
             label: "&Archive"
-          }
+          },
+          ...[
+            ["reports", "&Reports"],
+            ["schedule", "&Schedule"],
+            ["history", "&History"],
+            ["options", "&Options"],
+            ["help", "&Help"]
+          ].map(([id, label]) => ({
+            content: (
+              <NuView>
+                <Info>{label.replace("&", "")} page content.</Info>
+              </NuView>
+            ),
+            id,
+            label
+          }))
         ]}
       />
     </SandboxWindowView>
@@ -2333,6 +2341,10 @@ function ToolBarWindowContent() {
           <ToolButton icon="gear">&Map</ToolButton>
           <ToolSeparator />
           <ToolButton disabled>&Repair</ToolButton>
+          <ToolButton icon="star">&Verify</ToolButton>
+          <ToolButton icon="folder">&Catalog</ToolButton>
+          <ToolButton icon="gear">&Options</ToolButton>
+          <ToolButton>&Defragment</ToolButton>
         </ToolBar>
         <div style={{ width: "100%" }}>
           <ToolBar wrap>
@@ -2804,7 +2816,10 @@ function FrameWindowContent() {
   return (
     <SandboxWindowView>
       <Stack gap="md">
-        <Frame contentStyle={{ padding: "var(--nu-content-inset)" }} title="&Simple Frame">
+        <Frame
+          contentStyle={{ padding: "var(--nu-content-inset)" }}
+          title="&Simple Frame"
+        >
           <Info>Default text title still works as the simple shorthand.</Info>
         </Frame>
         <Frame
@@ -2859,14 +2874,14 @@ function WindowLaunchers() {
         <NuView padding="cell">
           <Stack gap="md">
             <p className="sandbox-copy">
-              Resetting theme tokens will restore the classic palette and
-              clear any sandbox overrides.
+              Resetting theme tokens will restore the classic palette and clear
+              any sandbox overrides.
             </p>
             <Stack direction="row" gap="sm" justify="center">
-              <Button defaultFocused onClick={close}>
+              <Button defaultFocused isDefault onClick={close}>
                 &Confirm
               </Button>
-              <Button onClick={close} variant="secondary">
+              <Button isCancel onClick={close} variant="secondary">
                 &Cancel
               </Button>
             </Stack>
@@ -2885,14 +2900,14 @@ function WindowLaunchers() {
         <NuView padding="cell">
           <Stack gap="md">
             <p className="sandbox-copy">
-              Modal maintenance dialog blocks interaction with the desktop
-              and other windows until you close it.
+              Modal maintenance dialog blocks interaction with the desktop and
+              other windows until you close it.
             </p>
             <Stack direction="row" gap="sm" justify="center">
-              <Button defaultFocused onClick={close}>
+              <Button defaultFocused isDefault onClick={close}>
                 &Confirm
               </Button>
-              <Button onClick={close} variant="secondary">
+              <Button isCancel onClick={close} variant="secondary">
                 &Cancel
               </Button>
             </Stack>
@@ -2902,6 +2917,47 @@ function WindowLaunchers() {
       appModal: true,
       domain: "Reset",
       title: "Confirm Reset"
+    });
+  }
+
+  function openKeyboardDialog() {
+    windowManager.openDialog({
+      border: "double",
+      content: ({ close }) => (
+        <NuView padding="cell">
+          <Stack gap="md">
+            <TextField
+              autoFocus
+              defaultValue="SURFACE.SCAN"
+              hint="Enter runs Apply; Escape runs Cancel."
+              label="Operation"
+            />
+            <Stack direction="row" gap="sm" justify="center">
+              <Button
+                isDefault
+                onClick={() => {
+                  setLastDialogResult("Keyboard dialog: applied");
+                  close();
+                }}
+              >
+                &Apply
+              </Button>
+              <Button
+                isCancel
+                onClick={() => {
+                  setLastDialogResult("Keyboard dialog: cancelled");
+                  close();
+                }}
+                variant="secondary"
+              >
+                &Cancel
+              </Button>
+            </Stack>
+          </Stack>
+        </NuView>
+      ),
+      domain: "Keyboard",
+      title: "Keyboard Dialog"
     });
   }
 
@@ -3079,8 +3135,8 @@ function WindowLaunchers() {
         <NuView padding="cell">
           <Stack gap="md">
             <p className="sandbox-copy">
-              Disk Map displays allocation regions, hot spots, and cluster
-              usage for the selected volume.
+              Disk Map displays allocation regions, hot spots, and cluster usage
+              for the selected volume.
             </p>
             <p className="sandbox-copy">
               Volume C: 68% used 12% fragmented 3 hot sectors detected
@@ -3394,7 +3450,7 @@ function WindowLaunchers() {
   async function openInputBox() {
     const result = await windowManager.showInputBox({
       defaultValue: "C:\\LOGS\\SURFACE.MAP",
-      hint: "Type the target report path and confirm.",
+      hint: "Enter confirms the path; Escape cancels.",
       label: "Target path",
       title: "Archive Report"
     });
@@ -3408,8 +3464,11 @@ function WindowLaunchers() {
 
   return (
     <Stack gap="sm">
-      <Stack direction="row" gap="sm" style={{ flexWrap: "wrap" }}>
+      <Stack direction="row" gap="sm" wrap>
         <Button onClick={openMaintenanceDialog}>Open &dialog</Button>
+        <Button onClick={openKeyboardDialog} variant="secondary">
+          &Keyboard dialog
+        </Button>
         <Button onClick={openModalMaintenanceDialog} variant="secondary">
           Open &modal dialog
         </Button>
@@ -3586,7 +3645,11 @@ function PopupMenuSandbox() {
   );
 }
 
-export function DemoApp() {
+export function DemoApp({
+  onWorkspaceModeChange
+}: {
+  onWorkspaceModeChange?: () => void;
+}) {
   const {
     desktopPatternMode,
     fontFamily,
@@ -3599,14 +3662,14 @@ export function DemoApp() {
   const [verifyStructure, setVerifyStructure] = useState(true);
   const [repairLinks, setRepairLinks] = useState(false);
   const [bootMode, setBootMode] = useState("safe");
-  const hostFontFamily = fontFamily ?? SANDBOX_FONT_OPTIONS[0].value;
-  const hostFontSize = fontSize ?? SANDBOX_FONT_SIZE_OPTIONS[3].value;
+  const hostFontFamily = fontFamily ?? '"Consolas", monospace';
+  const hostFontSize = fontSize ?? 15;
   const hostFontId =
     SANDBOX_FONT_OPTIONS.find((option) => option.value === hostFontFamily)
-      ?.id ?? SANDBOX_FONT_OPTIONS[0].id;
+      ?.id ?? "consolas";
   const hostFontSizeId =
     SANDBOX_FONT_SIZE_OPTIONS.find((option) => option.value === hostFontSize)
-      ?.id ?? SANDBOX_FONT_SIZE_OPTIONS[3].id;
+      ?.id ?? "15";
   const hostTypographyPresetId =
     SANDBOX_TYPOGRAPHY_PRESETS.find(
       (preset) =>
@@ -3628,7 +3691,7 @@ export function DemoApp() {
               component APIs.
             </p>
             <ThemeSwitcher />
-            <Stack direction="row" gap="md">
+            <Stack direction="row" gap="md" wrap>
               <Dropdown
                 data={[
                   {
@@ -3873,6 +3936,7 @@ export function DemoApp() {
       <DesktopMenuSync
         editorFontFamily={hostFontFamily}
         editorFontSize={hostFontSize}
+        onWorkspaceModeChange={onWorkspaceModeChange}
       />
       <Dashboard
         className="sandbox-dashboard"

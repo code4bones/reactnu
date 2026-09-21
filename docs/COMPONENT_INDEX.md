@@ -56,6 +56,7 @@
 - [AppBarItem](./AppBarItem.md)
 - [WindowBar](./WindowBar.md)
 - [NuWindowProvider](./NuWindowProvider.md)
+- [NuWorkspaceProvider](./NuWorkspaceProvider.md)
 
 ## Providers
 

@@ -41,4 +41,5 @@
 ## Notes
 
 - The popup width is clamped to the width of the closed control.
+- The popup inherits the nearest `NuThemeProvider` tokens even though it is rendered into `document.body`.
 - This component is intentionally select-like; searchable combo-box behavior should live in a separate component.
